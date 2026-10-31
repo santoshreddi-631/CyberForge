@@ -8,6 +8,8 @@ coverage/
 backend/.tmp-pg*/
 backend/dist/
 backend/node_modules/
+backend/localhost-key.pem
+backend/localhost-cert.pem
 backend/audits/*
 !backend/audits/INDEPENDENT-AUDIT.md
 !backend/audits/PRD-COMPLIANCE-MATRIX.md

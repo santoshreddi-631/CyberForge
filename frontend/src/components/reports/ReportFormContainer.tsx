@@ -21,7 +21,7 @@ import { apiClient, ApiError } from "@/lib/api/client";
 import { CreateReportRequestContract, CreateReportResponseContract } from "@/lib/contracts";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { ReportIdentifierSelector, REPORT_IDENTIFIER_OPTIONS } from "./ReportIdentifierSelector";
-import { REPORT_SCAM_TYPES } from "@/lib/constants/reportOptions";
+import { REPORT_SCAM_TYPES, MONITORED_AREAS } from "@/lib/constants/reportOptions";
 
 // Scam category options matching contract ScamCategory enum
 const CATEGORY_OPTIONS: { value: ScamCategory; label: string }[] = [
@@ -72,6 +72,29 @@ type SubmitState =
   | { status: "submitting" }
   | { status: "success"; data: CreateReportResponseContract }
   | { status: "error"; title: string; description: string; canRetry: boolean };
+
+function mapCategoryToScamType(category: string): string {
+  const mapping: Record<string, string> = {
+    upi_fraud: "upi-refund-qr",
+    phishing_url: "fake-kyc-link",
+    part_time_job: "job-offer",
+    lottery_kbc: "lottery-prize",
+    courier_customs: "courier-customs",
+    loan_app: "loan-app-harassment",
+    deepfake_impersonation: "digital-arrest",
+    aadhaar_pan: "fake-kyc-link",
+    crypto_investment: "investment-group",
+    electricity_bill: "electricity-disconnection",
+  };
+  return mapping[category] || category || "other";
+}
+
+function inferChannel(type: string, category: string): "Phone call" | "SMS or WhatsApp" | "QR code" | "Fake website" | "UPI request" | "Something else" {
+  if (category === "phishing_url" || type === "url") return "Fake website";
+  if (category === "upi_fraud" || type === "upi") return "UPI request";
+  if (type === "sender_id") return "SMS or WhatsApp";
+  return "Phone call";
+}
 
 export function ReportFormContainer() {
   const [form, setForm] = useState<FormData>({
@@ -146,16 +169,45 @@ export function ReportFormContainer() {
 
     setSubmitState({ status: "submitting" });
 
-    const payload: CreateReportRequestContract = {
-      title: form.title.trim(),
-      description: form.description.trim(),
-      category: form.category as ScamCategory,
-      identifierType: form.identifierType,
-      identifierValue: form.identifierValue.trim(),
-      ...(form.state && { state: form.state }),
-      ...(form.city.trim() && { city: form.city.trim() }),
-      ...(form.pincode.trim() && { pincode: form.pincode.trim() }),
+    const matchedArea = MONITORED_AREAS.find((a) => a.code === form.pincode.trim()) || {
+      area: "HSR Layout",
+      city: "Bengaluru",
+      code: "560102",
     };
+
+    const reportId = typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : `report-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+
+    let reporterId = typeof window !== "undefined" ? localStorage.getItem("scammap_reporter_id") : null;
+    if (!reporterId) {
+      reporterId = typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID()
+        : `reporter-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+      if (typeof window !== "undefined") {
+        try { localStorage.setItem("scammap_reporter_id", reporterId); } catch {}
+      }
+    }
+
+    const nowIso = new Date().toISOString();
+    const payload = {
+      report_id: reportId,
+      occurred_at: nowIso,
+      reported_at: nowIso,
+      reporter_id: reporterId,
+      ip_prefix: "103.21.244.0/24",
+      channel: inferChannel(form.identifierType, form.category),
+      scam_type: mapCategoryToScamType(form.category),
+      identifier_type: form.identifierType,
+      identifier_value: form.identifierValue.trim(),
+      pincode: matchedArea.code,
+      locality: matchedArea.area,
+      city: matchedArea.city,
+      note: form.description.trim() || form.title.trim() || null,
+      has_screenshot: false,
+      amount_lost_inr: 0,
+    };
+
 
     try {
       const response = await apiClient.post<CreateReportResponseContract>("/reports", payload);
@@ -224,11 +276,11 @@ export function ReportFormContainer() {
             </p>
           </div>
 
-          {data.referenceNumber && (
+          {(data.referenceNumber || data.report_id || data.case_id) && (
             <div className="inline-flex flex-col items-center gap-1 px-5 py-3 rounded-xl bg-slate-900 border border-slate-800 text-sm">
               <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">Reference Number</span>
               <span className="font-mono font-bold text-teal-300 text-base tracking-wide">
-                {data.referenceNumber}
+                {data.referenceNumber || data.report_id || data.case_id}
               </span>
               <span className="text-[11px] text-slate-400">Keep this for your records</span>
             </div>

@@ -37,11 +37,14 @@ export interface CreateReportRequestContract {
 }
 
 export interface CreateReportResponseContract {
-  success: boolean;
-  reportId: string;
-  referenceNumber: string;
-  status: string;
-  createdAt: string;
+  success?: boolean;
+  report_id?: string;
+  case_id?: string;
+  merged?: boolean;
+  reportId?: string;
+  referenceNumber?: string;
+  status?: string;
+  createdAt?: string;
 }
 
 export interface ReportsQueryContract {
@@ -115,7 +118,7 @@ export interface ChallengeRequestContract {
 
 export interface ChallengeResponseContract {
   challenge_id: string;
-  status: string;
+  status?: string;
 }
 
 export type CreateDisputeRequestContract = ChallengeRequestContract;

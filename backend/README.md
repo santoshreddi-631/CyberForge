@@ -50,6 +50,18 @@ For production also configure:
 `TEST_DATABASE_URL` is only for a disposable local database whose name ends in
 `_test`. The application never uses it.
 
+The normal `npm run dev` command uses HTTP and does not require TLS files. The
+optional HTTPS demo reads `localhost-key.pem` and `localhost-cert.pem`; these
+are local-only files and are intentionally ignored by Git. Generate a
+development certificate/key pair locally before running `scripts/start-https.ts`
+and never commit either file:
+
+```powershell
+openssl req -x509 -newkey rsa:2048 -nodes `
+  -keyout localhost-key.pem -out localhost-cert.pem -days 365 `
+  -subj "/CN=localhost"
+```
+
 `POST /admin/reset` is fail-closed unless `JUDGING_RESET_ENABLED=true`,
 `JUDGING_DATABASE_DISPOSABLE=true`, `JUDGING_ENVIRONMENT=judging`, and
 `JUDGING_DATABASE_URL` exactly matches `DATABASE_URL`. It is also rejected when
