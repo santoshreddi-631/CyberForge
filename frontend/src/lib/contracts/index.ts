@@ -3,7 +3,6 @@
  */
 import {
   ScamReportSummary,
-  FraudAlert,
   DisputeSubmission,
   ScamCategory,
   IdentifierType,
@@ -60,9 +59,29 @@ export interface ReportsListResponseContract {
   totalPages: number;
 }
 
+export type AlertType = "SPIKE" | "NEW_TYPE" | string;
+
+export interface AlertItemContract {
+  type: AlertType;
+  pincode: string;
+  window?: string;
+  count?: number;
+  baseline_per_day?: number;
+  scam_type?: string;
+  locality?: string;
+  city?: string;
+  timestamp?: string;
+  created_at?: string;
+  title?: string;
+  summary?: string;
+}
+
+export interface AlertsQueryParamsContract {
+  pincode?: string;
+}
+
 export interface AlertsResponseContract {
-  alerts: FraudAlert[];
-  updatedAt: string;
+  alerts: AlertItemContract[];
 }
 
 export interface MapClusterItem {
@@ -86,11 +105,18 @@ export interface MapResponseContract {
   clusters: MapClusterItem[];
 }
 
-export type CreateDisputeRequestContract = DisputeSubmission;
-
-export interface CreateDisputeResponseContract {
-  success: boolean;
-  ticketId: string;
-  status: "pending";
-  acknowledgmentMessage: string;
+export interface ChallengeRequestContract {
+  identifier_type: string;
+  identifier_value: string;
+  claimant_name: string;
+  contact_email: string;
+  proof_note: string;
 }
+
+export interface ChallengeResponseContract {
+  challenge_id: string;
+  status: string;
+}
+
+export type CreateDisputeRequestContract = ChallengeRequestContract;
+export type CreateDisputeResponseContract = ChallengeResponseContract;
