@@ -28,6 +28,7 @@
     "drizzle-orm": "^0.44.2",
     "express": "^5.0.1",
     "helmet": "^8.0.0",
+    "inherits": "^2.0.4",
     "pino": "^9.6.0",
     "pino-http": "^10.3.0",
     "postgres": "^3.4.5",

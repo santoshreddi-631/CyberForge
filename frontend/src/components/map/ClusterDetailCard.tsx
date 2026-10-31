@@ -14,6 +14,7 @@ import { MapClusterItem } from "@/lib/contracts";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { REPORT_SCAM_TYPES } from "@/lib/constants/reportOptions";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface ClusterDetailCardProps {
   cluster: MapClusterItem;
@@ -21,11 +22,31 @@ interface ClusterDetailCardProps {
   className?: string;
 }
 
-export function getScamTypeLabel(scamType: string): string {
+const SCAM_TYPE_HI: Record<string, string> = {
+  "fake-kyc-link": "फ़िशिंग लिंक / नकली KYC",
+  "aadhaar-pan": "आधार / पैन / KYC फ्रॉड",
+  "upi-fraud": "UPI / भुगतान धोखाधड़ी",
+  "part-time-job": "पार्ट-टाइम जॉब स्कैम",
+  "lottery-kbc": "लॉटरी / इनाम स्कैम",
+  "courier-customs": "पार्सल / सीमा शुल्क जुर्माना",
+  "loan-app": "लोन ऐप उत्पीड़न",
+  "deepfake-impersonation": "डिजिटल अरेस्ट / डीपफेक",
+  "crypto-investment": "क्रिप्टो / निवेश धोखाधड़ी",
+  "electricity-bill": "बिजली बिल स्कैम",
+  "phishing-url": "फ़िशिंग लिंक / नकली वेबसाइट",
+};
+
+export function getScamTypeLabel(scamType: string, isHi: boolean = false): string {
+  if (isHi) {
+    const key = scamType.toLowerCase().replace(/_/g, "-");
+    if (SCAM_TYPE_HI[key]) return SCAM_TYPE_HI[key];
+  }
   const match = REPORT_SCAM_TYPES.find(
     (item) => item.type === scamType || item.type.replace(/-/g, "_") === scamType.replace(/-/g, "_")
   );
-  if (match) return match.label;
+  if (match) {
+    return match.label;
+  }
   return scamType
     .split(/[-_]/)
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
@@ -33,18 +54,39 @@ export function getScamTypeLabel(scamType: string): string {
 }
 
 export function ClusterDetailCard({ cluster, onClose, className = "" }: ClusterDetailCardProps) {
+  const { lang, t } = useLanguage();
+  const isHi = lang === "hi";
+
   const normalizedSeverity = cluster.severity?.toUpperCase() || "MED";
-  const scamLabel = getScamTypeLabel(cluster.top_scam_type);
+  const scamLabel = getScamTypeLabel(cluster.top_scam_type, isHi);
 
   const getSeverityDescription = (sev: string) => {
     switch (sev) {
       case "CRIT":
-        return "High volume of scam activity reported in this area over the past 7 days. High vigilance advised for residents.";
+        return isHi
+          ? "पिछले 7 दिनों में इस क्षेत्र में उच्च मात्रा में धोखाधड़ी दर्ज की गई है। निवासियों को अत्यधिक सतर्क रहने की सलाह दी जाती है।"
+          : "High volume of scam activity reported in this area over the past 7 days. High vigilance advised for residents.";
       case "HIGH":
-        return "Elevated scam reports noted in this area over the past 7 days. Verify unexpected payment requests.";
+        return isHi
+          ? "पिछले 7 दिनों में इस क्षेत्र में स्कैम रिपोर्टों में वृद्धि देखी गई है। अप्रत्याशित भुगतान अनुरोधों की पुष्टि करें।"
+          : "Elevated scam reports noted in this area over the past 7 days. Verify unexpected payment requests.";
       case "MED":
       default:
-        return "Moderate scam reports recorded in this area over the past 7 days. Standard caution recommended.";
+        return isHi
+          ? "पिछले 7 दिनों में इस क्षेत्र में मध्यम स्कैम रिपोर्टें दर्ज की गई हैं। सामान्य सावधानी बरतने की सलाह दी जाती है।"
+          : "Moderate scam reports recorded in this area over the past 7 days. Standard caution recommended.";
+    }
+  };
+
+  const getSeverityLabel = (sev: string) => {
+    switch (sev) {
+      case "CRIT":
+        return isHi ? "गंभीर गतिविधि" : "Critical Activity";
+      case "HIGH":
+        return isHi ? "बढ़ी हुई गतिविधि" : "Elevated Activity";
+      case "MED":
+      default:
+        return isHi ? "मध्यम गतिविधि" : "Moderate Activity";
     }
   };
 
@@ -79,13 +121,7 @@ export function ClusterDetailCard({ cluster, onClose, className = "" }: ClusterD
                 ? "high"
                 : "medium"
             }
-            label={
-              normalizedSeverity === "CRIT"
-                ? "Critical Activity"
-                : normalizedSeverity === "HIGH"
-                ? "Elevated Activity"
-                : "Moderate Activity"
-            }
+            label={getSeverityLabel(normalizedSeverity)}
             size="sm"
           />
           {onClose && (
@@ -105,19 +141,21 @@ export function ClusterDetailCard({ cluster, onClose, className = "" }: ClusterD
       <div className="grid grid-cols-2 gap-3 my-4">
         <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800/80">
           <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider block">
-            Reports (7 Days)
+            {isHi ? t.map.reports7Days : "Reports (7 Days)"}
           </span>
           <div className="flex items-baseline gap-1.5 mt-1">
             <span className="text-2xl font-bold font-mono text-teal-300">
               {cluster.count}
             </span>
-            <span className="text-xs text-slate-400">verified incidents</span>
+            <span className="text-xs text-slate-400">
+              {isHi ? "सत्यापित घटनाएं" : "verified incidents"}
+            </span>
           </div>
         </div>
 
         <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800/80">
           <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider block">
-            Severity Rating
+            {isHi ? "जोखिम रेटिंग" : "Severity Rating"}
           </span>
           <div className="flex items-center gap-1.5 mt-1.5">
             {normalizedSeverity === "CRIT" ? (
@@ -135,7 +173,7 @@ export function ClusterDetailCard({ cluster, onClose, className = "" }: ClusterD
       {/* Primary Pattern */}
       <div className="mb-4 p-3 rounded-lg bg-slate-950/40 border border-slate-800/80 space-y-1.5">
         <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-          Primary Scam Pattern
+          {isHi ? t.map.dominantPattern : "Primary Scam Pattern"}
         </span>
         <p className="text-sm font-semibold text-teal-200">
           {scamLabel}
@@ -149,7 +187,10 @@ export function ClusterDetailCard({ cluster, onClose, className = "" }: ClusterD
       <div className="mb-4 p-2.5 rounded-lg bg-slate-950/80 border border-slate-800 text-[11px] text-slate-400 leading-relaxed flex items-start gap-2">
         <span className="text-teal-400 mt-0.5 shrink-0">ℹ</span>
         <span>
-          <strong>Community Protection Notice:</strong> Data represents aggregated incident counts mapped to neighborhood centers from PRD Appendix B. Individual victims and reporters remain strictly anonymous.
+          <strong>{isHi ? "नागरिक सुरक्षा सूचना:" : "Community Protection Notice:"}</strong>{" "}
+          {isHi
+            ? "डेटा केवल क्षेत्र स्तर पर समूहीकृत घटनाओं का प्रतिनिधित्व करता है। व्यक्तिगत नागरिक और शिकायतकर्ता पूरी तरह से गुमनाम रहते हैं।"
+            : "Data represents aggregated incident counts mapped to neighborhood centers from PRD Appendix B. Individual victims and reporters remain strictly anonymous."}
         </span>
       </div>
 
@@ -162,7 +203,7 @@ export function ClusterDetailCard({ cluster, onClose, className = "" }: ClusterD
             className="w-full text-xs justify-center"
             leftIcon={<Search className="w-3.5 h-3.5" />}
           >
-            Check an Identifier
+            {isHi ? t.lookup.checkAnother : "Check an Identifier"}
           </PrimaryButton>
         </Link>
         <Link href={`/report`}>
@@ -172,7 +213,7 @@ export function ClusterDetailCard({ cluster, onClose, className = "" }: ClusterD
             className="w-full text-xs justify-center font-semibold"
             leftIcon={<ShieldAlert className="w-3.5 h-3.5" />}
           >
-            Report Incident
+            {isHi ? t.home.reportIncident : "Report Incident"}
           </PrimaryButton>
         </Link>
       </div>

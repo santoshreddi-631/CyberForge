@@ -90,7 +90,7 @@ async function readStatistics(client: DatabaseClient, caseId: string | null): Pr
 
 async function readScamType(client: DatabaseClient, caseId: string | null): Promise<string | null> {
   if (!caseId) return null;
-  const [row] = await client.db.execute(sql`
+  const [eligibleRow] = await client.db.execute(sql`
     SELECT r.scam_type, count(*)::int AS count
     FROM reports r
     JOIN trust_decisions td ON td.report_id = r.id AND td.status = 'eligible'
@@ -99,7 +99,18 @@ async function readScamType(client: DatabaseClient, caseId: string | null): Prom
     ORDER BY count DESC, r.scam_type ASC
     LIMIT 1
   `);
-  return (row as { scam_type?: string } | undefined)?.scam_type ?? null;
+  if ((eligibleRow as { scam_type?: string } | undefined)?.scam_type) {
+    return (eligibleRow as { scam_type: string }).scam_type;
+  }
+  const [rawRow] = await client.db.execute(sql`
+    SELECT r.scam_type, count(*)::int AS count
+    FROM reports r
+    WHERE r.case_id = ${caseId}
+    GROUP BY r.scam_type
+    ORDER BY count DESC, r.scam_type ASC
+    LIMIT 1
+  `);
+  return (rawRow as { scam_type?: string } | undefined)?.scam_type ?? null;
 }
 
 async function readEvidence(client: DatabaseClient, caseId: string | null): Promise<EvidenceRow[]> {

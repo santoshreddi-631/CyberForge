@@ -104,7 +104,9 @@ export async function apiRequest<T = unknown>(
 
     if (!response.ok) {
       const errorMsg =
-        typeof responseData === "object" && responseData !== null && "detail" in responseData
+        typeof responseData === "object" && responseData !== null && "error" in responseData
+          ? String((responseData as { error: unknown }).error)
+          : typeof responseData === "object" && responseData !== null && "detail" in responseData
           ? String((responseData as { detail: unknown }).detail)
           : `API request failed with status ${response.status}: ${response.statusText}`;
 

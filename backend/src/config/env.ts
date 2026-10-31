@@ -1,5 +1,8 @@
 import { z } from "zod";
-import "dotenv/config";
+import dotenv from 'dotenv';
+dotenv.config();
+
+
 /**
  * Environment variable schema validated at startup.
  * The application will fail fast with clear messages when misconfigured.
