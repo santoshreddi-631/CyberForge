@@ -28,30 +28,30 @@ export function AppHeader({ onToggleSidebar, isSidebarOpen }: AppHeaderProps) {
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-800 bg-slate-950/90 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* Brand & Left Actions */}
+    <header className="sticky top-0 z-40 w-full border-b border-[#EAE6FD] bg-white/90 backdrop-blur-md shadow-[0_4px_20px_rgba(96,53,232,0.03)]">
+      <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        {/* Brand */}
         <div className="flex items-center gap-3">
           {onToggleSidebar && (
             <button
               type="button"
               onClick={onToggleSidebar}
-              className="hidden lg:flex p-2 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 focus:outline-none"
+              className="hidden lg:flex p-2 rounded-xl text-[#34335C] hover:text-[#6035E8] hover:bg-[#F0EDFF] focus:outline-none transition-colors"
               aria-label={isSidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
             >
               <Menu className="w-5 h-5" />
             </button>
           )}
 
-          <Link href="/" className="flex items-center gap-2.5 group focus:outline-none">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-500/10 border border-teal-500/30 text-teal-400 group-hover:bg-teal-500/20 group-hover:border-teal-400/50 transition-colors">
+          <Link href="/" className="flex items-center gap-3 group focus:outline-none">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#6035E8] text-white shadow-md shadow-[#6035E8]/25 group-hover:scale-105 transition-transform">
               <ShieldAlert className="w-5 h-5" />
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-bold tracking-tight text-slate-100 group-hover:text-teal-300 transition-colors">
+              <span className="text-base font-extrabold tracking-tight text-[#171638] group-hover:text-[#6035E8] transition-colors leading-tight">
                 Community Scam Map
               </span>
-              <span className="text-[10px] font-medium text-slate-400 tracking-wider uppercase">
+              <span className="text-[10px] font-bold text-[#6035E8] tracking-wider uppercase">
                 India Citizen Defense
               </span>
             </div>
@@ -59,7 +59,7 @@ export function AppHeader({ onToggleSidebar, isSidebarOpen }: AppHeaderProps) {
         </div>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-1">
+        <nav className="hidden md:flex items-center gap-1.5 bg-[#F6F4FE] p-1.5 rounded-full border border-[#EAE6FD]">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
             return (
@@ -67,10 +67,10 @@ export function AppHeader({ onToggleSidebar, isSidebarOpen }: AppHeaderProps) {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
+                  "px-4 py-2 text-sm font-semibold rounded-full transition-all duration-150",
                   isActive
-                    ? "bg-slate-800 text-teal-300"
-                    : "text-slate-300 hover:text-slate-100 hover:bg-slate-850"
+                    ? "bg-[#6035E8] text-white shadow-sm"
+                    : "text-[#34335C] hover:text-[#6035E8] hover:bg-white"
                 )}
               >
                 {link.name}
@@ -80,7 +80,7 @@ export function AppHeader({ onToggleSidebar, isSidebarOpen }: AppHeaderProps) {
         </nav>
 
         {/* Right Header Actions */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-3">
           <LanguageSwitcher compact />
 
           <Link href="/report" className="hidden sm:inline-flex">
@@ -88,6 +88,7 @@ export function AppHeader({ onToggleSidebar, isSidebarOpen }: AppHeaderProps) {
               size="sm"
               variant="primary"
               leftIcon={<PlusCircle className="w-4 h-4" />}
+              className="font-black shadow-md shadow-[#08C9C5]/20"
             >
               {t.nav.report}
             </PrimaryButton>
@@ -97,18 +98,17 @@ export function AppHeader({ onToggleSidebar, isSidebarOpen }: AppHeaderProps) {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 focus:outline-none"
-            aria-expanded={mobileMenuOpen}
-            aria-label="Toggle mobile menu"
+            className="md:hidden p-2 rounded-xl text-[#171638] hover:bg-[#F0EDFF] focus:outline-none transition-colors"
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
           >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Drawer Dropdown */}
+      {/* Mobile Dropdown Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-slate-800 bg-slate-900/95 px-4 pt-2 pb-4 space-y-1">
+        <div className="md:hidden border-b border-[#EAE6FD] bg-white px-4 pt-3 pb-6 space-y-2 shadow-xl animate-in slide-in-from-top-2 duration-150">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
             return (
@@ -117,30 +117,25 @@ export function AppHeader({ onToggleSidebar, isSidebarOpen }: AppHeaderProps) {
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
                 className={cn(
-                  "block px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                  "block px-4 py-3 text-sm font-bold rounded-2xl transition-colors",
                   isActive
-                    ? "bg-teal-500/10 text-teal-300 border-l-2 border-teal-500"
-                    : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                    ? "bg-[#6035E8] text-white"
+                    : "text-[#171638] hover:bg-[#F6F4FE]"
                 )}
               >
                 {link.name}
               </Link>
             );
           })}
+
           <div className="pt-2">
             <Link
               href="/report"
               onClick={() => setMobileMenuOpen(false)}
-              className="block w-full"
+              className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-[#08C9C5] text-[#171638] font-black text-sm shadow-md"
             >
-              <PrimaryButton
-                size="sm"
-                variant="primary"
-                className="w-full"
-                leftIcon={<PlusCircle className="w-4 h-4" />}
-              >
-                {t.nav.report}
-              </PrimaryButton>
+              <PlusCircle className="w-4 h-4" />
+              <span>{t.nav.report}</span>
             </Link>
           </div>
         </div>

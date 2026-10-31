@@ -208,23 +208,23 @@ export function DisputeFormContainer() {
 
     return (
       <div className="w-full max-w-2xl mx-auto space-y-6">
-        <div className="rounded-2xl bg-emerald-950/30 border border-emerald-800/70 p-8 sm:p-10 text-center space-y-5 shadow-2xl">
-          <div className="w-14 h-14 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto">
-            <ShieldCheck className="w-7 h-7" />
+        <div className="rounded-[2.5rem] bg-white border border-[#EAE6FD] p-8 sm:p-12 text-center space-y-6 shadow-xl shadow-[#6035E8]/5">
+          <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center mx-auto shadow-inner">
+            <ShieldCheck className="w-8 h-8" />
           </div>
 
           <div className="space-y-2">
-            <h2 className="text-2xl font-bold text-emerald-100 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-black text-[#171638] tracking-tight">
               {isHi ? "विवाद समीक्षा के लिए सफलतापूर्वक पंजीकृत" : "Challenge Registered Under Review"}
             </h2>
-            <p className="text-sm text-slate-300 leading-relaxed max-w-lg mx-auto">
+            <p className="text-sm sm:text-base text-[#545277] leading-relaxed max-w-lg mx-auto font-medium">
               {isHi ? (
                 <>
-                  <strong className="text-slate-100">{form.claimant_name}</strong> के लिए आपका विवाद समीक्षा डेस्क को प्राप्त हो गया है।
+                  <strong className="text-[#171638]">{form.claimant_name}</strong> के लिए आपका विवाद समीक्षा डेस्क को प्राप्त हो गया है।
                 </>
               ) : (
                 <>
-                  Your dispute for <strong className="text-slate-100">{form.claimant_name}</strong> has been received by the review desk.
+                  Your dispute for <strong className="text-[#171638]">{form.claimant_name}</strong> has been received by the review desk.
                 </>
               )}
             </p>
@@ -233,18 +233,18 @@ export function DisputeFormContainer() {
           {/* Reference & Status Pill */}
           <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
             {data.challenge_id && (
-              <div className="inline-flex flex-col items-center px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs">
-                <span className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">
+              <div className="inline-flex flex-col items-center px-5 py-3 rounded-2xl bg-[#F0EDFF] border border-[#DDD6FE] text-xs shadow-sm">
+                <span className="text-[10px] text-[#6035E8] uppercase tracking-wider font-bold">
                   {isHi ? "चैलेंज आईडी" : "Challenge ID"}
                 </span>
-                <span className="font-mono font-bold text-teal-300 text-sm mt-0.5">
+                <span className="font-mono font-black text-[#171638] text-base mt-0.5">
                   {data.challenge_id}
                 </span>
               </div>
             )}
 
-            <div className="inline-flex flex-col items-center px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs">
-              <span className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">
+            <div className="inline-flex flex-col items-center px-5 py-3 rounded-2xl bg-[#F0EDFF] border border-[#DDD6FE] text-xs shadow-sm">
+              <span className="text-[10px] text-[#6035E8] uppercase tracking-wider font-bold">
                 {isHi ? "समीक्षा स्थिति" : "Review Status"}
               </span>
               <div className="mt-0.5">
@@ -258,18 +258,18 @@ export function DisputeFormContainer() {
           </div>
 
           {/* Platform Policy Explanation */}
-          <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 text-left text-xs text-slate-300 space-y-2">
-            <div className="flex items-center gap-2 font-semibold text-teal-300">
-              <Scale className="w-4 h-4" />
+          <div className="p-5 rounded-2xl bg-[#F6F4FE] border border-[#EAE6FD] text-left text-xs text-[#545277] space-y-2 leading-relaxed font-medium">
+            <div className="flex items-center gap-2 font-bold text-[#6035E8]">
+              <Scale className="w-4 h-4 text-[#6035E8]" />
               <span>{isHi ? "मंच समीक्षा और सार्वजनिक जांच स्थिति" : "Platform Review & Lookup Status"}</span>
             </div>
-            <p className="text-slate-400 leading-relaxed">
+            <p className="text-[#545277]">
               {isHi
                 ? "मंच के नियमों के अनुसार, समीक्षाधीन होने के दौरान इस पहचानकर्ता पर सार्वजनिक खोज में पुष्टि किए गए स्कैम के बजाय 'विवादित / समीक्षाधीन' स्थिति दिखाई जाएगी।"
                 : "In accordance with platform rules, while under review, public lookups on this identifier will display a neutral \"challenged / under review\" status rather than a confirmed scam verdict."}
             </p>
-            <p className="text-[11px] text-slate-400 border-t border-slate-800 pt-2 leading-relaxed">
-              <strong>{isHi ? "सूचना:" : "Notice:"}</strong>{" "}
+            <p className="text-[11px] text-[#837FA8] border-t border-[#EAE6FD] pt-2">
+              <strong className="text-[#171638]">{isHi ? "सूचना:" : "Notice:"}</strong>{" "}
               {isHi
                 ? "चैलेंज दर्ज करना समीक्षा का औपचारिक अनुरोध है और यह सामुदायिक चेतावनियों को स्वतः नहीं हटाता। वास्तविक पीड़ितों की सुरक्षा और वैध व्यापारियों के अधिकारों में संतुलन बनाए रखा जाता है।"
                 : "Submitting a challenge is a formal request for review and does not automatically delete community warnings. Genuine victim reports are evaluated alongside your business credentials to maintain community safety."}
@@ -279,17 +279,17 @@ export function DisputeFormContainer() {
           {/* Actions */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-3">
             <Link href="/lookup">
-              <PrimaryButton variant="secondary" size="md" leftIcon={<Search className="w-4 h-4" />}>
+              <PrimaryButton variant="purple" size="md" leftIcon={<Search className="w-4 h-4" />}>
                 {isHi ? t.nav.lookup : "Check Status in Lookup"}
               </PrimaryButton>
             </Link>
             <Link href="/">
-              <PrimaryButton variant="outline" size="md" leftIcon={<Home className="w-4 h-4" />}>
+              <PrimaryButton variant="secondary" size="md" leftIcon={<Home className="w-4 h-4" />}>
                 {isHi ? t.report.returnHome : "Return Home"}
               </PrimaryButton>
             </Link>
             <PrimaryButton
-              variant="ghost"
+              variant="outline"
               size="md"
               onClick={handleResetForm}
               leftIcon={<RotateCcw className="w-4 h-4" />}
@@ -309,24 +309,24 @@ export function DisputeFormContainer() {
       {submitState.status === "error" && (
         <div
           role="alert"
-          className="flex items-start gap-3 p-4 rounded-xl bg-rose-950/40 border border-rose-800/80 text-sm shadow-lg"
+          className="flex items-start gap-3 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-sm shadow-sm"
         >
-          <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+          <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <p className="font-semibold text-rose-200">{submitState.title}</p>
-            <p className="text-slate-300 text-xs leading-relaxed">{submitState.description}</p>
+            <p className="font-bold text-rose-900">{submitState.title}</p>
+            <p className="text-rose-700 text-xs leading-relaxed">{submitState.description}</p>
           </div>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} noValidate className="space-y-5">
+      <form onSubmit={handleSubmit} noValidate className="space-y-6">
         {/* ── SECTION 1: Disputed Contact Identifier ───────────────── */}
-        <section className="rounded-xl bg-slate-900/80 border border-slate-800 p-5 sm:p-6 space-y-4">
+        <section className="rounded-[2rem] bg-white border border-[#EAE6FD] p-6 sm:p-8 space-y-5 shadow-sm">
           <div>
-            <h2 className="text-sm font-bold text-slate-100 uppercase tracking-wider">
+            <h2 className="text-sm sm:text-base font-black text-[#171638] uppercase tracking-wider">
               {t.disputes.formStep1}
             </h2>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs sm:text-sm text-[#545277] mt-1 font-medium">
               {t.disputes.formStep1Desc}
             </p>
           </div>
@@ -338,8 +338,8 @@ export function DisputeFormContainer() {
           />
 
           <div className="space-y-1.5">
-            <label htmlFor="dispute-identifier-input" className="block text-xs font-semibold text-slate-300">
-              {isHi ? currentOption.labelHi : currentOption.label} <span className="text-rose-400">*</span>
+            <label htmlFor="dispute-identifier-input" className="block text-xs font-bold text-[#171638] uppercase tracking-wider">
+              {isHi ? currentOption.labelHi : currentOption.label} <span className="text-rose-500">*</span>
             </label>
             <input
               id="dispute-identifier-input"
@@ -349,17 +349,17 @@ export function DisputeFormContainer() {
               onChange={(e) => setField("identifier_value", e.target.value)}
               placeholder={isHi ? currentOption.placeholderHi : currentOption.placeholder}
               className={cn(
-                "w-full h-11 px-4 rounded-lg bg-slate-950 border text-slate-100 placeholder:text-slate-500 text-sm outline-none transition-colors",
+                "w-full h-12 px-4 rounded-xl bg-[#F6F4FE] border text-[#171638] placeholder:text-[#837FA8] text-sm outline-none transition-colors",
                 errors.identifier_value
-                  ? "border-rose-500/70 focus:border-rose-400"
-                  : "border-slate-700/80 hover:border-slate-600 focus:border-teal-500"
+                  ? "border-rose-400 focus:border-rose-500 bg-rose-50/30"
+                  : "border-[#EAE6FD] hover:border-[#6035E8]/40 focus:border-[#6035E8] focus:bg-white focus:ring-4 focus:ring-[#6035E8]/10"
               )}
             />
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-[#837FA8] font-medium">
               {isHi ? currentOption.helperTextHi : currentOption.helperText}
             </p>
             {errors.identifier_value && (
-              <p className="flex items-center gap-1.5 text-xs text-rose-400 font-medium" role="alert">
+              <p className="flex items-center gap-1.5 text-xs text-rose-600 font-semibold" role="alert">
                 <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                 {errors.identifier_value}
               </p>
@@ -368,20 +368,20 @@ export function DisputeFormContainer() {
         </section>
 
         {/* ── SECTION 2: Business & Contact Information ────────────── */}
-        <section className="rounded-xl bg-slate-900/80 border border-slate-800 p-5 sm:p-6 space-y-4">
+        <section className="rounded-[2rem] bg-white border border-[#EAE6FD] p-6 sm:p-8 space-y-5 shadow-sm">
           <div>
-            <h2 className="text-sm font-bold text-slate-100 uppercase tracking-wider">
+            <h2 className="text-sm sm:text-base font-black text-[#171638] uppercase tracking-wider">
               {t.disputes.formStep2}
             </h2>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs sm:text-sm text-[#545277] mt-1 font-medium">
               {t.disputes.formStep2Desc}
             </p>
           </div>
 
           {/* Business / Claimant Name */}
           <div className="space-y-1.5">
-            <label htmlFor="dispute-claimant-name" className="block text-xs font-semibold text-slate-300">
-              {t.disputes.businessNameLabel} <span className="text-rose-400">*</span>
+            <label htmlFor="dispute-claimant-name" className="block text-xs font-bold text-[#171638] uppercase tracking-wider">
+              {t.disputes.businessNameLabel} <span className="text-rose-500">*</span>
             </label>
             <div className="relative">
               <input
@@ -393,16 +393,16 @@ export function DisputeFormContainer() {
                 maxLength={120}
                 placeholder={isHi ? "उदा. फ्रेश बेक्स या एबीसी रिटेलर्स प्राइवेट लिमिटेड" : "e.g. Fresh Bakes or ABC Retailers Pvt Ltd"}
                 className={cn(
-                  "w-full h-11 pl-10 pr-4 rounded-lg bg-slate-950 border text-slate-100 placeholder:text-slate-500 text-sm outline-none transition-colors",
+                  "w-full h-12 pl-10 pr-4 rounded-xl bg-[#F6F4FE] border text-[#171638] placeholder:text-[#837FA8] text-sm outline-none transition-colors",
                   errors.claimant_name
-                    ? "border-rose-500/70 focus:border-rose-400"
-                    : "border-slate-700/80 hover:border-slate-600 focus:border-teal-500"
+                    ? "border-rose-400 focus:border-rose-500 bg-rose-50/30"
+                    : "border-[#EAE6FD] hover:border-[#6035E8]/40 focus:border-[#6035E8] focus:bg-white focus:ring-4 focus:ring-[#6035E8]/10"
                 )}
               />
-              <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+              <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#837FA8] pointer-events-none" />
             </div>
             {errors.claimant_name && (
-              <p className="flex items-center gap-1.5 text-xs text-rose-400 font-medium" role="alert">
+              <p className="flex items-center gap-1.5 text-xs text-rose-600 font-semibold" role="alert">
                 <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                 {errors.claimant_name}
               </p>
@@ -411,8 +411,8 @@ export function DisputeFormContainer() {
 
           {/* Contact Email */}
           <div className="space-y-1.5">
-            <label htmlFor="dispute-contact-email" className="block text-xs font-semibold text-slate-300">
-              {t.disputes.contactEmailLabel} <span className="text-rose-400">*</span>
+            <label htmlFor="dispute-contact-email" className="block text-xs font-bold text-[#171638] uppercase tracking-wider">
+              {t.disputes.contactEmailLabel} <span className="text-rose-500">*</span>
             </label>
             <div className="relative">
               <input
@@ -423,21 +423,21 @@ export function DisputeFormContainer() {
                 onChange={(e) => setField("contact_email", e.target.value)}
                 placeholder="e.g. owner@example.com or support@freshbakes.in"
                 className={cn(
-                  "w-full h-11 pl-10 pr-4 rounded-lg bg-slate-950 border text-slate-100 placeholder:text-slate-500 text-sm outline-none transition-colors",
+                  "w-full h-12 pl-10 pr-4 rounded-xl bg-[#F6F4FE] border text-[#171638] placeholder:text-[#837FA8] text-sm outline-none transition-colors",
                   errors.contact_email
-                    ? "border-rose-500/70 focus:border-rose-400"
-                    : "border-slate-700/80 hover:border-slate-600 focus:border-teal-500"
+                    ? "border-rose-400 focus:border-rose-500 bg-rose-50/30"
+                    : "border-[#EAE6FD] hover:border-[#6035E8]/40 focus:border-[#6035E8] focus:bg-white focus:ring-4 focus:ring-[#6035E8]/10"
                 )}
               />
-              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#837FA8] pointer-events-none" />
             </div>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-[#837FA8] font-medium">
               {isHi
                 ? "केवल सत्यापन अपडेट के लिए उपयोग किया जाता है। कभी भी सार्वजनिक नहीं किया जाता।"
                 : "Used strictly for verification updates. Never published or shared with reporters."}
             </p>
             {errors.contact_email && (
-              <p className="flex items-center gap-1.5 text-xs text-rose-400 font-medium" role="alert">
+              <p className="flex items-center gap-1.5 text-xs text-rose-600 font-semibold" role="alert">
                 <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                 {errors.contact_email}
               </p>
@@ -446,19 +446,19 @@ export function DisputeFormContainer() {
         </section>
 
         {/* ── SECTION 3: Proof of Legitimate Business ──────────────── */}
-        <section className="rounded-xl bg-slate-900/80 border border-slate-800 p-5 sm:p-6 space-y-4">
+        <section className="rounded-[2rem] bg-white border border-[#EAE6FD] p-6 sm:p-8 space-y-5 shadow-sm">
           <div>
-            <h2 className="text-sm font-bold text-slate-100 uppercase tracking-wider">
+            <h2 className="text-sm sm:text-base font-black text-[#171638] uppercase tracking-wider">
               {t.disputes.formStep3}
             </h2>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs sm:text-sm text-[#545277] mt-1 font-medium">
               {t.disputes.formStep3Desc}
             </p>
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="dispute-proof-note" className="block text-xs font-semibold text-slate-300">
-              {t.disputes.proofNoteLabel} <span className="text-rose-400">*</span>
+            <label htmlFor="dispute-proof-note" className="block text-xs font-bold text-[#171638] uppercase tracking-wider">
+              {t.disputes.proofNoteLabel} <span className="text-rose-500">*</span>
             </label>
             <div className="relative">
               <textarea
@@ -472,18 +472,18 @@ export function DisputeFormContainer() {
                   ? "उदा. GST प्रमाण पत्र और दुकान लाइसेंस संलग्न। GSTIN: 29AAAAA0000A1Z5, पंजीकृत नाम: फ्रेश बेक्स, पता: 100 फीट रोड, इंदिरानगर, बेंगलुरु। हम एक स्थानीय बेकरी संचालित करते हैं और अवांछित भुगतान लिंक नहीं भेजते।"
                   : "e.g. GST certificate and shop licence attached. GSTIN: 29AAAAA0000A1Z5, Registered Trade Name: Fresh Bakes, Address: 100 Feet Rd, Indiranagar, Bengaluru. We operate a local bakery and do not send unsolicited payment links."}
                 className={cn(
-                  "w-full px-4 py-3 rounded-lg bg-slate-950 border text-slate-100 placeholder:text-slate-500 text-sm outline-none transition-colors resize-none leading-relaxed",
+                  "w-full px-4 py-3 rounded-2xl bg-[#F6F4FE] border text-[#171638] placeholder:text-[#837FA8] text-sm outline-none transition-colors resize-none leading-relaxed",
                   errors.proof_note
-                    ? "border-rose-500/70 focus:border-rose-400"
-                    : "border-slate-700/80 hover:border-slate-600 focus:border-teal-500"
+                    ? "border-rose-400 focus:border-rose-500 bg-rose-50/30"
+                    : "border-[#EAE6FD] hover:border-[#6035E8]/40 focus:border-[#6035E8] focus:bg-white focus:ring-4 focus:ring-[#6035E8]/10"
                 )}
               />
-              <span className="absolute right-3 bottom-2.5 text-[10px] text-slate-500 font-mono">
+              <span className="absolute right-3.5 bottom-2.5 text-[10px] text-[#837FA8] font-mono font-medium">
                 {form.proof_note.length}/1000
               </span>
             </div>
             {errors.proof_note && (
-              <p className="flex items-center gap-1.5 text-xs text-rose-400 font-medium" role="alert">
+              <p className="flex items-center gap-1.5 text-xs text-rose-600 font-semibold" role="alert">
                 <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                 {errors.proof_note}
               </p>
@@ -492,12 +492,12 @@ export function DisputeFormContainer() {
         </section>
 
         {/* ── Legal & Fair Review Assurances ───────────────────────── */}
-        <div className="p-4 rounded-xl bg-slate-900/50 border border-slate-800 text-xs text-slate-300 space-y-2">
-          <div className="flex items-center gap-2 font-semibold text-teal-400">
-            <Shield className="w-4 h-4" />
+        <div className="p-5 rounded-2xl bg-[#F0EDFF] border border-[#DDD6FE] text-xs text-[#545277] space-y-2.5">
+          <div className="flex items-center gap-2 font-bold text-[#6035E8]">
+            <Shield className="w-4 h-4 text-[#6035E8]" />
             <span>{isHi ? "निष्पक्ष समीक्षा प्रक्रिया आश्वासन" : "Fair Review Process Assurances"}</span>
           </div>
-          <ul className="space-y-1 text-slate-400 text-[11px] list-disc list-inside">
+          <ul className="space-y-1.5 text-[#545277] text-xs list-disc list-inside font-medium leading-relaxed">
             <li>
               {isHi
                 ? "आपका संपर्क ईमेल केवल सत्यापन संचार के लिए उपयोग किया जाता है और कभी सार्वजनिक नहीं होता।"
@@ -524,14 +524,14 @@ export function DisputeFormContainer() {
             size="lg"
             disabled={isSubmitting}
             isLoading={isSubmitting}
-            className="w-full font-bold text-base"
+            className="w-full font-bold text-base shadow-lg shadow-[#08C9C5]/20"
           >
             {isSubmitting ? t.disputes.submittingBtn : t.disputes.submitBtn}
           </PrimaryButton>
 
           {isSubmitting && (
-            <p className="text-center text-xs text-slate-400 flex items-center justify-center gap-2 mt-2">
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            <p className="text-center text-xs text-[#545277] flex items-center justify-center gap-2 mt-2 font-medium">
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-[#6035E8]" />
               <span>
                 {isHi
                   ? "विवाद समीक्षा डेस्क को भेजा जा रहा है…"

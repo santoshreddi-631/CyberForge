@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation";
 import {
   Search,
   X,
-  Loader2,
   AlertCircle,
   ShieldQuestion,
 } from "lucide-react";
@@ -165,11 +164,11 @@ export function LookupClientContainer() {
   return (
     <div className="w-full max-w-4xl mx-auto space-y-8">
       {/* 1. Main Search Form Card */}
-      <div className="rounded-2xl bg-slate-900/80 border border-slate-800 p-6 sm:p-8 shadow-xl backdrop-blur-md">
+      <div className="rounded-[2.5rem] bg-white border border-[#EAE6FD] p-6 sm:p-9 shadow-[0_16px_50px_rgba(96,53,232,0.06)]">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* A. Identifier Type Selector */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2.5">
+            <label className="block text-xs font-black uppercase tracking-wider text-[#171638] mb-3">
               {t.lookup.selectType}
             </label>
             <IdentifierTypeSelector
@@ -181,13 +180,13 @@ export function LookupClientContainer() {
 
           {/* B. Input Field & Clear / Submit controls */}
           <div className="space-y-2">
-            <label htmlFor="identifier-input" className="block text-xs font-bold uppercase tracking-wider text-slate-300">
+            <label htmlFor="identifier-input" className="block text-xs font-black uppercase tracking-wider text-[#171638]">
               {isHi ? currentOption.labelHi : currentOption.label}
             </label>
 
-            <div className="flex flex-col sm:flex-row items-stretch gap-2.5">
+            <div className="flex flex-col sm:flex-row items-stretch gap-3">
               <div className="relative flex-1">
-                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#6035E8]">
                   <Search className="w-5 h-5" />
                 </div>
                 <input
@@ -201,10 +200,10 @@ export function LookupClientContainer() {
                   }}
                   placeholder={isHi ? currentOption.placeholderHi : currentOption.placeholder}
                   className={cn(
-                    "w-full h-12 pl-11 pr-10 rounded-xl bg-slate-950 border text-slate-100 placeholder:text-slate-400 text-sm sm:text-base outline-none transition-all",
+                    "w-full h-13 pl-12 pr-10 rounded-2xl sm:rounded-full bg-[#F6F4FE] border text-[#171638] placeholder:text-[#837FA8] text-sm sm:text-base font-semibold outline-none transition-all",
                     validationError
-                      ? "border-rose-500/80 focus:border-rose-400 focus:ring-1 focus:ring-rose-500/40"
-                      : "border-slate-700/80 hover:border-slate-600 focus:border-teal-500 focus:ring-1 focus:ring-teal-500/40",
+                      ? "border-rose-400 focus:ring-2 focus:ring-rose-200"
+                      : "border-[#EAE6FD] hover:border-[#6035E8]/40 focus:border-[#6035E8] focus:bg-white focus:ring-4 focus:ring-[#6035E8]/10",
                     isLoading && "opacity-70 cursor-not-allowed"
                   )}
                 />
@@ -213,7 +212,7 @@ export function LookupClientContainer() {
                   <button
                     type="button"
                     onClick={handleClear}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors focus:outline-none"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1.5 rounded-full text-slate-400 hover:text-[#171638] hover:bg-[#F0EDFF] transition-colors focus:outline-none cursor-pointer"
                     aria-label={t.lookup.clear}
                   >
                     <X className="w-4 h-4" />
@@ -229,7 +228,7 @@ export function LookupClientContainer() {
                     variant="ghost"
                     size="lg"
                     onClick={handleClear}
-                    className="h-12 px-3 text-slate-400 hover:text-slate-200"
+                    className="h-13 px-4 text-[#6E6D8F] hover:text-[#171638]"
                   >
                     {t.lookup.clear}
                   </PrimaryButton>
@@ -241,21 +240,21 @@ export function LookupClientContainer() {
                   size="lg"
                   disabled={isLoading}
                   isLoading={isLoading}
-                  className="h-12 px-6 flex-1 sm:flex-initial font-semibold"
+                  className="h-13 px-8 flex-1 sm:flex-initial font-black"
                 >
                   {isLoading ? t.lookup.checkingButton : t.lookup.checkButton}
                 </PrimaryButton>
               </div>
             </div>
 
-            {/* Helper or Validation Error Message */}
+            {/* Helper text or validation error */}
             {validationError ? (
-              <p className="flex items-center gap-1.5 text-xs text-rose-400 mt-2 font-medium" role="alert">
+              <p className="flex items-center gap-1.5 text-xs text-rose-600 font-bold pt-1" role="alert">
                 <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                 <span>{validationError}</span>
               </p>
             ) : (
-              <p className="text-[11px] text-slate-400 mt-1.5">
+              <p className="text-[11px] text-[#6E6D8F]">
                 {isHi ? currentOption.helperHi : currentOption.helper}
               </p>
             )}
@@ -263,57 +262,46 @@ export function LookupClientContainer() {
         </form>
       </div>
 
-      {/* 2. Result Section (Dynamic State Handling) */}
-      <section aria-live="polite" aria-atomic="true">
-        {/* Loading State */}
-        {isLoading && (
-          <div className="p-8 sm:p-12 rounded-2xl bg-slate-900/60 border border-slate-800 text-center space-y-4">
-            <Loader2 className="w-8 h-8 text-teal-400 animate-spin mx-auto" />
-            <div className="space-y-1">
-              <h3 className="text-base font-semibold text-slate-100">
-                {t.lookup.searching}
-              </h3>
-              <p className="text-xs text-slate-400">
-                {t.lookup.searchingDesc}
-              </p>
-            </div>
-            <div className="max-w-md mx-auto pt-2">
-              <LoadingSkeleton variant="row" count={2} />
-            </div>
+      {/* 2. Loading State */}
+      {isLoading && (
+        <div className="rounded-[2.5rem] bg-white border border-[#EAE6FD] p-8 shadow-xl space-y-4">
+          <div className="flex items-center gap-3 text-sm font-black text-[#6035E8]">
+            <div className="w-5 h-5 rounded-full border-2 border-[#6035E8] border-t-transparent animate-spin" />
+            <span>{t.lookup.searching}</span>
           </div>
-        )}
+          <p className="text-xs text-[#6E6D8F]">{t.lookup.searchingDesc}</p>
+          <LoadingSkeleton variant="card" className="h-40" />
+        </div>
+      )}
 
-        {/* API Error State (Network or Server Disruption) */}
-        {!isLoading && apiError && (
-          <ErrorState
-            title={apiError.title}
-            description={apiError.description}
-            onRetry={apiError.canRetry ? executeLookup : undefined}
-          />
-        )}
+      {/* 3. API Disruption Error State */}
+      {apiError && !isLoading && (
+        <ErrorState
+          title={apiError.title}
+          description={apiError.description}
+          onRetry={apiError.canRetry ? executeLookup : undefined}
+        />
+      )}
 
-        {/* Successful Result State */}
-        {!isLoading && !apiError && result && (
-          <LookupResultCard result={result} searchedValue={searchedIdentifier} />
-        )}
+      {/* 4. Verified Intelligence Result Display */}
+      {result && !isLoading && (
+        <LookupResultCard result={result} searchedValue={searchedIdentifier} />
+      )}
 
-        {/* Initial Empty / Idle Guidance State */}
-        {!isLoading && !apiError && !result && (
-          <div className="p-8 sm:p-10 rounded-2xl border border-dashed border-slate-800/80 bg-slate-900/30 text-center space-y-3">
-            <div className="w-12 h-12 rounded-full bg-slate-800/60 border border-slate-700/60 text-slate-400 flex items-center justify-center mx-auto">
-              <ShieldQuestion className="w-6 h-6" />
-            </div>
-            <h3 className="text-base font-semibold text-slate-200">
-              {t.lookup.emptyPrompt}
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-400 max-w-lg mx-auto leading-relaxed">
-              {t.lookup.emptyDesc}
-            </p>
+      {/* 5. Clean Empty State */}
+      {!result && !isLoading && !apiError && (
+        <div className="p-8 sm:p-10 rounded-[2.5rem] bg-white border border-[#EAE6FD] text-center space-y-3 shadow-sm">
+          <div className="w-14 h-14 rounded-2xl bg-[#F0EDFF] text-[#6035E8] flex items-center justify-center mx-auto shadow-sm">
+            <ShieldQuestion className="w-7 h-7" />
           </div>
-        )}
-      </section>
+          <h3 className="text-lg font-black text-[#171638]">{t.lookup.emptyPrompt}</h3>
+          <p className="text-xs sm:text-sm text-[#6E6D8F] max-w-md mx-auto leading-relaxed">
+            {t.lookup.emptyDesc}
+          </p>
+        </div>
+      )}
 
-      {/* 3. Safety Reminders Section (Always visible below interface) */}
+      {/* 6. Continuous Citizen Safety Advisory */}
       <StayAlertSection />
     </div>
   );

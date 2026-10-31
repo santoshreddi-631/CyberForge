@@ -1,19 +1,21 @@
 @import "tailwindcss";
 
 :root {
-  --background: #080d1a;
-  --foreground: #f1f5f9;
-  --surface: #0e172a;
-  --surface-hover: #15223e;
-  --surface-card: #0f1a30;
-  --surface-elevated: #162444;
-  --border: #1e2e4f;
-  --border-subtle: #172440;
-  --border-focus: #14b8a6;
-  --accent-teal: #14b8a6;
-  --accent-blue: #3b82f6;
-  --muted: #94a3b8;
-  --muted-dark: #64748b;
+  --background: #F6F4FE;
+  --foreground: #171638;
+  --surface: #FFFFFF;
+  --surface-hover: #F8F6FE;
+  --surface-card: #FFFFFF;
+  --surface-elevated: #FFFFFF;
+  --border: #E8E3FA;
+  --border-subtle: #F0ECFD;
+  --border-focus: #6035E8;
+  --accent-purple: #6035E8;
+  --accent-purple-deep: #5421D6;
+  --accent-yellow: #FFC928;
+  --accent-teal: #08C9C5;
+  --muted: #6E6D8F;
+  --muted-dark: #34335C;
   --danger: #ef4444;
   --warning: #f59e0b;
   --success: #10b981;
@@ -29,7 +31,9 @@
   --color-border-theme: var(--border);
   --color-border-subtle: var(--border-subtle);
   --color-accent-teal: var(--accent-teal);
-  --color-accent-blue: var(--accent-blue);
+  --color-accent-purple: var(--accent-purple);
+  --color-accent-purple-deep: var(--accent-purple-deep);
+  --color-accent-yellow: var(--accent-yellow);
   --color-muted-text: var(--muted);
   --color-danger: var(--danger);
   --color-warning: var(--warning);
@@ -44,35 +48,35 @@
 
 html,
 body {
-  height: 100%;
-  background-color: var(--background);
-  color: var(--foreground);
+  min-height: 100%;
+  background-color: #F6F4FE;
+  color: #171638;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom subtle scrollbar */
+/* Custom modern scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #080d1a;
+  background: #F0EDFF;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e2e4f;
+  background: #CFC5F8;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #334870;
+  background: #6035E8;
 }
 
 /* Focus styles for keyboard accessibility */
 :focus-visible {
-  outline: 2px solid #14b8a6;
+  outline: 2px solid #6035E8;
   outline-offset: 2px;
 }

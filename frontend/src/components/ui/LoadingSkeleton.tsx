@@ -34,7 +34,7 @@ export function LoadingSkeleton({
         <div
           key={i}
           className={cn(
-            "bg-slate-800/60 animate-pulse border border-slate-700/30",
+            "bg-[#EAE6FD]/60 animate-pulse border border-[#DDD6FE]/40",
             getVariantClasses(),
             className
           )}

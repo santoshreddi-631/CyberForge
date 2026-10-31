@@ -28,14 +28,14 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        "flex flex-col gap-4 pb-6 mb-6 border-b border-slate-800/80 md:flex-row md:items-end md:justify-between",
+        "flex flex-col gap-4 pb-8 mb-8 border-b border-[#EAE6FD] md:flex-row md:items-end md:justify-between",
         className
       )}
       {...props}
     >
-      <div className="space-y-1.5 max-w-3xl">
+      <div className="space-y-2 max-w-3xl">
         {breadcrumbs && breadcrumbs.length > 0 && (
-          <nav aria-label="Breadcrumbs" className="flex items-center gap-1.5 text-xs text-slate-400 mb-2">
+          <nav aria-label="Breadcrumbs" className="flex items-center gap-2 text-xs font-semibold text-[#6E6D8F] mb-3">
             {breadcrumbs.map((crumb, idx) => {
               const isLast = idx === breadcrumbs.length - 1;
               return (
@@ -43,14 +43,14 @@ export function PageHeader({
                   {crumb.href && !isLast ? (
                     <Link
                       href={crumb.href}
-                      className="hover:text-slate-200 transition-colors"
+                      className="text-[#6035E8] hover:underline transition-colors"
                     >
                       {crumb.label}
                     </Link>
                   ) : (
-                    <span className={cn(isLast && "text-slate-200 font-medium")}>{crumb.label}</span>
+                    <span className={cn(isLast && "text-[#171638] font-bold")}>{crumb.label}</span>
                   )}
-                  {!isLast && <ChevronRight className="w-3 h-3 text-slate-600" />}
+                  {!isLast && <ChevronRight className="w-3.5 h-3.5 text-[#A5A0C8]" />}
                 </React.Fragment>
               );
             })}
@@ -58,20 +58,20 @@ export function PageHeader({
         )}
 
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-100">
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-[#171638]">
             {title}
           </h1>
           {badge && <div className="shrink-0">{badge}</div>}
         </div>
 
         {description && (
-          <p className="text-sm sm:text-base text-slate-400 leading-relaxed">
+          <p className="text-base text-[#6E6D8F] leading-relaxed font-normal">
             {description}
           </p>
         )}
       </div>
 
-      {actions && <div className="flex items-center gap-2.5 shrink-0 pt-2 md:pt-0">{actions}</div>}
+      {actions && <div className="flex items-center gap-3 shrink-0 pt-2 md:pt-0">{actions}</div>}
     </div>
   );
 }
