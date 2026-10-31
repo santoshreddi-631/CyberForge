@@ -1,4 +1,7 @@
 import { z } from "zod";
+import dotenv from 'dotenv';
+dotenv.config();
+
 
 /**
  * Environment variable schema validated at startup.
