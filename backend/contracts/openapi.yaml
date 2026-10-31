@@ -1,0 +1,733 @@
+openapi: "3.1.0"
+
+info:
+  title: Community Scam Map API
+  version: "1.0.0"
+  description: |
+    Backend API for the Community Scam Map application.
+    Allows community members to report and look up scam phone numbers,
+    UPI IDs, links and SMS senders without mandatory authentication.
+
+    Privacy guarantees:
+    - Reporter identities are never stored or exposed.
+    - Phone numbers are masked until ≥3 distinct reporters confirm them.
+    - Notes and IP prefixes are internal-only and never returned to callers.
+
+    Source of truth: PRD_Community_Scam_Map.pdf (Oct 29 2026, @Prasanth)
+
+servers:
+  - url: http://localhost:3001
+    description: Local development
+  - url: https://yourteam-scammap.onrender.com
+    description: Production (update URL before deployment)
+
+# ---------------------------------------------------------------------------
+# Reusable components
+# ---------------------------------------------------------------------------
+components:
+  schemas:
+
+    # ── Enumerations from PRD Appendix C ───────────────────────────────────
+
+    ScamType:
+      type: string
+      enum:
+        - digital-arrest
+        - fake-kyc-link
+        - upi-refund-qr
+        - investment-group
+        - courier-customs
+        - job-offer
+        - lottery-prize
+        - loan-app-harassment
+        - electricity-disconnection
+        - fake-customer-care
+        - otp-call
+        - sextortion
+      description: |
+        Named scam categories from PRD Appendix C.
+        Any other value is accepted and treated as "other".
+
+    Channel:
+      type: string
+      enum:
+        - "Phone call"
+        - "SMS or WhatsApp"
+        - "QR code"
+        - "Fake website"
+        - "UPI request"
+        - "Something else"
+      description: Report channel from PRD Appendix C.
+
+    IdentifierType:
+      type: string
+      enum: [phone, upi, url, sender_id]
+      description: Type of the scam identifier.
+
+    Verdict:
+      type: string
+      enum: [KNOWN_SCAM, SUSPICIOUS, NO_REPORTS, VERIFIED_BUSINESS]
+      description: |
+        Lookup verdict.
+        - KNOWN_SCAM: multiple distinct, credible reporters confirm scam.
+        - SUSPICIOUS: some signals but below KNOWN_SCAM threshold.
+        - NO_REPORTS: identifier is valid but has no reports.
+        - VERIFIED_BUSINESS: identifier is on the PRD verified list.
+
+    Severity:
+      type: string
+      enum: [CRIT, HIGH, MED]
+      description: Map cluster severity on the team's own scale.
+
+    AlertType:
+      type: string
+      enum: [SPIKE, NEW_TYPE]
+
+    # ── Request bodies ──────────────────────────────────────────────────────
+
+    ReportRequest:
+      type: object
+      required:
+        - report_id
+        - occurred_at
+        - reported_at
+        - reporter_id
+        - ip_prefix
+        - channel
+        - scam_type
+        - identifier_type
+        - identifier_value
+        - pincode
+        - locality
+        - city
+      properties:
+        report_id:
+          type: string
+          example: "rep_000123"
+          description: Unique ID supplied by the reporter / test tool.
+        occurred_at:
+          type: string
+          format: date-time
+          example: "2026-10-27T18:21:04+05:30"
+          description: When the scam incident occurred.
+        reported_at:
+          type: string
+          format: date-time
+          example: "2026-10-27T18:40:04+05:30"
+          description: When this report was submitted.
+        reporter_id:
+          type: string
+          example: "r_7c2d91aa"
+          description: |
+            Pseudonymous reporter identifier supplied by the test tool.
+            NEVER stored in plaintext; a keyed hash is stored instead.
+        ip_prefix:
+          type: string
+          example: "103.21.58"
+          description: |
+            First three octets of the reporter's IP.
+            NEVER stored in plaintext; a keyed hash is stored instead.
+        channel:
+          $ref: "#/components/schemas/Channel"
+        scam_type:
+          type: string
+          description: |
+            Named scam type. Values from ScamType enum are preferred;
+            unknown values are accepted and stored as-is.
+          example: "digital-arrest"
+        identifier_type:
+          $ref: "#/components/schemas/IdentifierType"
+        identifier_value:
+          type: string
+          example: "+91 98765 43210"
+          description: |
+            Raw identifier value; normalised server-side before storage.
+        pincode:
+          type: string
+          example: "560102"
+          description: |
+            6-digit postal area code. Must be one of the 25 PRD-defined areas
+            or another valid Indian pincode.
+        locality:
+          type: string
+          example: "HSR Layout"
+        city:
+          type: string
+          example: "Bengaluru"
+        note:
+          type: string
+          nullable: true
+          description: |
+            Free-text description in English, Hindi or Hinglish.
+            NEVER returned in public responses.
+          example: "Video call from a man in police uniform..."
+        has_screenshot:
+          type: boolean
+          default: false
+        amount_lost_inr:
+          type: number
+          minimum: 0
+          default: 0
+
+    ReportResponse:
+      type: object
+      required: [report_id, case_id, merged]
+      properties:
+        report_id:
+          type: string
+          example: "rep_000123"
+        case_id:
+          type: string
+          example: "case_abc123"
+          description: Canonical case grouping all reports for this identifier.
+        merged:
+          type: boolean
+          description: |
+            true when this report joined an existing case for the same identifier.
+
+    LookupEvidence:
+      type: object
+      required: [occurred_at, channel, scam_type, pincode]
+      properties:
+        occurred_at:
+          type: string
+          format: date-time
+        channel:
+          $ref: "#/components/schemas/Channel"
+        scam_type:
+          type: string
+        pincode:
+          type: string
+      description: |
+        PRD: "evidence never includes who reported, their IP or their note."
+
+    LookupResponse:
+      type: object
+      required:
+        - verdict
+        - report_count
+        - distinct_reporters
+        - display_value
+        - evidence
+        - challenged
+      properties:
+        verdict:
+          $ref: "#/components/schemas/Verdict"
+        report_count:
+          type: integer
+          minimum: 0
+        distinct_reporters:
+          type: integer
+          minimum: 0
+          description: |
+            Count of unique reporters after trust-rule deduplication.
+            One person reporting six times is 1.
+        first_seen:
+          type: string
+          format: date-time
+          nullable: true
+        last_seen:
+          type: string
+          format: date-time
+          nullable: true
+        scam_type:
+          type: string
+          nullable: true
+          description: Most-common scam type across all reports for this identifier.
+        display_value:
+          type: string
+          description: |
+            Masked until ≥3 distinct reporters: 98XXXXX210 for phone,
+            r***@okaxis for UPI, sbi***.in/... for URL, HD**** for sender.
+        evidence:
+          type: array
+          items:
+            $ref: "#/components/schemas/LookupEvidence"
+        challenged:
+          type: boolean
+          description: true if a business dispute is currently under review.
+
+    MapCluster:
+      type: object
+      required:
+        - pincode
+        - locality
+        - city
+        - count
+        - top_scam_type
+        - severity
+        - lat
+        - lng
+      properties:
+        pincode:
+          type: string
+        locality:
+          type: string
+        city:
+          type: string
+        count:
+          type: integer
+          minimum: 0
+        top_scam_type:
+          type: string
+        severity:
+          $ref: "#/components/schemas/Severity"
+        lat:
+          type: number
+          description: Area centroid latitude from PRD Appendix B (never reporter location).
+        lng:
+          type: number
+          description: Area centroid longitude from PRD Appendix B (never reporter location).
+
+    MapResponse:
+      type: object
+      required: [clusters]
+      properties:
+        clusters:
+          type: array
+          items:
+            $ref: "#/components/schemas/MapCluster"
+
+    SpikeAlert:
+      type: object
+      required: [type, pincode, window, count, baseline_per_day]
+      properties:
+        type:
+          type: string
+          enum: [SPIKE]
+        pincode:
+          type: string
+        window:
+          type: string
+          example: "24h"
+        count:
+          type: integer
+        baseline_per_day:
+          type: number
+
+    NewTypeAlert:
+      type: object
+      required: [type, pincode, scam_type, window]
+      properties:
+        type:
+          type: string
+          enum: [NEW_TYPE]
+        pincode:
+          type: string
+        scam_type:
+          type: string
+        window:
+          type: string
+          example: "24h"
+
+    AlertsResponse:
+      type: object
+      required: [alerts]
+      properties:
+        alerts:
+          type: array
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/SpikeAlert"
+              - $ref: "#/components/schemas/NewTypeAlert"
+
+    ChallengeRequest:
+      type: object
+      required:
+        - identifier_type
+        - identifier_value
+        - claimant_name
+        - contact_email
+        - proof_note
+      properties:
+        identifier_type:
+          $ref: "#/components/schemas/IdentifierType"
+        identifier_value:
+          type: string
+          example: "+91 80 4100 2233"
+        claimant_name:
+          type: string
+          example: "Fresh Bakes"
+        contact_email:
+          type: string
+          format: email
+          example: "owner@example.com"
+          description: NEVER exposed in public responses.
+        proof_note:
+          type: string
+          example: "GST certificate and shop licence attached."
+          description: NEVER exposed in public responses.
+
+    ChallengeResponse:
+      type: object
+      required: [challenge_id, status]
+      properties:
+        challenge_id:
+          type: string
+          example: "chl_abc123"
+        status:
+          type: string
+          enum: [under_review, resolved_verified, resolved_rejected]
+          example: "under_review"
+
+    LicenceFile:
+      type: object
+      required: [licensee, expires_at, signature]
+      properties:
+        licensee:
+          type: string
+          example: "Demo Bank"
+        expires_at:
+          type: string
+          format: date-time
+          example: "2026-11-15T10:05:00+05:30"
+        signature:
+          type: string
+          description: Ed25519 signature over canonical JSON of {licensee, expires_at}.
+
+    LicenceStatus:
+      type: object
+      required: [licensee, expires_at, valid, expired]
+      properties:
+        licensee:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+        valid:
+          type: boolean
+        expired:
+          type: boolean
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              path:
+                type: string
+              message:
+                type: string
+
+  responses:
+    BadRequest:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    TooManyRequests:
+      description: Rate limited – reporter is being slowed down
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    LicenceExpired:
+      description: Licence expired
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "LICENSE_EXPIRED"
+    InternalError:
+      description: Internal server error (no details exposed)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+# ---------------------------------------------------------------------------
+# Paths
+# ---------------------------------------------------------------------------
+paths:
+
+  /health:
+    get:
+      summary: Liveness check
+      operationId: getHealth
+      description: |
+        PRD §A.1: "Reply 200 with {"ok": true}."
+        Always reachable, even when the licence is expired.
+      tags: [System]
+      responses:
+        "200":
+          description: Server is alive
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok]
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+
+  /reports:
+    post:
+      summary: Submit a scam report
+      operationId: postReport
+      description: |
+        PRD §A.2: Receives one scam report.
+        - Identifier values are normalised to canonical form before storage.
+        - reporter_id and ip_prefix are hashed (HMAC-SHA256) before storage.
+        - Notes are never exposed in public responses.
+        - Returns 429 when this reporter is being rate-limited.
+        - Returns 400 for junk identifiers (e.g. "12345").
+      tags: [Reports]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReportRequest"
+      responses:
+        "201":
+          description: Report accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "403":
+          $ref: "#/components/responses/LicenceExpired"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /lookup:
+    get:
+      summary: Look up a number, UPI ID, link or SMS sender
+      operationId: getLookup
+      description: |
+        PRD §A.3: Checks a number, UPI ID, link or SMS sender.
+        - Query param 'value' is URL-encoded.
+        - Returns NO_REPORTS (200) for valid but unreported identifiers.
+        - Returns 400 for invalid identifiers (e.g. "12345").
+        - display_value is masked until ≥3 distinct reporters confirm.
+        - Evidence never includes reporter identity, IP or notes.
+        - Target latency: <500 ms (PRD Performance).
+      tags: [Lookup]
+      parameters:
+        - name: type
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/IdentifierType"
+          example: phone
+        - name: value
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "+91 98765 43210"
+          description: URL-encoded identifier value.
+      responses:
+        "200":
+          description: Lookup result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LookupResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/LicenceExpired"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /map:
+    get:
+      summary: Scam cluster map for last N days
+      operationId: getMap
+      description: |
+        PRD §A.4: Lists scam reports by area for the last 7 days.
+        - Centres use PRD Appendix B coordinates, never reporter locations.
+        - days defaults to 7; radius_km defaults to 2.
+      tags: [Map]
+      parameters:
+        - name: pincode
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "560102"
+        - name: days
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 7
+            minimum: 1
+            maximum: 90
+        - name: radius_km
+          in: query
+          required: false
+          schema:
+            type: number
+            default: 2
+            minimum: 0.1
+            maximum: 100
+      responses:
+        "200":
+          description: Map clusters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MapResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/LicenceExpired"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /alerts:
+    get:
+      summary: Alerts for an area
+      operationId: getAlerts
+      description: |
+        PRD §A.5: Lists alerts for an area.
+        - SPIKE: reports in last 24 h ≥ 2× daily avg of prior 7 days AND ≥ 5.
+        - NEW_TYPE: scam type seen in last 24 h not seen in prior 30 days.
+        - Reports rejected by trust rules do NOT trigger alerts.
+        - Returns {"alerts": []} when no alert conditions are met.
+      tags: [Alerts]
+      parameters:
+        - name: pincode
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "560102"
+      responses:
+        "200":
+          description: Alert list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlertsResponse"
+        "403":
+          $ref: "#/components/responses/LicenceExpired"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /admin/reset:
+    post:
+      summary: Delete all reports (judges use before each test run)
+      operationId: adminReset
+      description: |
+        PRD §A.6: "Delete every report and reply 200."
+        This endpoint is public (no auth) per PRD API rule #5.
+        PRD: "Keep the public judging reset endpoint isolated from real production data."
+        In production, this endpoint should be behind a deployment-level
+        secret (e.g. a reverse-proxy header check) — but the test tool
+        sends no credentials, so no application-layer auth is added here.
+      tags: [Admin]
+      responses:
+        "200":
+          description: All reports deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted:
+                    type: integer
+                    description: Number of report rows removed.
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /challenges:
+    post:
+      summary: Dispute a number (bonus feature)
+      operationId: postChallenge
+      description: |
+        PRD §A.7 (bonus): A business disputes a number.
+        - Contact details are NEVER exposed in public responses.
+        - A challenged number shows challenged: true in /lookup.
+        - A number under review is NEVER returned as KNOWN_SCAM.
+      tags: [Challenges]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChallengeRequest"
+      responses:
+        "201":
+          description: Challenge accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChallengeResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/LicenceExpired"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /license:
+    get:
+      summary: Show current licence status
+      operationId: getLicence
+      description: |
+        PRD §Ship it: "GET /license showing who it is licensed to and when it expires."
+        Always reachable (same as /health) even when expired.
+      tags: [Licence]
+      responses:
+        "200":
+          description: Licence status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LicenceStatus"
+
+    post:
+      summary: Upload a new licence file
+      operationId: postLicence
+      description: |
+        PRD §Ship it: "when a new licence file is uploaded through POST /license,
+        everything works again without restarting the server."
+        The server verifies the Ed25519 signature with the embedded public key.
+        If valid and not expired, the in-memory licence is replaced immediately.
+      tags: [Licence]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LicenceFile"
+      responses:
+        "200":
+          description: Licence accepted and activated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LicenceStatus"
+        "400":
+          description: Invalid licence (bad signature or malformed)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
