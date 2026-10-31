@@ -21,7 +21,7 @@ export function StatusBadge({
   const normalized = status.toLowerCase().replace(/[\s-]/g, "_");
 
   let text = label;
-  let bgClasses = "bg-slate-800 text-slate-300 border-slate-700";
+  let bgClasses = "bg-[#F0EDFF] text-[#6035E8] border-[#E4DEFD]";
   let icon = <Shield className="w-3.5 h-3.5" />;
 
   switch (normalized) {
@@ -30,15 +30,15 @@ export function StatusBadge({
     case "confirmed":
     case "critical":
       text = text || "Verified Scam";
-      bgClasses = "bg-rose-950/60 text-rose-300 border-rose-800/80 shadow-rose-950/40";
-      icon = <ShieldAlert className="w-3.5 h-3.5 text-rose-400 shrink-0" />;
+      bgClasses = "bg-rose-100 text-rose-700 border-rose-200";
+      icon = <ShieldAlert className="w-3.5 h-3.5 text-rose-600 shrink-0" />;
       break;
 
     case "high":
     case "high_risk":
       text = text || "High Risk";
-      bgClasses = "bg-rose-900/40 text-rose-200 border-rose-700/60";
-      icon = <AlertCircle className="w-3.5 h-3.5 text-rose-300 shrink-0" />;
+      bgClasses = "bg-rose-50 text-rose-600 border-rose-200";
+      icon = <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />;
       break;
 
     case "under_review":
@@ -46,14 +46,14 @@ export function StatusBadge({
     case "flagged":
     case "medium":
       text = text || (normalized === "under_review" ? "Under Review" : "Flagged");
-      bgClasses = "bg-amber-950/50 text-amber-300 border-amber-800/70";
-      icon = <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />;
+      bgClasses = "bg-amber-100 text-amber-800 border-amber-200";
+      icon = <Clock className="w-3.5 h-3.5 text-amber-600 shrink-0" />;
       break;
 
     case "disputed":
       text = text || "Disputed";
-      bgClasses = "bg-indigo-950/50 text-indigo-300 border-indigo-700/60";
-      icon = <AlertTriangle className="w-3.5 h-3.5 text-indigo-400 shrink-0" />;
+      bgClasses = "bg-[#F0EDFF] text-[#6035E8] border-[#DCD3FC]";
+      icon = <AlertTriangle className="w-3.5 h-3.5 text-[#6035E8] shrink-0" />;
       break;
 
     case "cleared":
@@ -61,27 +61,28 @@ export function StatusBadge({
     case "low":
     case "resolved":
       text = text || (normalized === "safe" ? "Low Risk / Safe" : "Cleared");
-      bgClasses = "bg-emerald-950/50 text-emerald-300 border-emerald-800/70";
-      icon = <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />;
+      bgClasses = "bg-emerald-100 text-emerald-800 border-emerald-200";
+      icon = <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />;
       break;
 
     default:
       text = text || status;
-      bgClasses = "bg-slate-800/80 text-slate-300 border-slate-700";
-      icon = <Shield className="w-3.5 h-3.5 text-slate-400 shrink-0" />;
+      bgClasses = "bg-[#F0EDFF] text-[#6035E8] border-[#E4DEFD]";
+      icon = <Shield className="w-3.5 h-3.5 text-[#6035E8] shrink-0" />;
+      break;
   }
 
-  const sizeStyles = {
-    sm: "px-2 py-0.5 text-xs gap-1",
-    md: "px-2.5 py-1 text-xs gap-1.5 font-medium",
+  const sizeClasses = {
+    sm: "px-2.5 py-0.5 text-[11px] gap-1",
+    md: "px-3.5 py-1 text-xs gap-1.5",
   };
 
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border shadow-xs tracking-wide select-none",
-        sizeStyles[size],
+        "inline-flex items-center rounded-full border font-black uppercase tracking-wider select-none shadow-sm",
         bgClasses,
+        sizeClasses[size],
         className
       )}
       {...props}

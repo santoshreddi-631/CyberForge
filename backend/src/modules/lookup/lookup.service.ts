@@ -43,6 +43,7 @@ export interface LookupResponse {
   display_value: string;
   evidence: EvidenceRow[];
   challenged: boolean;
+  business_name?: string;
 }
 
 async function findIdentifier(client: DatabaseClient, type: IdentifierType, value: string): Promise<IdentifierRow | null> {
@@ -168,5 +169,6 @@ export async function lookupIdentifier(
     display_value: isMasked ? display_value : canonicalValue,
     evidence,
     challenged: identifier?.challenged ?? false,
+    ...(identifier?.label ? { business_name: identifier.label } : {}),
   };
 }

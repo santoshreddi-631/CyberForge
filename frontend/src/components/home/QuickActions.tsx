@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { Search, AlertTriangle, Map, Bell, ArrowUpRight } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
+import { DonutRing, CircularOutline } from "@/components/ui/DecorativeShapes";
 
 export function QuickActions() {
   const { lang, t } = useLanguage();
@@ -15,52 +16,70 @@ export function QuickActions() {
       description: isHi ? t.home.qaCheckDesc : "Check whether a phone number, UPI ID, URL or SMS sender ID has been reported.",
       destination: "/lookup",
       icon: Search,
-      accent: "text-sky-400 bg-sky-500/10 border-sky-500/20 group-hover:border-sky-500/40",
-      cta: isHi ? "शुरू करें" : "Get started",
+      iconBg: "bg-purple-100 text-[#6035E8]",
+      ctaColor: "text-[#6035E8]",
+      cta: isHi ? "शुरू करें" : "Check Now",
     },
     {
       title: isHi ? t.home.qaReportTitle : "Report a Scam",
       description: isHi ? t.home.qaReportDesc : "Help others by reporting suspicious identifiers and fraudulent transactions.",
       destination: "/report",
       icon: AlertTriangle,
-      accent: "text-amber-400 bg-amber-500/10 border-amber-500/20 group-hover:border-amber-500/40",
+      iconBg: "bg-amber-100 text-amber-700",
+      ctaColor: "text-amber-700",
       badge: isHi ? "दूसरों की रक्षा करें" : "Protect Others",
-      cta: isHi ? "रिपोर्ट करें" : "Report now",
+      cta: isHi ? "रिपोर्ट करें" : "Report Now",
     },
     {
       title: isHi ? t.home.qaMapTitle : "Explore Scam Map",
       description: isHi ? t.home.qaMapDesc : "Discover reported scam activity and geographic risk clusters across areas.",
       destination: "/map",
       icon: Map,
-      accent: "text-teal-400 bg-teal-500/10 border-teal-500/20 group-hover:border-teal-500/40",
-      cta: isHi ? "नक्शा खोलें" : "Open map",
+      iconBg: "bg-teal-100 text-[#08C9C5]",
+      ctaColor: "text-[#08C9C5]",
+      cta: isHi ? "नक्शा खोलें" : "Open Map",
     },
     {
       title: isHi ? t.home.qaAlertsTitle : "View Alerts",
       description: isHi ? t.home.qaAlertsDesc : "Stay informed about emerging scam patterns, fake APKs, and phishing campaigns.",
       destination: "/alerts",
       icon: Bell,
-      accent: "text-rose-400 bg-rose-500/10 border-rose-500/20 group-hover:border-rose-500/40",
+      iconBg: "bg-rose-100 text-rose-600",
+      ctaColor: "text-rose-600",
       badge: isHi ? "लाइव फीड" : "Live Feed",
-      cta: isHi ? "अलर्ट देखें" : "View alerts",
+      cta: isHi ? "अलर्ट देखें" : "View Alerts",
     },
   ];
 
   return (
-    <section className="py-12 md:py-16 border-b border-slate-800/80 bg-slate-950/40">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-3">
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-              {isHi ? t.home.quickActionsTitle : "Community Action Center"}
-            </h2>
-            <p className="text-sm text-slate-400 mt-1">
-              {isHi ? t.home.quickActionsSubtitle : "Direct tools to verify suspected cyber fraud, submit intel, and monitor regional threats."}
-            </p>
+    <section className="relative py-16 md:py-24 bg-[#F6F4FE] overflow-hidden">
+      {/* Decorative donut at boundary */}
+      <DonutRing
+        color="yellow"
+        size="md"
+        className="absolute -top-12 right-12 opacity-80 pointer-events-none hidden md:block"
+      />
+      <CircularOutline
+        color="purple"
+        size="md"
+        className="absolute bottom-6 left-6 opacity-30 pointer-events-none"
+      />
+
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 z-10">
+        <div className="max-w-2xl mb-12 sm:mb-16">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EAE6FD] text-xs font-black text-[#6035E8] uppercase tracking-wider mb-3">
+            <span className="w-2 h-2 rounded-full bg-[#FFC928]" />
+            <span>{isHi ? "त्वरित नागरिक उपकरण" : "Citizen Action Grid"}</span>
           </div>
+          <h2 className="text-3xl sm:text-4xl font-black text-[#171638] tracking-tight leading-tight">
+            {isHi ? t.home.quickActionsTitle : "Community Action Center"}
+          </h2>
+          <p className="mt-3 text-base text-[#6E6D8F] leading-relaxed">
+            {isHi ? t.home.quickActionsSubtitle : "Direct tools to verify suspected cyber fraud, submit intel, and monitor regional threats."}
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {actionCards.map((card) => {
             const Icon = card.icon;
 
@@ -68,37 +87,39 @@ export function QuickActions() {
               <Link
                 key={card.title}
                 href={card.destination}
-                className="group relative flex flex-col justify-between p-5 sm:p-6 rounded-xl bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 transition-all duration-150 hover:-translate-y-0.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+                className="group relative flex flex-col justify-between p-7 rounded-[2rem] bg-white border border-[#EAE6FD] shadow-[0_12px_36px_rgba(96,53,232,0.06)] hover:shadow-[0_20px_50px_rgba(96,53,232,0.14)] hover:-translate-y-2 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-[#6035E8]/20"
               >
                 <div>
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-6">
                     <div
-                      className={`w-11 h-11 rounded-lg flex items-center justify-center border transition-colors ${card.accent}`}
+                      className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 duration-200 shadow-sm ${card.iconBg}`}
                     >
-                      <Icon className="w-5 h-5" />
+                      <Icon className="w-7 h-7" />
                     </div>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       {card.badge && (
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                        <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-[#F0EDFF] text-[#6035E8] border border-[#E0D8FD]">
                           {card.badge}
                         </span>
                       )}
-                      <ArrowUpRight className="w-4 h-4 text-slate-500 group-hover:text-teal-400 transition-colors" />
+                      <div className="w-8 h-8 rounded-full bg-[#F6F4FE] group-hover:bg-[#6035E8] flex items-center justify-center transition-colors">
+                        <ArrowUpRight className="w-4 h-4 text-[#6035E8] group-hover:text-white transition-colors" />
+                      </div>
                     </div>
                   </div>
 
-                  <h3 className="text-base font-semibold text-slate-100 group-hover:text-teal-300 transition-colors">
+                  <h3 className="text-xl font-black text-[#171638] group-hover:text-[#6035E8] transition-colors">
                     {card.title}
                   </h3>
-                  <p className="mt-2 text-xs sm:text-sm text-slate-400 leading-relaxed">
+                  <p className="mt-3 text-sm text-[#6E6D8F] leading-relaxed font-normal">
                     {card.description}
                   </p>
                 </div>
 
-                <div className="mt-5 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400 group-hover:text-slate-200">
-                  <span className="font-medium">{card.cta}</span>
-                  <span className="text-teal-400 font-semibold text-xs tracking-wider">→</span>
+                <div className="mt-6 pt-4 border-t border-[#F0EDFF] flex items-center justify-between text-xs font-black">
+                  <span className={card.ctaColor}>{card.cta}</span>
+                  <span className="text-[#6035E8] group-hover:translate-x-1 transition-transform">→</span>
                 </div>
               </Link>
             );

@@ -31,15 +31,15 @@ export function MapPageClient() {
       />
 
       {/* ── Community Safety & Neighborhood Fair Use Disclaimer ────── */}
-      <div className="mb-6 p-4 rounded-xl bg-slate-900/60 border border-slate-800 text-xs text-slate-300 flex items-start gap-3">
-        <div className="p-1 rounded-md bg-teal-500/10 text-teal-400 shrink-0 mt-0.5">
+      <div className="mb-6 p-4 rounded-2xl bg-white border border-[#EAE6FD] text-xs text-[#545277] flex items-start gap-3.5 shadow-sm">
+        <div className="p-2 rounded-xl bg-[#6035E8]/10 text-[#6035E8] shrink-0 mt-0.5">
           <Map className="w-4 h-4" />
         </div>
         <div className="space-y-1 leading-relaxed">
-          <p className="font-semibold text-slate-200">
+          <p className="font-bold text-[#171638] text-xs sm:text-sm">
             {t.map.disclaimerTitle}
           </p>
-          <p className="text-slate-400">
+          <p className="text-[#837FA8] font-medium">
             {t.map.disclaimerDesc}
           </p>
         </div>

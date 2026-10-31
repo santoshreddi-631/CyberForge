@@ -88,7 +88,7 @@ export function IdentifierTypeSelector({
     <div
       role="tablist"
       aria-label="Select suspicious identifier type"
-      className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-1.5 rounded-xl bg-slate-900/90 border border-slate-800"
+      className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-1.5 rounded-2xl sm:rounded-full bg-[#F0EDFF] border border-[#EAE6FD]"
     >
       {IDENTIFIER_OPTIONS.map((opt) => {
         const Icon = opt.icon;
@@ -103,14 +103,14 @@ export function IdentifierTypeSelector({
             disabled={disabled}
             onClick={() => onSelectType(opt.type)}
             className={cn(
-              "flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-teal-400 select-none",
+              "flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl sm:rounded-full text-xs sm:text-sm font-bold transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#6035E8] select-none cursor-pointer",
               isSelected
-                ? "bg-teal-500/15 text-teal-300 border border-teal-500/40 shadow-sm"
-                : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent",
+                ? "bg-[#6035E8] text-white shadow-md shadow-[#6035E8]/20"
+                : "text-[#545277] hover:text-[#171638] hover:bg-white/80",
               disabled && "opacity-50 cursor-not-allowed"
             )}
           >
-            <Icon className={cn("w-4 h-4 shrink-0", isSelected ? "text-teal-400" : "text-slate-500")} />
+            <Icon className={cn("w-4 h-4 shrink-0", isSelected ? "text-[#FFC928]" : "text-[#837FA8]")} />
             <span className="hidden sm:inline">{isHi ? opt.labelHi : opt.label}</span>
             <span className="sm:hidden">{isHi ? opt.shortLabelHi : opt.shortLabel}</span>
           </button>

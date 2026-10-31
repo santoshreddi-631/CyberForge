@@ -152,7 +152,22 @@
     "successDesc": "Thank you for helping protect the community. Your report has been received and will be reviewed by the intelligence network.",
     "refNumber": "Reference Number",
     "returnHome": "Return Home",
-    "checkAnother": "Check Another Identifier"
+    "checkAnother": "Check Another Identifier",
+    "channelLabel": "Contact Method / Channel",
+    "selectChannel": "Select how you were contacted…",
+    "channelHelp": "Specifying the contact medium helps analyze fraud attack vectors.",
+    "amountLostLabel": "Financial Loss Amount (₹)",
+    "amountLostPlaceholder": "0 if no financial loss",
+    "amountLostHelp": "Enter the amount lost if money was transferred. Leave 0 if you caught the scam in time.",
+    "hasScreenshotLabel": "I have a screenshot, chat log, or payment receipt as evidence",
+    "hasScreenshotHelp": "Verified screenshot evidence provides an automatic confidence boost in our Trust Engine.",
+    "incidentDateLabel": "Date of Incident",
+    "incidentDateHelp": "When did this occur? Helps track timeline accuracy.",
+    "stepLossEvidence": "Step 3 — Loss & Evidence (Optional)",
+    "stepLossEvidenceDesc": "Documenting financial loss or proof helps the trust engine prioritize verified cases.",
+    "stepArea": "Step 4 — Area (Optional)",
+    "stepAreaDesc": "Your area helps map scam hotspots and alert nearby citizens. We do not store your exact address.",
+    "stepPrivacy": "Step 5 — Privacy & Submit"
   },
   "map": {
     "title": "Community Scam Map",

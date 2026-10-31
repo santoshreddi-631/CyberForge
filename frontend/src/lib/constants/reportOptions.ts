@@ -50,13 +50,13 @@ export type ReportChannel =
   | "UPI request"
   | "Something else";
 
-export const REPORT_CHANNELS: { value: ReportChannel; label: string }[] = [
-  { value: "Phone call", label: "Phone Call" },
-  { value: "SMS or WhatsApp", label: "SMS or WhatsApp Message" },
-  { value: "UPI request", label: "UPI Request / Collect Link" },
-  { value: "QR code", label: "QR Code" },
-  { value: "Fake website", label: "Fake Website / Phishing Link" },
-  { value: "Something else", label: "Something else" },
+export const REPORT_CHANNELS: { value: ReportChannel; label: string; labelHi: string }[] = [
+  { value: "Phone call", label: "Phone Call", labelHi: "फ़ोन कॉल" },
+  { value: "SMS or WhatsApp", label: "SMS or WhatsApp Message", labelHi: "एसएमएस या व्हाट्सएप संदेश" },
+  { value: "UPI request", label: "UPI Request / Collect Link", labelHi: "यूपीआई अनुरोध / कलेक्ट लिंक" },
+  { value: "QR code", label: "QR Code", labelHi: "क्यूआर कोड" },
+  { value: "Fake website", label: "Fake Website / Phishing Link", labelHi: "नकली वेबसाइट / फ़िशिंग लिंक" },
+  { value: "Something else", label: "Something else", labelHi: "अन्य माध्यम" },
 ];
 
 export type ReportScamType =

@@ -21,7 +21,7 @@ export function MobileBottomNavigation() {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 border-t border-slate-800 backdrop-blur-lg pb-[env(safe-area-inset-bottom)]"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 border-t border-[#EAE6FD] shadow-[0_-8px_30px_rgba(96,53,232,0.06)] backdrop-blur-lg pb-[env(safe-area-inset-bottom)]"
       aria-label="Mobile Navigation"
     >
       <div className="flex items-center justify-around h-16 px-2">
@@ -37,10 +37,10 @@ export function MobileBottomNavigation() {
                 className="flex flex-col items-center justify-center -mt-5 group focus:outline-none"
                 aria-label={tab.name}
               >
-                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-teal-500 hover:bg-teal-400 active:bg-teal-600 text-slate-950 shadow-lg shadow-teal-500/30 transition-transform active:scale-95 border-2 border-slate-950">
-                  <Plus className="w-6 h-6 stroke-[2.5]" />
+                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#08C9C5] hover:bg-[#06B5B1] active:bg-[#059E9A] text-[#171638] shadow-lg shadow-[#08C9C5]/35 transition-transform active:scale-95 border-2 border-white">
+                  <Plus className="w-6 h-6 stroke-[3]" />
                 </div>
-                <span className="text-[10px] font-semibold text-teal-300 mt-1">
+                <span className="text-[10px] font-bold text-[#6035E8] mt-1">
                   {tab.name}
                 </span>
               </Link>
@@ -54,8 +54,8 @@ export function MobileBottomNavigation() {
               className={cn(
                 "flex flex-col items-center justify-center flex-1 h-full py-1 text-xs transition-colors",
                 isActive
-                  ? "text-teal-400 font-semibold"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "text-[#6035E8] font-bold"
+                  : "text-[#6E6D8F] hover:text-[#171638]"
               )}
             >
               <Icon className="w-5 h-5 mb-1 shrink-0" />

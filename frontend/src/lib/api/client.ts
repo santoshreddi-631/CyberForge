@@ -103,12 +103,20 @@ export async function apiRequest<T = unknown>(
     }
 
     if (!response.ok) {
-      const errorMsg =
+      let errorMsg =
         typeof responseData === "object" && responseData !== null && "error" in responseData
           ? String((responseData as { error: unknown }).error)
           : typeof responseData === "object" && responseData !== null && "detail" in responseData
           ? String((responseData as { detail: unknown }).detail)
           : `API request failed with status ${response.status}: ${response.statusText}`;
+
+      // PRD Section 5: Exact message on expired or tampered licence
+      if (
+        response.status === 403 &&
+        (errorMsg === "LICENSE_EXPIRED" || errorMsg.includes("LICENSE"))
+      ) {
+        errorMsg = "Licence expired. Contact your provider.";
+      }
 
       throw new ApiError(errorMsg, response.status, response.statusText, responseData);
     }

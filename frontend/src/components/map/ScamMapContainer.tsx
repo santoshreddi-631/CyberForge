@@ -337,16 +337,16 @@ export function ScamMapContainer() {
   return (
     <div className="space-y-6">
       {/* ── Privacy and Safeguard Banner ────────────────────────────── */}
-      <div className="rounded-xl bg-slate-900/90 border border-slate-800 p-4 text-xs text-slate-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md">
-        <div className="flex items-start gap-3">
-          <EyeOff className="w-5 h-5 text-teal-400 shrink-0 mt-0.5" />
-          <div className="space-y-0.5">
-            <span className="font-bold text-slate-100 block">
-              {isHi
-                ? "गोपनीयता और सुरक्षित मानचित्रण मानक"
-                : "Privacy and Safe Mapping Standard"}
+      <div className="rounded-2xl bg-white border border-[#EAE6FD] p-5 text-xs text-[#545277] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+        <div className="flex items-start gap-3.5">
+          <div className="w-9 h-9 rounded-full bg-[#6035E8]/10 text-[#6035E8] flex items-center justify-center shrink-0 mt-0.5">
+            <EyeOff className="w-4 h-4" />
+          </div>
+          <div className="space-y-1">
+            <span className="font-bold text-[#171638] text-sm block">
+              {isHi ? "गोपनीयता और सुरक्षित मानचित्रण मानक" : "Privacy and Safe Mapping Standard"}
             </span>
-            <p className="text-slate-400 leading-relaxed text-[11px] sm:text-xs">
+            <p className="text-[#837FA8] leading-relaxed text-xs">
               {isHi
                 ? `यह मानचित्र पिछले ${timeFilter === 1 ? "24 घंटों" : `${timeFilter} दिनों`} की समूहीकृत रिपोर्ट प्रदर्शित करता है। व्यक्तिगत जीपीएस निर्देशांक, पते या फ़ोन नंबर कभी उजागर नहीं किए जाते।`
                 : `This map displays aggregated community reports over the last ${
@@ -356,114 +356,57 @@ export function ScamMapContainer() {
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-teal-500/10 text-teal-300 border border-teal-500/20 flex items-center gap-1.5">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            {timeFilter === 1
-              ? isHi
-                ? "24-घंटे फ़िल्टर"
-                : "24-Hour Window"
-              : isHi
-              ? `${timeFilter}-दिवसीय मानक`
-              : `${timeFilter}-Day Standard`}
+          <span className="px-3.5 py-1.5 rounded-full text-xs font-bold bg-[#F0EDFF] text-[#6035E8] border border-[#DDD6FE] flex items-center gap-1.5 shadow-sm">
+            <CheckCircle2 className="w-3.5 h-3.5 text-[#6035E8]" />
+            {isHi ? "7-दिवसीय मानक" : "7-Day Standard"}
           </span>
         </div>
       </div>
 
       {/* ── Controls Toolbar ────────────────────────────────────────── */}
-      <div className="rounded-xl bg-slate-900/60 border border-slate-800 p-4 space-y-3.5">
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
-          {/* Filters Row */}
-          <div className="flex flex-wrap items-center gap-2.5 flex-1">
-            {/* Time Filter Tabs */}
-            <div className="flex items-center bg-slate-950 p-1 rounded-lg border border-slate-800 shrink-0">
-              <button
-                type="button"
-                onClick={() => setTimeFilter(1)}
-                className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
-                  timeFilter === 1
-                    ? "bg-teal-500/20 text-teal-300 font-semibold"
-                    : "text-slate-400 hover:text-slate-200"
-                }`}
-                title="Last 24 Hours"
-              >
-                24h
-              </button>
-              <button
-                type="button"
-                onClick={() => setTimeFilter(7)}
-                className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
-                  timeFilter === 7
-                    ? "bg-teal-500/20 text-teal-300 font-semibold"
-                    : "text-slate-400 hover:text-slate-200"
-                }`}
-                title="Last 7 Days"
-              >
-                7d
-              </button>
-              <button
-                type="button"
-                onClick={() => setTimeFilter(30)}
-                className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
-                  timeFilter === 30
-                    ? "bg-teal-500/20 text-teal-300 font-semibold"
-                    : "text-slate-400 hover:text-slate-200"
-                }`}
-                title="Last 30 Days"
-              >
-                30d
-              </button>
-            </div>
-
-            {/* Scam Category Selector */}
-            <div className="relative min-w-[170px] max-w-[210px]">
-              <select
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                aria-label="Filter by scam category"
-                className="w-full h-9 px-3 pr-8 rounded-lg bg-slate-950 border border-slate-700/80 hover:border-slate-600 focus:border-teal-500 text-xs text-slate-200 outline-none transition-colors appearance-none cursor-pointer truncate"
-              >
-                <option value="ALL">
-                  {isHi ? "सभी श्रेणियां" : "All Scam Categories"}
-                </option>
-                {REPORT_SCAM_TYPES.map((cat) => (
-                  <option
-                    key={cat.type}
-                    value={cat.type}
-                    className="bg-slate-900 text-slate-100"
-                  >
-                    {cat.label}
-                  </option>
-                ))}
-              </select>
-              <Filter className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 pointer-events-none" />
-            </div>
-
-            {/* City Selector */}
-            <div className="relative min-w-[130px]">
+      <div className="rounded-2xl bg-white border border-[#EAE6FD] p-4 sm:p-5 space-y-3 shadow-sm">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+          {/* Pincode & City Filter Form */}
+          <form
+            onSubmit={handleApplyPincodeSearch}
+            className="flex flex-wrap items-center gap-2.5 flex-1"
+          >
+            {/* City selector */}
+            <div className="relative min-w-[140px]">
               <select
                 value={cityFilter}
                 onChange={(e) => setCityFilter(e.target.value)}
                 aria-label="Filter clusters by city"
-                className="w-full h-9 px-3 pr-8 rounded-lg bg-slate-950 border border-slate-700/80 hover:border-slate-600 focus:border-teal-500 text-xs text-slate-200 outline-none transition-colors appearance-none cursor-pointer"
+                className="w-full h-11 px-3 pr-8 rounded-xl bg-[#F6F4FE] border border-[#EAE6FD] hover:border-[#6035E8]/40 focus:border-[#6035E8] focus:bg-white text-xs text-[#171638] outline-none transition-colors appearance-none cursor-pointer"
               >
                 <option value="ALL">{t.map.allCities}</option>
                 {availableCities.map((city) => (
-                  <option
-                    key={city}
-                    value={city}
-                    className="bg-slate-900 text-slate-100"
-                  >
+                  <option key={city} value={city} className="bg-white text-[#171638]">
                     {city}
                   </option>
                 ))}
               </select>
-              <Filter className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 pointer-events-none" />
+              <Filter className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#837FA8] pointer-events-none" />
             </div>
 
-            {/* Pincode Search Input */}
-            <form
-              onSubmit={handleApplyPincodeSearch}
-              className="flex items-center gap-1.5 flex-1 min-w-[160px] sm:max-w-xs"
+            {/* Pincode search input */}
+            <div className="relative flex-1 sm:max-w-xs">
+              <input
+                type="text"
+                inputMode="numeric"
+                value={pincodeFilter}
+                onChange={(e) => setPincodeFilter(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                placeholder={isHi ? "6-अंकों के पिन कोड द्वारा खोजें..." : "Filter by 6-digit PIN code..."}
+                className="w-full h-11 px-3 pl-9 rounded-xl bg-[#F6F4FE] border border-[#EAE6FD] hover:border-[#6035E8]/40 focus:border-[#6035E8] focus:bg-white text-xs text-[#171638] placeholder:text-[#837FA8] outline-none transition-colors font-mono"
+              />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#837FA8] pointer-events-none" />
+            </div>
+
+            <PrimaryButton
+              type="submit"
+              variant="purple"
+              size="sm"
+              className="text-xs h-11"
             >
               <div className="relative flex-1">
                 <input
@@ -500,160 +443,112 @@ export function ScamMapContainer() {
               <button
                 type="button"
                 onClick={handleClearFilter}
-                className="text-xs text-teal-400 hover:text-teal-300 underline underline-offset-4 px-1 shrink-0"
+                className="text-xs text-[#6035E8] hover:text-[#4317BD] font-bold underline underline-offset-4 px-2"
               >
                 {t.map.clearFilters}
               </button>
             )}
           </div>
 
-          {/* Right Toolbar: View mode toggles & Real-time Status */}
-          <div className="flex items-center gap-2.5 shrink-0 self-start lg:self-auto">
-            {/* Real-time sync indicator */}
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-[11px] text-slate-400">
-              <span
-                className={`w-2 h-2 rounded-full ${
-                  isRefreshing
-                    ? "bg-amber-400 animate-ping"
-                    : "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]"
-                }`}
-              />
-              <span>
-                {isRefreshing
-                  ? isHi
-                    ? "अपडेट हो रहा है..."
-                    : "Syncing..."
-                  : formattedLastUpdated
-                  ? formattedLastUpdated
-                  : isHi
-                  ? "लाइव"
-                  : "Live"}
-              </span>
-            </div>
-
-            {/* View Mode Switcher */}
-            <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
-              <button
-                type="button"
-                onClick={() => setViewMode("map")}
-                className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-                  viewMode === "map"
-                    ? "bg-teal-500/20 text-teal-300 font-semibold"
-                    : "text-slate-400 hover:text-slate-200"
-                }`}
-              >
-                {t.map.mapOnly}
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode("split")}
-                className={`hidden lg:block px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-                  viewMode === "split"
-                    ? "bg-teal-500/20 text-teal-300 font-semibold"
-                    : "text-slate-400 hover:text-slate-200"
-                }`}
-              >
-                {t.map.splitView}
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode("list")}
-                className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-                  viewMode === "list"
-                    ? "bg-teal-500/20 text-teal-300 font-semibold"
-                    : "text-slate-400 hover:text-slate-200"
-                }`}
-              >
-                {t.map.directory}
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  fetchMapData({
-                    days: timeFilter,
-                    category: categoryFilter,
-                    pincode: pincodeFilter,
-                  })
-                }
-                disabled={isRefreshing}
-                className="p-1 rounded-md text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors ml-0.5 disabled:opacity-50"
-                title={isHi ? "डेटा रीफ्रेश करें" : "Refresh map data"}
-                aria-label={isHi ? "डेटा रीफ्रेश करें" : "Refresh map data"}
-              >
-                <RotateCcw
-                  className={`w-3.5 h-3.5 ${
-                    isRefreshing ? "animate-spin text-teal-400" : ""
-                  }`}
-                />
-              </button>
-            </div>
+          {/* View mode toggle (Map / List / Split) */}
+          <div className="flex items-center gap-1 bg-[#F0EDFF] p-1.5 rounded-full border border-[#EAE6FD] shrink-0 self-start md:self-auto">
+            <button
+              type="button"
+              onClick={() => setViewMode("map")}
+              className={`px-3 py-1.5 rounded-full text-xs transition-all ${
+                viewMode === "map"
+                  ? "bg-[#6035E8] text-white font-bold shadow-sm"
+                  : "text-[#545277] hover:text-[#171638]"
+              }`}
+            >
+              {t.map.mapOnly}
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("split")}
+              className={`hidden lg:block px-3 py-1.5 rounded-full text-xs transition-all ${
+                viewMode === "split"
+                  ? "bg-[#6035E8] text-white font-bold shadow-sm"
+                  : "text-[#545277] hover:text-[#171638]"
+              }`}
+            >
+              {t.map.splitView}
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("list")}
+              className={`px-3 py-1.5 rounded-full text-xs transition-all ${
+                viewMode === "list"
+                  ? "bg-[#6035E8] text-white font-bold shadow-sm"
+                  : "text-[#545277] hover:text-[#171638]"
+              }`}
+            >
+              {t.map.directory}
+            </button>
+            <button
+              type="button"
+              onClick={() => loadMapData(pincodeFilter)}
+              className="p-1.5 rounded-full text-[#545277] hover:text-[#171638] hover:bg-white/80 transition-colors ml-1 cursor-pointer"
+              title={isHi ? "डेटा रीफ्रेश करें" : "Refresh map data"}
+              aria-label={isHi ? "डेटा रीफ्रेश करें" : "Refresh map data"}
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
       </div>
 
       {/* ── Summary Metrics ─────────────────────────────────────────── */}
       {summaryMetrics && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
-            <div className="flex items-center gap-1.5 text-xs text-slate-400">
-              <MapPin className="w-3.5 h-3.5 text-teal-400" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="p-5 rounded-2xl bg-white border border-[#EAE6FD] space-y-1.5 shadow-sm">
+            <div className="flex items-center gap-2 text-xs font-bold text-[#837FA8] uppercase tracking-wider">
+              <MapPin className="w-3.5 h-3.5 text-[#6035E8]" />
               <span>{t.map.activeClusters}</span>
             </div>
-            <p className="text-2xl font-bold font-mono text-slate-100">
+            <p className="text-3xl font-black font-mono text-[#171638]">
               {summaryMetrics.activeClusters}
             </p>
-            <p className="text-[10px] text-slate-400">
+            <p className="text-[11px] text-[#837FA8] font-medium">
               {isHi ? "निगरानी किए जा रहे क्षेत्र" : "monitored localities"}
             </p>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
-            <div className="flex items-center gap-1.5 text-xs text-slate-400">
-              <Activity className="w-3.5 h-3.5 text-teal-400" />
-              <span>
-                {timeFilter === 1
-                  ? isHi
-                    ? "24 घंटों में रिपोर्टें"
-                    : "24h Reports"
-                  : timeFilter === 30
-                  ? isHi
-                    ? "30 दिनों में रिपोर्टें"
-                    : "30d Reports"
-                  : t.map.reports7Days}
-              </span>
+          <div className="p-5 rounded-2xl bg-white border border-[#EAE6FD] space-y-1.5 shadow-sm">
+            <div className="flex items-center gap-2 text-xs font-bold text-[#837FA8] uppercase tracking-wider">
+              <Activity className="w-3.5 h-3.5 text-[#08C9C5]" />
+              <span>{t.map.reports7Days}</span>
             </div>
-            <p className="text-2xl font-bold font-mono text-teal-300">
+            <p className="text-3xl font-black font-mono text-[#08C9C5]">
               {summaryMetrics.totalReports}
             </p>
-            <p className="text-[10px] text-slate-400">
-              {isHi
-                ? "समूहीकृत नागरिक रिपोर्टें"
-                : "aggregated community reports"}
+            <p className="text-[11px] text-[#837FA8] font-medium">
+              {isHi ? "सत्यापित नागरिक रिपोर्टें" : "verified community reports"}
             </p>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
-            <div className="flex items-center gap-1.5 text-xs text-slate-400">
-              <Flame className="w-3.5 h-3.5 text-rose-400" />
+          <div className="p-5 rounded-2xl bg-white border border-[#EAE6FD] space-y-1.5 shadow-sm">
+            <div className="flex items-center gap-2 text-xs font-bold text-[#837FA8] uppercase tracking-wider">
+              <Flame className="w-3.5 h-3.5 text-rose-500" />
               <span>{t.map.criticalHotspots}</span>
             </div>
-            <p className="text-2xl font-bold font-mono text-rose-300">
+            <p className="text-3xl font-black font-mono text-rose-600">
               {summaryMetrics.criticalHotspots}
             </p>
-            <p className="text-[10px] text-slate-400">
+            <p className="text-[11px] text-[#837FA8] font-medium">
               {isHi ? "गंभीर (CRIT) क्षेत्र" : "CRIT severity areas"}
             </p>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
-            <div className="flex items-center gap-1.5 text-xs text-slate-400">
-              <Layers className="w-3.5 h-3.5 text-amber-400" />
+          <div className="p-5 rounded-2xl bg-white border border-[#EAE6FD] space-y-1.5 shadow-sm">
+            <div className="flex items-center gap-2 text-xs font-bold text-[#837FA8] uppercase tracking-wider">
+              <Layers className="w-3.5 h-3.5 text-[#FFC928]" />
               <span>{t.map.dominantPattern}</span>
             </div>
-            <p className="text-sm font-bold text-slate-100 truncate mt-1">
+            <p className="text-base font-black text-[#171638] truncate mt-1">
               {summaryMetrics.dominantPattern}
             </p>
-            <p className="text-[10px] text-slate-400">
+            <p className="text-[11px] text-[#837FA8] font-medium">
               {isHi ? "सर्वाधिक दर्ज श्रेणी" : "most frequent category"}
             </p>
           </div>
@@ -771,47 +666,20 @@ export function ScamMapContainer() {
 
               {/* Sidebar / Detail card or directory - Right 4 columns */}
               <div className="lg:col-span-4 space-y-4">
-                {displayedClusters.length === 0 ? (
-                  <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 text-center space-y-4">
-                    <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto text-emerald-400">
-                      <ShieldCheck className="w-6 h-6" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <h4 className="text-sm font-semibold text-slate-200">
-                        {isHi ? "क्षेत्र स्थिति: सुरक्षित" : "Area Status: Clear"}
-                      </h4>
-                      <p className="text-xs text-slate-400 leading-relaxed">
-                        {pincodeFilter
-                          ? isHi
-                            ? `पिन कोड ${pincodeFilter} के लिए कोई सक्रिय स्कैम रिपोर्ट दर्ज नहीं है।`
-                            : `PIN code ${pincodeFilter} has zero recorded scam reports in the monitored window.`
-                          : isHi
-                          ? "वर्तमान में चुने गए मापदंडों के लिए कोई क्लस्टर नहीं मिला।"
-                          : "No scam clusters recorded for the filtered criteria. You can explore the map freely or report suspicious activity."}
-                      </p>
-                    </div>
-                    <div className="pt-2 flex flex-col gap-2">
-                      <Link href="/report" className="w-full">
-                        <PrimaryButton
-                          variant="primary"
-                          size="sm"
-                          className="w-full"
-                          leftIcon={<ShieldAlert className="w-3.5 h-3.5" />}
-                        >
-                          {isHi ? t.home.reportIncident : "Report Incident"}
-                        </PrimaryButton>
-                      </Link>
-                      {(pincodeFilter || cityFilter !== "ALL" || categoryFilter !== "ALL" || timeFilter !== 7) && (
-                        <PrimaryButton
-                          variant="secondary"
-                          size="sm"
-                          onClick={handleClearFilter}
-                          className="w-full"
-                        >
-                          {t.map.clearFilters}
-                        </PrimaryButton>
-                      )}
-                    </div>
+                {selectedCluster ? (
+                  <ClusterDetailCard
+                    cluster={selectedCluster}
+                    onClose={() => setSelectedCluster(null)}
+                  />
+                ) : (
+                  <div className="rounded-2xl border border-dashed border-[#DDD6FE] bg-white p-6 text-center text-[#545277] space-y-2 shadow-sm">
+                    <MapPin className="w-6 h-6 mx-auto text-[#6035E8]" />
+                    <p className="text-sm font-bold text-[#171638]">
+                      {t.map.selectArea}
+                    </p>
+                    <p className="text-xs text-[#837FA8]">
+                      {t.map.selectAreaDesc}
+                    </p>
                   </div>
                 ) : (
                   <>
@@ -868,30 +736,31 @@ export function ScamMapContainer() {
           )}
 
           {viewMode === "list" && (
-            displayedClusters.length === 0 ? (
-              <EmptyState
-                title={isHi ? "कोई स्कैम क्लस्टर नहीं मिला" : "No Scam Clusters Found"}
-                description={
-                  pincodeFilter || cityFilter !== "ALL" || categoryFilter !== "ALL"
-                    ? isHi
-                      ? `चुने गए समय और फ़िल्टर के लिए कोई स्कैम क्लस्टर दर्ज नहीं है। सभी क्षेत्र देखने के लिए फ़िल्टर साफ़ करें।`
-                      : `No scam clusters recorded for the filtered criteria over the selected window. Try clearing filters to view all monitored areas.`
-                    : isHi
-                    ? `इस समय अंतराल में कोई स्कैम क्लस्टर रिपोर्ट नहीं हुआ। सतर्क रहें और संदिग्ध गतिविधियों की रिपोर्ट करें।`
-                    : `No scam clusters reported across any monitored areas in this time window. Stay alert and report suspicious attempts.`
-                }
-                action={
-                  <div className="flex items-center gap-3">
-                    {(pincodeFilter || cityFilter !== "ALL" || categoryFilter !== "ALL" || timeFilter !== 7) && (
-                      <PrimaryButton variant="secondary" size="sm" onClick={handleClearFilter}>
-                        {t.map.clearFilters}
-                      </PrimaryButton>
-                    )}
-                    <Link href="/report">
-                      <PrimaryButton variant="primary" size="sm" leftIcon={<ShieldAlert className="w-3.5 h-3.5" />}>
-                        {isHi ? t.home.reportIncident : "Report Incident"}
-                      </PrimaryButton>
-                    </Link>
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
+              <div className="md:col-span-7">
+                <ClusterListView
+                  clusters={displayedClusters}
+                  selectedCluster={selectedCluster}
+                  onSelectCluster={(cluster) => setSelectedCluster(cluster)}
+                />
+              </div>
+              <div className="md:col-span-5">
+                {selectedCluster ? (
+                  <ClusterDetailCard
+                    cluster={selectedCluster}
+                    onClose={() => setSelectedCluster(null)}
+                  />
+                ) : (
+                  <div className="rounded-2xl border border-dashed border-[#DDD6FE] bg-white p-8 text-center text-[#545277] space-y-2 shadow-sm">
+                    <MapPin className="w-6 h-6 mx-auto text-[#6035E8]" />
+                    <p className="text-sm font-bold text-[#171638]">
+                      {isHi ? "एक क्लस्टर चुनें" : "Select a Cluster"}
+                    </p>
+                    <p className="text-xs text-[#837FA8]">
+                      {isHi
+                        ? "समूहीकृत मेट्रिक्स और पैटर्न देखने के लिए डायरेक्टरी से किसी भी क्षेत्र पर क्लिक करें।"
+                        : "Click any item from the directory to review aggregated metrics and patterns."}
+                    </p>
                   </div>
                 }
               />
@@ -931,20 +800,20 @@ export function ScamMapContainer() {
       )}
 
       {/* ── Help and Navigation Shortcuts ───────────────────────────── */}
-      <div className="rounded-xl bg-slate-900/40 border border-slate-800 p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="space-y-1 text-center sm:text-left">
-          <h4 className="text-sm font-semibold text-slate-200">
+      <div className="rounded-[2rem] bg-white border border-[#EAE6FD] p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-5 shadow-sm">
+        <div className="space-y-1.5 text-center sm:text-left">
+          <h4 className="text-base sm:text-lg font-black text-[#171638] tracking-tight">
             {isHi
               ? "क्या आपके क्षेत्र में कोई संदिग्ध कॉल या संदेश आए हैं?"
               : "Have you encountered suspicious calls or messages in your area?"}
           </h4>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs sm:text-sm text-[#545277] font-medium max-w-xl leading-relaxed">
             {isHi
               ? "अज्ञात कॉल करने वालों, नकली KYC संदेशों या भुगतान धोखाधड़ी की रिपोर्ट करके अपने पड़ोस के नागरिकों को सतर्क रखें।"
               : "Help alert citizens in your neighborhood by reporting unknown callers, fake KYC messages, or payment scams."}
           </p>
         </div>
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex items-center gap-3 shrink-0">
           <Link href="/lookup">
             <PrimaryButton
               variant="outline"

@@ -45,6 +45,9 @@ export type ScamCategory =
   | "crypto_investment"
   | "courier_customs"
   | "electricity_bill"
+  | "fake_customer_care"
+  | "otp_call"
+  | "sextortion"
   | "other";
 
 export type ScamStatus =

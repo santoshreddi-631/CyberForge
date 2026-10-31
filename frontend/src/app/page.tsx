@@ -7,6 +7,7 @@ import {
   SafetyTips,
   EmergencySection,
 } from "@/components/home";
+import { FloatingPathsBackground } from "@/components/ui/floating-paths";
 
 export const metadata: Metadata = {
   title: "Community Scam Map | India's Citizen Cyber Fraud Defense Grid",
@@ -16,9 +17,14 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
-    <div className="flex flex-col w-full min-h-screen">
+    <div className="flex flex-col w-full min-h-screen bg-[#F6F4FE] text-[#171638]">
       {/* 1. Hero Section with Prominent Search Interface & CTAs */}
-      <HeroSection />
+      <FloatingPathsBackground
+        position={-1}
+        className="flex items-center justify-center w-full"
+      >
+        <HeroSection />
+      </FloatingPathsBackground>
 
       {/* 2. Quick Action Cards (Lookup, Report, Map, Alerts) */}
       <QuickActions />

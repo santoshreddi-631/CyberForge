@@ -22,16 +22,30 @@ export interface LookupRequestContract {
 export type LookupResponseContract = BackendLookupResult;
 
 export interface CreateReportRequestContract {
-  title: string;
-  description: string;
-  category: ScamCategory;
-  identifierType: IdentifierType;
-  identifierValue: string;
+  report_id?: string;
+  occurred_at?: string;
+  reported_at?: string;
+  reporter_id?: string;
+  ip_prefix?: string;
+  channel?: string;
+  scam_type?: string;
+  identifier_type?: IdentifierType | LookupIdentifierType;
+  identifier_value?: string;
+  pincode?: string;
+  locality?: string;
+  city?: string;
+  note?: string | null;
+  has_screenshot?: boolean;
+  amount_lost_inr?: number;
+  // Optional convenience fields
+  title?: string;
+  description?: string;
+  category?: ScamCategory;
+  identifierType?: IdentifierType;
+  identifierValue?: string;
   amountLostInr?: number;
   incidentDate?: string;
   state?: string;
-  city?: string;
-  pincode?: string;
   evidenceHashes?: string[];
 }
 

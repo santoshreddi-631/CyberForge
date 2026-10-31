@@ -92,23 +92,23 @@ export function ClusterDetailCard({ cluster, onClose, className = "" }: ClusterD
 
   return (
     <div
-      className={`rounded-xl border border-slate-700/80 bg-slate-900/95 p-5 shadow-2xl backdrop-blur-md text-slate-100 ${className}`}
+      className={`rounded-[2rem] border border-[#EAE6FD] bg-white p-6 shadow-xl shadow-[#6035E8]/10 text-[#171638] ${className}`}
       role="region"
       aria-label={`Details for ${cluster.locality}`}
     >
       {/* Header */}
-      <div className="flex items-start justify-between gap-3 pb-4 border-b border-slate-800">
+      <div className="flex items-start justify-between gap-3 pb-4 border-b border-[#EAE6FD]">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="p-1 rounded-md bg-teal-500/10 text-teal-400">
+            <span className="p-1.5 rounded-xl bg-[#6035E8]/10 text-[#6035E8]">
               <MapPin className="w-4 h-4" />
             </span>
-            <h3 className="text-lg font-bold text-slate-100 tracking-tight">
+            <h3 className="text-xl font-black text-[#171638] tracking-tight">
               {cluster.locality}
             </h3>
           </div>
-          <p className="text-xs text-slate-400">
-            {cluster.city} • PIN: <span className="font-mono text-slate-300 font-semibold">{cluster.pincode}</span>
+          <p className="text-xs text-[#545277] font-medium">
+            {cluster.city} • PIN: <span className="font-mono text-[#171638] font-bold">{cluster.pincode}</span>
           </p>
         </div>
 
@@ -128,7 +128,7 @@ export function ClusterDetailCard({ cluster, onClose, className = "" }: ClusterD
             <button
               onClick={onClose}
               type="button"
-              className="p-1 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+              className="p-1.5 rounded-full text-[#837FA8] hover:text-[#171638] hover:bg-[#F0EDFF] transition-colors cursor-pointer"
               aria-label="Close cluster details"
             >
               <X className="w-4 h-4" />
@@ -139,31 +139,31 @@ export function ClusterDetailCard({ cluster, onClose, className = "" }: ClusterD
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-2 gap-3 my-4">
-        <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800/80">
-          <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider block">
+        <div className="p-4 rounded-2xl bg-[#F6F4FE] border border-[#EAE6FD]">
+          <span className="text-[11px] font-bold text-[#837FA8] uppercase tracking-wider block">
             {isHi ? t.map.reports7Days : "Reports (7 Days)"}
           </span>
           <div className="flex items-baseline gap-1.5 mt-1">
-            <span className="text-2xl font-bold font-mono text-teal-300">
+            <span className="text-2xl font-black font-mono text-[#08C9C5]">
               {cluster.count}
             </span>
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-[#545277] font-medium">
               {isHi ? "सत्यापित घटनाएं" : "verified incidents"}
             </span>
           </div>
         </div>
 
-        <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800/80">
-          <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider block">
+        <div className="p-4 rounded-2xl bg-[#F6F4FE] border border-[#EAE6FD]">
+          <span className="text-[11px] font-bold text-[#837FA8] uppercase tracking-wider block">
             {isHi ? "जोखिम रेटिंग" : "Severity Rating"}
           </span>
           <div className="flex items-center gap-1.5 mt-1.5">
             {normalizedSeverity === "CRIT" ? (
-              <Flame className="w-4 h-4 text-rose-400 shrink-0" />
+              <Flame className="w-4 h-4 text-rose-500 shrink-0" />
             ) : (
-              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+              <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
             )}
-            <span className="text-sm font-semibold text-slate-200 font-mono">
+            <span className="text-sm font-bold text-[#171638] font-mono">
               {normalizedSeverity}
             </span>
           </div>
@@ -171,23 +171,23 @@ export function ClusterDetailCard({ cluster, onClose, className = "" }: ClusterD
       </div>
 
       {/* Primary Pattern */}
-      <div className="mb-4 p-3 rounded-lg bg-slate-950/40 border border-slate-800/80 space-y-1.5">
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+      <div className="mb-4 p-4 rounded-2xl bg-[#F0EDFF] border border-[#DDD6FE] space-y-1.5">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-[#6035E8]">
           {isHi ? t.map.dominantPattern : "Primary Scam Pattern"}
         </span>
-        <p className="text-sm font-semibold text-teal-200">
+        <p className="text-base font-black text-[#171638]">
           {scamLabel}
         </p>
-        <p className="text-xs text-slate-400 leading-relaxed">
+        <p className="text-xs text-[#545277] leading-relaxed font-medium">
           {getSeverityDescription(normalizedSeverity)}
         </p>
       </div>
 
       {/* Privacy Guarantee Note */}
-      <div className="mb-4 p-2.5 rounded-lg bg-slate-950/80 border border-slate-800 text-[11px] text-slate-400 leading-relaxed flex items-start gap-2">
-        <span className="text-teal-400 mt-0.5 shrink-0">ℹ</span>
+      <div className="mb-4 p-3 rounded-xl bg-[#F6F4FE] border border-[#EAE6FD] text-[11px] text-[#545277] leading-relaxed flex items-start gap-2">
+        <span className="text-[#6035E8] font-bold mt-0.5 shrink-0">ℹ</span>
         <span>
-          <strong>{isHi ? "नागरिक सुरक्षा सूचना:" : "Community Protection Notice:"}</strong>{" "}
+          <strong className="text-[#171638]">{isHi ? "नागरिक सुरक्षा सूचना:" : "Community Protection Notice:"}</strong>{" "}
           {isHi
             ? "डेटा केवल क्षेत्र स्तर पर समूहीकृत घटनाओं का प्रतिनिधित्व करता है। व्यक्तिगत नागरिक और शिकायतकर्ता पूरी तरह से गुमनाम रहते हैं।"
             : "Data represents aggregated incident counts mapped to neighborhood centers from PRD Appendix B. Individual victims and reporters remain strictly anonymous."}
@@ -195,10 +195,10 @@ export function ClusterDetailCard({ cluster, onClose, className = "" }: ClusterD
       </div>
 
       {/* Action Links */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-slate-800">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-3 border-t border-[#EAE6FD]">
         <Link href={`/lookup`}>
           <PrimaryButton
-            variant="outline"
+            variant="purple"
             size="sm"
             className="w-full text-xs justify-center"
             leftIcon={<Search className="w-3.5 h-3.5" />}
@@ -210,7 +210,7 @@ export function ClusterDetailCard({ cluster, onClose, className = "" }: ClusterD
           <PrimaryButton
             variant="primary"
             size="sm"
-            className="w-full text-xs justify-center font-semibold"
+            className="w-full text-xs justify-center font-bold"
             leftIcon={<ShieldAlert className="w-3.5 h-3.5" />}
           >
             {isHi ? t.home.reportIncident : "Report Incident"}

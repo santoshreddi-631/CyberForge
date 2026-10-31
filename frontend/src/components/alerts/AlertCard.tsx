@@ -46,26 +46,26 @@ export function AlertCard({ alert, className = "" }: AlertCardProps) {
 
   return (
     <article
-      className={`rounded-xl border transition-all p-5 shadow-lg backdrop-blur-sm text-slate-100 ${
+      className={`rounded-[2rem] border transition-all p-6 sm:p-7 shadow-lg shadow-[#6035E8]/5 bg-white text-[#171638] ${
         isSpike
-          ? "border-amber-500/40 bg-slate-900/90 hover:border-amber-500/70"
+          ? "border-amber-200/90 hover:border-amber-300"
           : isNewType
-          ? "border-teal-500/40 bg-slate-900/90 hover:border-teal-500/70"
-          : "border-slate-800 bg-slate-900/80 hover:border-slate-700"
+          ? "border-[#99F0ED] hover:border-[#08C9C5]"
+          : "border-[#EAE6FD] hover:border-[#6035E8]/40"
       } ${className}`}
       aria-labelledby={`alert-title-${alert.pincode}-${alert.type}`}
     >
       {/* ── Top Bar: Type Badge, Area, & Timestamp ────────────────── */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5 pb-3 border-b border-slate-800/80">
+      <div className="flex flex-wrap items-center justify-between gap-2.5 pb-4 border-b border-[#EAE6FD]">
         <div className="flex items-center gap-2">
           {isSpike ? (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
-              <TrendingUp className="w-3.5 h-3.5 text-amber-400" />
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-[#FFF9EB] text-amber-800 border border-[#FDE68A]">
+              <TrendingUp className="w-3.5 h-3.5 text-amber-600" />
               {isHi ? "रिपोर्ट में उछाल (SPIKE)" : "Volume Surge (SPIKE)"}
             </span>
           ) : isNewType ? (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-teal-500/15 text-teal-300 border border-teal-500/30">
-              <Sparkles className="w-3.5 h-3.5 text-teal-400" />
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-[#E6FAF9] text-teal-900 border border-[#99F0ED]">
+              <Sparkles className="w-3.5 h-3.5 text-[#08C9C5]" />
               {isHi ? "नया फ्रॉड वेक्टर (NEW_TYPE)" : "New Vector (NEW_TYPE)"}
             </span>
           ) : (
@@ -73,7 +73,7 @@ export function AlertCard({ alert, className = "" }: AlertCardProps) {
           )}
 
           {alert.window && (
-            <span className="text-[11px] font-mono text-slate-400 px-2 py-0.5 rounded bg-slate-950/70 border border-slate-800">
+            <span className="text-[11px] font-mono font-bold text-[#545277] px-2.5 py-1 rounded-full bg-[#F6F4FE] border border-[#EAE6FD]">
               {isHi ? "अवधि:" : "Window:"} {alert.window}
             </span>
           )}
@@ -81,8 +81,8 @@ export function AlertCard({ alert, className = "" }: AlertCardProps) {
 
         {/* Timestamp if provided by the API */}
         {(alert.timestamp || alert.created_at) && (
-          <div className="flex items-center gap-1.5 text-xs text-slate-400">
-            <Clock className="w-3.5 h-3.5 text-slate-500" />
+          <div className="flex items-center gap-1.5 text-xs text-[#837FA8] font-medium">
+            <Clock className="w-3.5 h-3.5 text-[#837FA8]" />
             <time dateTime={alert.timestamp || alert.created_at}>
               {new Date(alert.timestamp || alert.created_at || "").toLocaleString(isHi ? "hi-IN" : "en-IN", {
                 dateStyle: "medium",
@@ -97,17 +97,17 @@ export function AlertCard({ alert, className = "" }: AlertCardProps) {
       <div className="py-4 space-y-3">
         {/* Title & Area */}
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-xs text-slate-400">
-            <MapPin className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+          <div className="flex items-center gap-2 text-xs text-[#545277] font-medium">
+            <MapPin className="w-3.5 h-3.5 text-[#6035E8] shrink-0" />
             <span>
               {areaInfo.locality}, {areaInfo.city} • PIN:{" "}
-              <strong className="font-mono text-slate-200">{alert.pincode}</strong>
+              <strong className="font-mono text-[#171638] font-bold">{alert.pincode}</strong>
             </span>
           </div>
 
           <h3
             id={`alert-title-${alert.pincode}-${alert.type}`}
-            className="text-base sm:text-lg font-bold text-slate-100 tracking-tight"
+            className="text-base sm:text-lg font-black text-[#171638] tracking-tight"
           >
             {isSpike
               ? (isHi
@@ -122,23 +122,23 @@ export function AlertCard({ alert, className = "" }: AlertCardProps) {
         </div>
 
         {/* Explanatory Narrative based on strict API Contract meaning */}
-        <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+        <p className="text-xs sm:text-sm text-[#545277] leading-relaxed font-medium">
           {isSpike ? (
             <>
               {isHi ? (
                 <>
-                  पिछले <strong className="text-slate-100">{alert.window || "24 घंटों"}</strong> में इस क्षेत्र में समुदाय रिपोर्टों में उल्लेखनीय वृद्धि देखी गई है।
+                  पिछले <strong className="text-[#171638]">{alert.window || "24 घंटों"}</strong> में इस क्षेत्र में समुदाय रिपोर्टों में उल्लेखनीय वृद्धि देखी गई है।
                   {alert.count !== undefined && (
                     <>
                       {" "}सिस्टम ने{" "}
-                      <strong className="text-amber-300 font-mono font-semibold">
+                      <strong className="text-amber-700 font-mono font-bold">
                         {alert.count} रिपोर्टें
                       </strong>{" "}
                       दर्ज की हैं
                       {alert.baseline_per_day !== undefined && (
                         <>
                           , जबकि पिछले 7 दिनों का दैनिक औसत{" "}
-                          <span className="font-mono text-slate-200">
+                          <span className="font-mono text-[#171638] font-bold">
                             {alert.baseline_per_day.toFixed(1)}/दिन
                           </span>{" "}
                           था।
@@ -150,17 +150,17 @@ export function AlertCard({ alert, className = "" }: AlertCardProps) {
               ) : (
                 <>
                   Community reports in this area increased significantly in the last{" "}
-                  <strong className="text-slate-100">{alert.window || "24 hours"}</strong>.
+                  <strong className="text-[#171638]">{alert.window || "24 hours"}</strong>.
                   {alert.count !== undefined && (
                     <>
                       {" "}The system recorded{" "}
-                      <strong className="text-amber-300 font-mono font-semibold">
+                      <strong className="text-amber-700 font-mono font-bold">
                         {alert.count} reports
                       </strong>
                       {alert.baseline_per_day !== undefined && (
                         <>
                           , compared to the prior daily baseline average of{" "}
-                          <span className="font-mono text-slate-200">
+                          <span className="font-mono text-[#171638] font-bold">
                             {alert.baseline_per_day.toFixed(1)}/day
                           </span>.
                         </>
@@ -175,13 +175,13 @@ export function AlertCard({ alert, className = "" }: AlertCardProps) {
               {isHi ? (
                 <>
                   एक नई धोखाधड़ी श्रेणी ({scamLabel || alert.scam_type}), जो पिछले 30 दिनों में इस इलाके में नहीं देखी गई थी, पिछले{" "}
-                  <strong className="text-slate-100">{alert.window || "24 घंटों"}</strong> में रिपोर्ट की गई है। अज्ञात संचार माध्यमों से सतर्क रहें।
+                  <strong className="text-[#171638]">{alert.window || "24 घंटों"}</strong> में रिपोर्ट की गई है। अज्ञात संचार माध्यमों से सतर्क रहें।
                 </>
               ) : (
                 <>
                   A scam category ({scamLabel || alert.scam_type}) not observed in this area over
                   the preceding 30 days was reported within the last{" "}
-                  <strong className="text-slate-100">{alert.window || "24 hours"}</strong>. Stay cautious of unfamiliar communication channels.
+                  <strong className="text-[#171638]">{alert.window || "24 hours"}</strong>. Stay cautious of unfamiliar communication channels.
                 </>
               )}
             </>
@@ -192,30 +192,30 @@ export function AlertCard({ alert, className = "" }: AlertCardProps) {
 
         {/* Quantitative Metrics Chips (only when provided by API) */}
         {isSpike && (alert.count !== undefined || alert.baseline_per_day !== undefined) && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-1">
             {alert.count !== undefined && (
-              <div className="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800 space-y-0.5">
-                <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider block">
+              <div className="p-3 rounded-2xl bg-[#FFF9EB] border border-[#FDE68A] space-y-0.5">
+                <span className="text-[10px] text-amber-800 font-bold uppercase tracking-wider block">
                   {isHi ? "घटना संख्या" : "Incident Volume"}
                 </span>
-                <span className="text-base font-bold font-mono text-amber-300">
+                <span className="text-lg font-black font-mono text-amber-700">
                   {alert.count}
                 </span>
-                <span className="text-[10px] text-slate-400 ml-1">
+                <span className="text-[10px] text-amber-800 ml-1 font-medium">
                   {isHi ? `(अवधि: ${alert.window || "24h"})` : `in ${alert.window || "24h"}`}
                 </span>
               </div>
             )}
 
             {alert.baseline_per_day !== undefined && (
-              <div className="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800 space-y-0.5">
-                <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider block">
+              <div className="p-3 rounded-2xl bg-[#F6F4FE] border border-[#EAE6FD] space-y-0.5">
+                <span className="text-[10px] text-[#837FA8] font-bold uppercase tracking-wider block">
                   {isHi ? "दैनिक औसत" : "Baseline Average"}
                 </span>
-                <span className="text-base font-bold font-mono text-slate-200">
+                <span className="text-lg font-black font-mono text-[#171638]">
                   {alert.baseline_per_day.toFixed(1)}
                 </span>
-                <span className="text-[10px] text-slate-400 ml-1">
+                <span className="text-[10px] text-[#545277] ml-1 font-medium">
                   {isHi ? "रिपोर्ट/दिन" : "reports/day"}
                 </span>
               </div>
@@ -224,14 +224,14 @@ export function AlertCard({ alert, className = "" }: AlertCardProps) {
             {alert.count !== undefined &&
               alert.baseline_per_day !== undefined &&
               alert.baseline_per_day > 0 && (
-                <div className="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800 space-y-0.5 col-span-2 sm:col-span-1">
-                  <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider block">
+                <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200 space-y-0.5 col-span-2 sm:col-span-1">
+                  <span className="text-[10px] text-rose-700 font-bold uppercase tracking-wider block">
                     {isHi ? "उछाल अनुपात" : "Surge Multiple"}
                   </span>
-                  <span className="text-base font-bold font-mono text-rose-300">
+                  <span className="text-lg font-black font-mono text-rose-600">
                     {(alert.count / alert.baseline_per_day).toFixed(1)}x
                   </span>
-                  <span className="text-[10px] text-slate-400 ml-1">
+                  <span className="text-[10px] text-rose-700 ml-1 font-medium">
                     {isHi ? "औसत से अधिक" : "of baseline"}
                   </span>
                 </div>
@@ -240,9 +240,9 @@ export function AlertCard({ alert, className = "" }: AlertCardProps) {
         )}
 
         {isNewType && alert.scam_type && (
-          <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800 text-xs flex items-center justify-between">
-            <span className="text-slate-400">{isHi ? "नया देखा गया पैटर्न:" : "Newly Observed Pattern:"}</span>
-            <span className="font-semibold text-teal-300 font-mono">
+          <div className="p-3.5 rounded-2xl bg-[#E6FAF9] border border-[#99F0ED] text-xs flex items-center justify-between">
+            <span className="text-teal-900 font-medium">{isHi ? "नया देखा गया पैटर्न:" : "Newly Observed Pattern:"}</span>
+            <span className="font-bold text-[#08C9C5] font-mono">
               {scamLabel}
             </span>
           </div>
@@ -250,9 +250,9 @@ export function AlertCard({ alert, className = "" }: AlertCardProps) {
       </div>
 
       {/* ── Footer: Responsible Notice & Action Shortcuts ─────────── */}
-      <div className="pt-3 border-t border-slate-800/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-        <p className="text-[11px] text-slate-400 flex items-center gap-1.5">
-          <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+      <div className="pt-4 border-t border-[#EAE6FD] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+        <p className="text-[11px] text-[#837FA8] flex items-center gap-1.5 font-medium">
+          <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
           <span>
             {isHi
               ? "सामुदायिक संकेत • भुगतान अनुरोधों पर भरोसा करने से पहले स्वतंत्र रूप से पुष्टि करें।"
@@ -273,7 +273,7 @@ export function AlertCard({ alert, className = "" }: AlertCardProps) {
           </Link>
           <Link href={`/lookup`}>
             <PrimaryButton
-              variant="secondary"
+              variant="purple"
               size="sm"
               className="text-xs"
               leftIcon={<Search className="w-3 h-3" />}
