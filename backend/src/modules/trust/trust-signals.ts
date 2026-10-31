@@ -202,6 +202,11 @@ export function buildTrustSignals(
   const suspiciousIpConcentration =
     maxReportsFromOneIpPrefix >= policy.concentratedIpReportCount &&
     maxIpPrefixRatio >= policy.concentratedIpRatio;
+  const circuitBreakerWindowMs = (policy.circuitBreakerWindowMinutes ?? 15) * 60 * 1000;
+  const circuitBreakerSurgeCount = calculateBurstCount(times, circuitBreakerWindowMs);
+  const circuitBreakerThreshold = policy.circuitBreakerThreshold ?? 8;
+  const circuitBreakerTripped = circuitBreakerSurgeCount >= circuitBreakerThreshold;
+
   const coordinatedBurst =
     maxBurstCount >= policy.coordinatedBurstReportCount &&
     (suspiciousIpConcentration || copiedNoteRatio >= policy.copiedNoteRatio);
@@ -233,6 +238,8 @@ export function buildTrustSignals(
     coordinatedBurst,
     suspiciousIpConcentration,
     repeatedReporter,
+    circuitBreakerTripped,
+    circuitBreakerSurgeCount,
   };
 }
 

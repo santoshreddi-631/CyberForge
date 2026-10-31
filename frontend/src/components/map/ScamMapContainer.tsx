@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import {
   ShieldAlert,
+  ShieldCheck,
   Search,
   RotateCcw,
   MapPin,
@@ -13,196 +15,291 @@ import {
   EyeOff,
   Filter,
   CheckCircle2,
+  Clock,
+  Calendar,
 } from "lucide-react";
 import { apiClient, ApiError } from "@/lib/api/client";
-import { MapClusterItem, MapResponseContract } from "@/lib/contracts";
-import { MONITORED_AREAS } from "@/lib/constants/reportOptions";
+import {
+  MapClusterItem,
+  MapResponseContract,
+  MapGeoJsonFeature,
+} from "@/lib/contracts";
+import {
+  MONITORED_AREAS,
+  REPORT_SCAM_TYPES,
+} from "@/lib/constants/reportOptions";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingSkeleton } from "@/components/ui/LoadingSkeleton";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { useLanguage } from "@/hooks/useLanguage";
-import { GeospatialMapView } from "./GeospatialMapView";
 import { ClusterDetailCard, getScamTypeLabel } from "./ClusterDetailCard";
 import { ClusterListView } from "./ClusterListView";
+
+// Dynamically import MapLibre map component to avoid SSR/window issues in Next.js
+const GeospatialMapView = dynamic(
+  () =>
+    import("./GeospatialMapView").then((mod) => mod.GeospatialMapView),
+  {
+    ssr: false,
+    loading: () => (
+      <LoadingSkeleton className="h-[580px] sm:h-[620px] rounded-2xl" />
+    ),
+  }
+);
 
 type FetchState =
   | { status: "loading" }
   | { status: "success"; data: MapResponseContract }
   | { status: "error"; message: string; isNetworkError: boolean };
 
+const POLL_INTERVAL_MS = 25000; // Real-time background sync every 25 seconds
+
 export function ScamMapContainer() {
   const { lang, t } = useLanguage();
   const isHi = lang === "hi";
 
-  const [fetchState, setFetchState] = useState<FetchState>({ status: "loading" });
-  const [selectedCluster, setSelectedCluster] = useState<MapClusterItem | null>(null);
+  const [fetchState, setFetchState] = useState<FetchState>({
+    status: "loading",
+  });
+  const [selectedCluster, setSelectedCluster] = useState<MapClusterItem | null>(
+    null
+  );
   const [pincodeFilter, setPincodeFilter] = useState<string>("");
   const [cityFilter, setCityFilter] = useState<string>("ALL");
+  const [timeFilter, setTimeFilter] = useState<1 | 7 | 30>(7);
+  const [categoryFilter, setCategoryFilter] = useState<string>("ALL");
   const [viewMode, setViewMode] = useState<"map" | "list" | "split">("split");
 
-  // Fetch map clusters from backend GET /map (used by user actions)
-  const loadMapData = useCallback(async (pincode?: string) => {
-    setFetchState({ status: "loading" });
-    setSelectedCluster(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-    try {
-      // Standard 7 days window and 2 km radius per PRD specifications
-      const params: Record<string, string | number> = {
-        pincode: (pincode && pincode.trim().length > 0) ? pincode.trim() : "560102",
-        radius_km: 2,
-        days: 7,
-      };
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const isFetchingRef = useRef(false);
 
-      if (pincode && pincode.trim().length > 0) {
-        params.pincode = pincode.trim();
-        params.radius_km = 2;
+  // Core fetch function with abort signal and concurrency guard
+  const fetchMapData = useCallback(
+    async (
+      options: {
+        pincode?: string;
+        days?: number;
+        category?: string;
+        isBackground?: boolean;
+      } = {}
+    ) => {
+      // Abort previous in-flight request if any
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
 
-      const response = await apiClient.get<MapResponseContract>("/map", { params });
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+      isFetchingRef.current = true;
 
-      // Validate response structure
-      if (!response || !Array.isArray(response.clusters)) {
-        setFetchState({
-          status: "error",
-          message: isHi ? "सर्वर से अप्रत्याशित डेटा प्राप्त हुआ।" : "The server returned an unexpected map response schema.",
-          isNetworkError: false,
-        });
-        return;
-      }
-
-      setFetchState({ status: "success", data: response });
-
-      // Auto-select first cluster if available
-      if (response.clusters.length > 0) {
-        setSelectedCluster(response.clusters[0]);
-      }
-    } catch (err: unknown) {
-      if (err instanceof ApiError) {
-        setFetchState({
-          status: "error",
-          message:
-            err.message ||
-            (isHi
-              ? `API त्रुटि (${err.status}): GET /map से क्लस्टर लोड नहीं किए जा सके।`
-              : `API error (${err.status}): Could not load map clusters from GET /map.`),
-          isNetworkError: err.status === 0,
-        });
+      const isBackground = options.isBackground ?? false;
+      if (isBackground) {
+        setIsRefreshing(true);
       } else {
-        setFetchState({
-          status: "error",
-          message: isHi
-            ? "सुरक्षा सर्वर से कनेक्शन स्थापित करने में असमर्थ।"
-            : "Unable to establish connection with the intelligence server.",
-          isNetworkError: true,
-        });
+        setFetchState({ status: "loading" });
+        setSelectedCluster(null);
       }
-    }
-  }, [isHi]);
 
-  // Initial load on mount (purely asynchronous to avoid cascading renders)
-  useEffect(() => {
-    let ignore = false;
-
-    async function fetchInitialData() {
       try {
-        const response = await apiClient.get<MapResponseContract>("/map", {
-          params: { pincode: "560102", days: 7, radius_km: 2 },
-        });
+        const queryDays = options.days !== undefined ? options.days : timeFilter;
+        const queryCategory =
+          options.category !== undefined ? options.category : categoryFilter;
+        const queryPincode =
+          options.pincode !== undefined ? options.pincode : pincodeFilter;
 
-        if (ignore) return;
+        const params: Record<string, string | number> = {
+          days: queryDays,
+          radius_km: 2,
+          format: "geojson",
+        };
 
-        if (!response || !Array.isArray(response.clusters)) {
-          setFetchState({
-            status: "error",
-            message: isHi ? "सर्वर से अप्रत्याशित डेटा प्राप्त हुआ।" : "The server returned an unexpected map response schema.",
-            isNetworkError: false,
-          });
-          return;
+        if (queryPincode && queryPincode.trim().length > 0) {
+          params.pincode = queryPincode.trim();
         }
 
-        setFetchState({ status: "success", data: response });
+        if (queryCategory && queryCategory !== "ALL") {
+          params.category = queryCategory;
+        }
 
-        if (response.clusters.length > 0) {
-          setSelectedCluster(response.clusters[0]);
+        // Prefer /api/v1/map endpoint
+        const response = await apiClient.get<MapResponseContract>(
+          "/api/v1/map",
+          {
+            params,
+            signal: controller.signal,
+          }
+        );
+
+        if (controller.signal.aborted) return;
+
+        // Ensure clusters array exists
+        const clusters = response?.clusters || [];
+        const normalizedData: MapResponseContract = {
+          ...response,
+          clusters,
+          features: response?.features || [],
+        };
+
+        setFetchState({ status: "success", data: normalizedData });
+        setLastUpdated(new Date());
+
+        // Select first cluster if none currently selected
+        if (clusters.length > 0 && !selectedCluster) {
+          setSelectedCluster(clusters[0]);
         }
       } catch (err: unknown) {
-        if (ignore) return;
+        if (controller.signal.aborted) return;
 
-        if (err instanceof ApiError) {
-          setFetchState({
-            status: "error",
-            message:
-              err.message ||
-              (isHi
-                ? `API त्रुटि (${err.status}): GET /map से क्लस्टर लोड नहीं किए जा सके।`
-                : `API error (${err.status}): Could not load map clusters from GET /map.`),
-            isNetworkError: err.status === 0,
-          });
-        } else {
-          setFetchState({
-            status: "error",
-            message: isHi
-              ? "सुरक्षा सर्वर से कनेक्शन स्थापित करने में असमर्थ।"
-              : "Unable to establish connection with the intelligence server.",
-            isNetworkError: true,
-          });
+        console.error("ScamMap fetch error:", err);
+
+        // If background refresh fails, preserve existing data
+        if (!isBackground) {
+          if (err instanceof ApiError) {
+            setFetchState({
+              status: "error",
+              message:
+                err.message ||
+                (isHi
+                  ? `API त्रुटि (${err.status}): नक़्शा डेटा लोड नहीं हो सका।`
+                  : `API error (${err.status}): Could not load map data.`),
+              isNetworkError: err.status === 0,
+            });
+          } else {
+            setFetchState({
+              status: "error",
+              message: isHi
+                ? "सुरक्षा सर्वर से कनेक्शन स्थापित करने में असमर्थ।"
+                : "Unable to establish connection with the intelligence server.",
+              isNetworkError: true,
+            });
+          }
         }
+      } finally {
+        isFetchingRef.current = false;
+        setIsRefreshing(false);
       }
-    }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [timeFilter, categoryFilter, pincodeFilter, isHi]
+  );
 
-    fetchInitialData();
+  // Trigger load when timeFilter or categoryFilter changes
+  useEffect(() => {
+    fetchMapData({ days: timeFilter, category: categoryFilter, pincode: pincodeFilter });
 
     return () => {
-      ignore = true;
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
     };
-  }, [isHi]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeFilter, categoryFilter]);
+
+  // Periodic background sync (every 25 seconds)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Avoid sync if tab is hidden or a fetch is currently in progress
+      if (
+        typeof document !== "undefined" &&
+        document.visibilityState === "hidden"
+      ) {
+        return;
+      }
+      if (isFetchingRef.current) return;
+
+      fetchMapData({
+        days: timeFilter,
+        category: categoryFilter,
+        pincode: pincodeFilter,
+        isBackground: true,
+      });
+    }, POLL_INTERVAL_MS);
+
+    return () => clearInterval(interval);
+  }, [timeFilter, categoryFilter, pincodeFilter, fetchMapData]);
 
   const handleApplyPincodeSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    loadMapData(pincodeFilter);
+    fetchMapData({ pincode: pincodeFilter });
   };
 
   const handleClearFilter = () => {
     setPincodeFilter("");
     setCityFilter("ALL");
-    loadMapData();
+    setCategoryFilter("ALL");
+    setTimeFilter(7);
+    fetchMapData({ pincode: "", category: "ALL", days: 7 });
   };
 
-  // Derive unique cities from monitored areas or returned clusters
+  // Derive unique cities
   const availableCities = useMemo(() => {
     const set = new Set<string>();
     MONITORED_AREAS.forEach((a) => set.add(a.city));
-    if (fetchState.status === "success") {
-      fetchState.data.clusters.forEach((c) => set.add(c.city));
+    if (fetchState.status === "success" && fetchState.data.clusters) {
+      fetchState.data.clusters.forEach((c) => {
+        if (c.city) set.add(c.city);
+      });
     }
     return Array.from(set).sort();
   }, [fetchState]);
 
   // Filter clusters by city if selected
   const displayedClusters = useMemo(() => {
-    if (fetchState.status !== "success") return [];
+    if (fetchState.status !== "success" || !fetchState.data.clusters) return [];
     if (cityFilter === "ALL") return fetchState.data.clusters;
-    return fetchState.data.clusters.filter((c) => c.city.toLowerCase() === cityFilter.toLowerCase());
+    return fetchState.data.clusters.filter(
+      (c) => c.city.toLowerCase() === cityFilter.toLowerCase()
+    );
   }, [fetchState, cityFilter]);
 
-  // Derived summary metrics from ACTUAL data only
+  // Filter GeoJSON features by city if selected
+  const displayedFeatures = useMemo((): MapGeoJsonFeature[] => {
+    if (fetchState.status !== "success" || !fetchState.data.features) return [];
+    if (cityFilter === "ALL") return fetchState.data.features;
+    return fetchState.data.features.filter(
+      (f) =>
+        f.properties?.city?.toLowerCase() === cityFilter.toLowerCase()
+    );
+  }, [fetchState, cityFilter]);
+
+  // Derived target coordinates when searching by PIN code
+  const searchedCoordinates = useMemo((): [number, number] | null => {
+    if (!pincodeFilter.trim()) return null;
+    const found = MONITORED_AREAS.find((a) => a.code === pincodeFilter.trim());
+    if (found) return [found.lng, found.lat];
+    return null;
+  }, [pincodeFilter]);
+
+  // Derived summary metrics
   const summaryMetrics = useMemo(() => {
-    if (fetchState.status !== "success" || fetchState.data.clusters.length === 0) {
+    if (
+      fetchState.status !== "success" ||
+      !fetchState.data.clusters ||
+      fetchState.data.clusters.length === 0
+    ) {
       return null;
     }
 
-    const clusters = fetchState.data.clusters;
-    const totalReports = clusters.reduce((acc, c) => acc + (c.count || 0), 0);
+    const clusters = displayedClusters;
+    const totalReports =
+      fetchState.data.total_reports !== undefined
+        ? fetchState.data.total_reports
+        : clusters.reduce((acc, c) => acc + (c.count || 0), 0);
+
     const criticalHotspots = clusters.filter(
       (c) => c.severity?.toUpperCase() === "CRIT"
     ).length;
 
-    // Find top scam type across all clusters
+    // Dominant scam type across all clusters
     const typeCount: Record<string, number> = {};
     clusters.forEach((c) => {
       if (c.top_scam_type) {
-        typeCount[c.top_scam_type] = (typeCount[c.top_scam_type] || 0) + (c.count || 1);
+        typeCount[c.top_scam_type] =
+          (typeCount[c.top_scam_type] || 0) + (c.count || 1);
       }
     });
 
@@ -219,9 +316,23 @@ export function ScamMapContainer() {
       activeClusters: clusters.length,
       totalReports,
       criticalHotspots,
-      dominantPattern: topType !== "N/A" ? getScamTypeLabel(topType, isHi) : (isHi ? "कोई दर्ज नहीं" : "None reported"),
+      dominantPattern:
+        topType !== "N/A"
+          ? getScamTypeLabel(topType, isHi)
+          : isHi
+          ? "कोई दर्ज नहीं"
+          : "None reported",
     };
-  }, [fetchState, isHi]);
+  }, [fetchState, displayedClusters, isHi]);
+
+  const formattedLastUpdated = useMemo(() => {
+    if (!lastUpdated) return null;
+    return lastUpdated.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+  }, [lastUpdated]);
 
   return (
     <div className="space-y-6">
@@ -237,8 +348,10 @@ export function ScamMapContainer() {
             </span>
             <p className="text-[#837FA8] leading-relaxed text-xs">
               {isHi
-                ? "यह मानचित्र पिछले 7 दिनों की समूहीकृत रिपोर्ट प्रदर्शित करता है। व्यक्तिगत जीपीएस निर्देशांक, पते या फ़ोन नंबर कभी उजागर नहीं किए जाते।"
-                : "This map displays aggregated community reports over the last 7 days. Exact reporter GPS coordinates, residential addresses, and phone numbers are never stored or exposed."}
+                ? `यह मानचित्र पिछले ${timeFilter === 1 ? "24 घंटों" : `${timeFilter} दिनों`} की समूहीकृत रिपोर्ट प्रदर्शित करता है। व्यक्तिगत जीपीएस निर्देशांक, पते या फ़ोन नंबर कभी उजागर नहीं किए जाते।`
+                : `This map displays aggregated community reports over the last ${
+                    timeFilter === 1 ? "24 hours" : `${timeFilter} days`
+                  }. Exact reporter GPS coordinates, residential addresses, and personal identities are never exposed.`}
             </p>
           </div>
         </div>
@@ -295,10 +408,38 @@ export function ScamMapContainer() {
               size="sm"
               className="text-xs h-11"
             >
-              {t.map.filterPin}
-            </PrimaryButton>
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={pincodeFilter}
+                  onChange={(e) =>
+                    setPincodeFilter(
+                      e.target.value.replace(/\D/g, "").slice(0, 6)
+                    )
+                  }
+                  placeholder={
+                    isHi ? "6-अंकों का पिन कोड..." : "6-digit PIN..."
+                  }
+                  className="w-full h-9 px-3 pl-8 rounded-lg bg-slate-950 border border-slate-700/80 hover:border-slate-600 focus:border-teal-500 text-xs text-slate-100 placeholder:text-slate-500 outline-none transition-colors font-mono"
+                />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 pointer-events-none" />
+              </div>
 
-            {(pincodeFilter || cityFilter !== "ALL") && (
+              <PrimaryButton
+                type="submit"
+                variant="secondary"
+                size="sm"
+                className="h-9 text-xs px-2.5"
+              >
+                {t.map.filterPin}
+              </PrimaryButton>
+            </form>
+
+            {(pincodeFilter ||
+              cityFilter !== "ALL" ||
+              categoryFilter !== "ALL" ||
+              timeFilter !== 7) && (
               <button
                 type="button"
                 onClick={handleClearFilter}
@@ -307,7 +448,7 @@ export function ScamMapContainer() {
                 {t.map.clearFilters}
               </button>
             )}
-          </form>
+          </div>
 
           {/* View mode toggle (Map / List / Split) */}
           <div className="flex items-center gap-1 bg-[#F0EDFF] p-1.5 rounded-full border border-[#EAE6FD] shrink-0 self-start md:self-auto">
@@ -357,7 +498,7 @@ export function ScamMapContainer() {
         </div>
       </div>
 
-      {/* ── Summary Metrics (Rendered ONLY from real API data) ────────── */}
+      {/* ── Summary Metrics ─────────────────────────────────────────── */}
       {summaryMetrics && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="p-5 rounded-2xl bg-white border border-[#EAE6FD] space-y-1.5 shadow-sm">
@@ -417,7 +558,7 @@ export function ScamMapContainer() {
       {/* ── Main Content Body ───────────────────────────────────────── */}
       {fetchState.status === "loading" && (
         <div className="space-y-4">
-          <LoadingSkeleton className="h-[520px] rounded-2xl" />
+          <LoadingSkeleton className="h-[580px] sm:h-[620px] rounded-2xl" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <LoadingSkeleton variant="card" className="h-24 rounded-xl" />
             <LoadingSkeleton variant="card" className="h-24 rounded-xl" />
@@ -428,26 +569,50 @@ export function ScamMapContainer() {
 
       {fetchState.status === "error" && (
         <ErrorState
-          title={isHi ? "नक्शा डेटा उपलब्ध नहीं है" : "Scam Map Intelligence Unavailable"}
+          title={
+            isHi
+              ? "नक्शा डेटा उपलब्ध नहीं है"
+              : "Scam Map Intelligence Unavailable"
+          }
           description={fetchState.message}
-          onRetry={() => loadMapData(pincodeFilter)}
+          onRetry={() =>
+            fetchMapData({
+              days: timeFilter,
+              category: categoryFilter,
+              pincode: pincodeFilter,
+            })
+          }
           action={
             <div className="flex flex-col sm:flex-row items-center gap-3 mt-4">
               <PrimaryButton
                 variant="secondary"
                 size="md"
-                onClick={() => loadMapData(pincodeFilter)}
+                onClick={() =>
+                  fetchMapData({
+                    days: timeFilter,
+                    category: categoryFilter,
+                    pincode: pincodeFilter,
+                  })
+                }
                 leftIcon={<RotateCcw className="w-4 h-4" />}
               >
                 {isHi ? "पुनः प्रयास करें" : "Retry Connection"}
               </PrimaryButton>
               <Link href="/lookup">
-                <PrimaryButton variant="outline" size="md" leftIcon={<Search className="w-4 h-4" />}>
+                <PrimaryButton
+                  variant="outline"
+                  size="md"
+                  leftIcon={<Search className="w-4 h-4" />}
+                >
                   {isHi ? t.lookup.checkAnother : "Check an Identifier"}
                 </PrimaryButton>
               </Link>
               <Link href="/report">
-                <PrimaryButton variant="primary" size="md" leftIcon={<ShieldAlert className="w-4 h-4" />}>
+                <PrimaryButton
+                  variant="primary"
+                  size="md"
+                  leftIcon={<ShieldAlert className="w-4 h-4" />}
+                >
                   {isHi ? t.home.reportIncident : "Report Incident"}
                 </PrimaryButton>
               </Link>
@@ -456,49 +621,46 @@ export function ScamMapContainer() {
         />
       )}
 
-      {fetchState.status === "success" && displayedClusters.length === 0 && (
-        <EmptyState
-          title={isHi ? "कोई स्कैम क्लस्टर नहीं मिला" : "No Scam Clusters Found"}
-          description={
-            pincodeFilter || cityFilter !== "ALL"
-              ? (isHi
-                  ? "पिछले 7 दिनों में फ़िल्टर किए गए स्थान के लिए कोई स्कैम क्लस्टर दर्ज नहीं है। सभी क्षेत्र देखने के लिए फ़िल्टर साफ़ करें।"
-                  : `No scam clusters recorded for the filtered location over the past 7 days. Try clearing filters to view all monitored areas.`)
-              : (isHi
-                  ? "पिछले 7 दिनों में किसी भी क्षेत्र में कोई स्कैम क्लस्टर रिपोर्ट नहीं हुआ। सतर्क रहें और संदिग्ध गतिविधियों की रिपोर्ट करें।"
-                  : `No scam clusters reported across any monitored areas in the last 7 days. Stay alert and report suspicious attempts to help keep your neighborhood secure.`)
-          }
-          action={
-            <div className="flex items-center gap-3">
-              {(pincodeFilter || cityFilter !== "ALL") && (
-                <PrimaryButton
-                  variant="secondary"
-                  size="sm"
+      {fetchState.status === "success" && (
+        <div className="space-y-4">
+          {/* Informational banner when 0 clusters match current filters */}
+          {displayedClusters.length === 0 && (
+            <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 px-4 py-3 text-xs text-emerald-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+              <div className="flex items-center gap-2.5">
+                <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>
+                  {pincodeFilter || cityFilter !== "ALL" || categoryFilter !== "ALL"
+                    ? isHi
+                      ? `चुने गए फ़िल्टर (${pincodeFilter ? `पिन: ${pincodeFilter} ` : ""}${cityFilter !== "ALL" ? `शहर: ${cityFilter} ` : ""}) के लिए पिछले ${timeFilter} दिनों में 0 स्कैम क्लस्टर दर्ज हैं। यह क्षेत्र वर्तमान में सुरक्षित है।`
+                      : `Zero scam clusters recorded for active filter (${pincodeFilter ? `PIN: ${pincodeFilter} ` : ""}${cityFilter !== "ALL" ? `City: ${cityFilter} ` : ""}) over the selected window (${timeFilter}d). This area is currently clear of reported fraud.`
+                    : isHi
+                    ? `इस समय अंतराल में कोई सक्रिय स्कैम क्लस्टर रिपोर्ट नहीं हुआ। सतर्क रहें और संदिग्ध गतिविधियों की रिपोर्ट करें।`
+                    : `No scam clusters reported across monitored areas in this time window. Stay alert and report suspicious attempts.`}
+                </span>
+              </div>
+              {(pincodeFilter || cityFilter !== "ALL" || categoryFilter !== "ALL" || timeFilter !== 7) && (
+                <button
+                  type="button"
                   onClick={handleClearFilter}
+                  className="inline-flex items-center gap-1 font-medium text-emerald-400 hover:text-emerald-300 underline underline-offset-2 shrink-0 self-start sm:self-auto"
                 >
                   {t.map.clearFilters}
-                </PrimaryButton>
+                </button>
               )}
-              <Link href="/report">
-                <PrimaryButton variant="primary" size="sm" leftIcon={<ShieldAlert className="w-3.5 h-3.5" />}>
-                  {isHi ? t.home.reportIncident : "Report Incident"}
-                </PrimaryButton>
-              </Link>
             </div>
-          }
-        />
-      )}
+          )}
 
-      {fetchState.status === "success" && displayedClusters.length > 0 && (
-        <div className="space-y-4">
           {viewMode === "split" && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-              {/* Map Canvas - Left 8 columns */}
+              {/* Map Canvas - Left 8 columns: ALWAYS RENDERS */}
               <div className="lg:col-span-8 space-y-4">
                 <GeospatialMapView
                   clusters={displayedClusters}
+                  features={displayedFeatures}
                   selectedCluster={selectedCluster}
                   onSelectCluster={(cluster) => setSelectedCluster(cluster)}
+                  searchedCoordinates={searchedCoordinates}
+                  isHi={isHi}
                 />
               </div>
 
@@ -519,15 +681,34 @@ export function ScamMapContainer() {
                       {t.map.selectAreaDesc}
                     </p>
                   </div>
-                )}
+                ) : (
+                  <>
+                    {selectedCluster ? (
+                      <ClusterDetailCard
+                        cluster={selectedCluster}
+                        onClose={() => setSelectedCluster(null)}
+                      />
+                    ) : (
+                      <div className="rounded-xl border border-dashed border-slate-800 bg-slate-900/40 p-6 text-center text-slate-400 space-y-2">
+                        <MapPin className="w-6 h-6 mx-auto text-slate-500" />
+                        <p className="text-sm font-semibold text-slate-300">
+                          {t.map.selectArea}
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          {t.map.selectAreaDesc}
+                        </p>
+                      </div>
+                    )}
 
-                {/* Directory Mini-list below detail card */}
-                <ClusterListView
-                  clusters={displayedClusters}
-                  selectedCluster={selectedCluster}
-                  onSelectCluster={(cluster) => setSelectedCluster(cluster)}
-                  className="max-h-[380px]"
-                />
+                    {/* Directory Mini-list below detail card */}
+                    <ClusterListView
+                      clusters={displayedClusters}
+                      selectedCluster={selectedCluster}
+                      onSelectCluster={(cluster) => setSelectedCluster(cluster)}
+                      className="max-h-[380px]"
+                    />
+                  </>
+                )}
               </div>
             </div>
           )}
@@ -536,8 +717,11 @@ export function ScamMapContainer() {
             <div className="space-y-4">
               <GeospatialMapView
                 clusters={displayedClusters}
+                features={displayedFeatures}
                 selectedCluster={selectedCluster}
                 onSelectCluster={(cluster) => setSelectedCluster(cluster)}
+                searchedCoordinates={searchedCoordinates}
+                isHi={isHi}
               />
 
               {selectedCluster && (
@@ -578,9 +762,39 @@ export function ScamMapContainer() {
                         : "Click any item from the directory to review aggregated metrics and patterns."}
                     </p>
                   </div>
-                )}
+                }
+              />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
+                <div className="md:col-span-7">
+                  <ClusterListView
+                    clusters={displayedClusters}
+                    selectedCluster={selectedCluster}
+                    onSelectCluster={(cluster) => setSelectedCluster(cluster)}
+                  />
+                </div>
+                <div className="md:col-span-5">
+                  {selectedCluster ? (
+                    <ClusterDetailCard
+                      cluster={selectedCluster}
+                      onClose={() => setSelectedCluster(null)}
+                    />
+                  ) : (
+                    <div className="rounded-xl border border-dashed border-slate-800 bg-slate-900/40 p-8 text-center text-slate-400 space-y-2">
+                      <MapPin className="w-6 h-6 mx-auto text-slate-500" />
+                      <p className="text-sm font-semibold text-slate-300">
+                        {isHi ? "एक क्लस्टर चुनें" : "Select a Cluster"}
+                      </p>
+                      <p className="text-xs text-slate-400">
+                        {isHi
+                          ? "समूहीकृत मेट्रिक्स और पैटर्न देखने के लिए डायरेक्टरी से किसी भी क्षेत्र पर क्लिक करें।"
+                          : "Click any item from the directory to review aggregated metrics and patterns."}
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            )
           )}
         </div>
       )}
@@ -601,12 +815,20 @@ export function ScamMapContainer() {
         </div>
         <div className="flex items-center gap-3 shrink-0">
           <Link href="/lookup">
-            <PrimaryButton variant="outline" size="sm" leftIcon={<Search className="w-3.5 h-3.5" />}>
+            <PrimaryButton
+              variant="outline"
+              size="sm"
+              leftIcon={<Search className="w-3.5 h-3.5" />}
+            >
               {isHi ? t.nav.lookup : "Lookup"}
             </PrimaryButton>
           </Link>
           <Link href="/report">
-            <PrimaryButton variant="primary" size="sm" leftIcon={<ShieldAlert className="w-3.5 h-3.5" />}>
+            <PrimaryButton
+              variant="primary"
+              size="sm"
+              leftIcon={<ShieldAlert className="w-3.5 h-3.5" />}
+            >
               {isHi ? t.nav.report : "Report Scam"}
             </PrimaryButton>
           </Link>

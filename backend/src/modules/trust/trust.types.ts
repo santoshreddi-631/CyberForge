@@ -37,6 +37,8 @@ export interface TrustPolicy {
   repeatedReporterPenalty: number;
   coordinatedBurstPenalty: number;
   ipConcentrationPenalty: number;
+  circuitBreakerWindowMinutes: number;
+  circuitBreakerThreshold: number;
 }
 
 export interface TrustSignals {
@@ -57,6 +59,8 @@ export interface TrustSignals {
   coordinatedBurst: boolean;
   suspiciousIpConcentration: boolean;
   repeatedReporter: boolean;
+  circuitBreakerTripped: boolean;
+  circuitBreakerSurgeCount: number;
 }
 
 export interface ReportTrustDecision {
@@ -70,6 +74,7 @@ export interface TrustEvaluation {
   verdict: TrustVerdict;
   status: TrustStatus;
   trusted: boolean;
+  circuitBreakerTripped: boolean;
   score: number;
   reasons: string[];
   signals: TrustSignals;

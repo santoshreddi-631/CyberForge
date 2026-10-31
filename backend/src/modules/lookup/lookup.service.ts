@@ -19,8 +19,11 @@ interface StatisticsRow {
   raw_report_count: number;
   eligible_report_count: number;
   distinct_eligible_reporters: number;
+  distinct_raw_reporters: number;
   first_seen: string | null;
   last_seen: string | null;
+  raw_first_seen: string | null;
+  raw_last_seen: string | null;
 }
 
 interface EvidenceRow {
@@ -70,8 +73,11 @@ async function readStatistics(client: DatabaseClient, caseId: string | null): Pr
       raw_report_count: 0,
       eligible_report_count: 0,
       distinct_eligible_reporters: 0,
+      distinct_raw_reporters: 0,
       first_seen: null,
       last_seen: null,
+      raw_first_seen: null,
+      raw_last_seen: null,
     };
   }
   const [row] = await client.db.execute(sql`
@@ -80,8 +86,11 @@ async function readStatistics(client: DatabaseClient, caseId: string | null): Pr
       count(r.id) FILTER (WHERE td.status = 'eligible')::int AS eligible_report_count,
       count(DISTINCT r.reporter_signal_id) FILTER (WHERE td.status = 'eligible')::int
         AS distinct_eligible_reporters,
+      count(DISTINCT r.reporter_signal_id)::int AS distinct_raw_reporters,
       min(r.occurred_at) FILTER (WHERE td.status = 'eligible') AS first_seen,
-      max(r.occurred_at) FILTER (WHERE td.status = 'eligible') AS last_seen
+      max(r.occurred_at) FILTER (WHERE td.status = 'eligible') AS last_seen,
+      min(r.occurred_at) AS raw_first_seen,
+      max(r.occurred_at) AS raw_last_seen
     FROM reports r
     LEFT JOIN trust_decisions td ON td.report_id = r.id
     WHERE r.case_id = ${caseId}
@@ -142,16 +151,20 @@ export async function lookupIdentifier(
     eligibleReportCount: statistics.eligible_report_count,
     distinctEligibleReporters: statistics.distinct_eligible_reporters,
   });
+  const distinctReporters =
+    statistics.distinct_eligible_reporters > 0
+      ? statistics.distinct_eligible_reporters
+      : statistics.distinct_raw_reporters;
   const display_value = maskIdentifier(type, canonicalValue);
-  const isMasked = statistics.distinct_eligible_reporters < 3;
+  const isMasked = distinctReporters < 3;
   const evidence = await readEvidence(client, identifier?.case_id ?? null);
 
   return {
     verdict,
     report_count: statistics.eligible_report_count,
-    distinct_reporters: statistics.distinct_eligible_reporters,
-    first_seen: statistics.first_seen,
-    last_seen: statistics.last_seen,
+    distinct_reporters: distinctReporters,
+    first_seen: statistics.first_seen ?? statistics.raw_first_seen,
+    last_seen: statistics.last_seen ?? statistics.raw_last_seen,
     scam_type: await readScamType(client, identifier?.case_id ?? null),
     display_value: isMasked ? display_value : canonicalValue,
     evidence,

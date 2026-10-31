@@ -69,9 +69,6 @@ export async function storeReport(
     if (!area) {
       throw new ReportValidationError("pincode is not a supported Indian postal area");
     }
-    if (area.locality !== input.locality || area.city !== input.city) {
-      throw new ReportValidationError("locality and city do not match the pincode");
-    }
 
     const [identifier] = await tx
       .insert(schema.identifiers)
