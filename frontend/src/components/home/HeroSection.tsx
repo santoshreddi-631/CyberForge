@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, ShieldAlert, ArrowRight, MapPin, AlertCircle } from "lucide-react";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
+import { FloatingPathsBackground } from "@/components/ui/floating-paths";
 import { useLanguage } from "@/hooks/useLanguage";
 
 export function HeroSection() {
@@ -31,6 +32,11 @@ export function HeroSection() {
 
   return (
     <section className="relative overflow-hidden pt-8 pb-16 md:pt-14 md:pb-24 border-b border-slate-800/80">
+      {/* Floating Paths Background */}
+      <FloatingPathsBackground position={1} className="absolute inset-0 pointer-events-none opacity-40">
+        {null}
+      </FloatingPathsBackground>
+
       {/* Subtle radial ambient glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-teal-500/5 blur-3xl pointer-events-none rounded-full" />
       <div className="absolute -top-24 right-10 w-72 h-72 bg-blue-600/5 blur-3xl pointer-events-none rounded-full" />

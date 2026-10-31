@@ -147,8 +147,8 @@ export function LookupClientContainer() {
         setApiError({
           title: isHi ? "सेवा अस्थायी रूप से अनुपलब्ध है" : "Service Temporarily Unavailable",
           description: isHi
-            ? "सत्यापन नेटवर्क (http://localhost:8000) से संपर्क नहीं हो सका। कृपया अपनी कनेक्टिविटी जांचें या पुनः प्रयास करें।"
-            : "Could not connect to the verification network (http://localhost:8000). Please ensure your connection is active or retry.",
+            ? "सत्यापन नेटवर्क से संपर्क नहीं हो सका। कृपया जांचें कि बैकएंड चालू है और पुनः प्रयास करें।"
+            : "Could not connect to the verification network. Please ensure the backend is running and your connection is active.",
           canRetry: true,
         });
       }

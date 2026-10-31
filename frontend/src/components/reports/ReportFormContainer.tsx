@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils/cn";
 import { LookupIdentifierType, ScamCategory } from "@/types";
 import { validateIdentifier } from "@/lib/utils/lookupValidation";
 import { apiClient, ApiError } from "@/lib/api/client";
-import { CreateReportRequestContract, CreateReportResponseContract } from "@/lib/contracts";
+import { CreateReportResponseContract } from "@/lib/contracts";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { useLanguage } from "@/hooks/useLanguage";
 import { ReportIdentifierSelector, REPORT_IDENTIFIER_OPTIONS } from "./ReportIdentifierSelector";
