@@ -207,6 +207,9 @@ components:
         - verdict
         - report_count
         - distinct_reporters
+        - first_seen
+        - last_seen
+        - scam_type
         - display_value
         - evidence
         - challenged
@@ -560,6 +563,9 @@ paths:
         PRD §A.4: Lists scam reports by area for the last 7 days.
         - Centres use PRD Appendix B coordinates, never reporter locations.
         - days defaults to 7; radius_km defaults to 2.
+        - The PRD does not define numeric bounds. This API accepts days 1–30
+          and radius_km 0–100 km to bound query work while supporting a zero
+          radius that returns only the selected area centroid.
       tags: [Map]
       parameters:
         - name: pincode
@@ -567,6 +573,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^\d{6}$'
           example: "560102"
         - name: days
           in: query
@@ -575,14 +582,14 @@ paths:
             type: integer
             default: 7
             minimum: 1
-            maximum: 90
+            maximum: 30
         - name: radius_km
           in: query
           required: false
           schema:
             type: number
             default: 2
-            minimum: 0.1
+            minimum: 0
             maximum: 100
       responses:
         "200":
@@ -615,6 +622,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^\d{6}$'
           example: "560102"
       responses:
         "200":
@@ -623,6 +631,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AlertsResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "403":
           $ref: "#/components/responses/LicenceExpired"
         "500":
@@ -653,6 +663,12 @@ paths:
                     description: Number of report rows removed.
         "500":
           $ref: "#/components/responses/InternalError"
+        "503":
+          description: Reset is unavailable outside the explicitly configured disposable judging database
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
   /challenges:
     post:

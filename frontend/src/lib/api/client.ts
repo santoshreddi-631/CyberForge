@@ -35,7 +35,7 @@ export function getBaseApiUrl(): string {
   if (envUrl && envUrl.trim().length > 0) {
     return envUrl.replace(/\/+$/, "");
   }
-  return "http://localhost:8000";
+  return "http://localhost:3001";
 }
 
 /**

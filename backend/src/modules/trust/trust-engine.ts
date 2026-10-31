@@ -1,5 +1,5 @@
 import { DEFAULT_TRUST_POLICY } from "./trust-policy.js";
-import { buildTrustSignals } from "./trust-signals.js";
+import { buildTrustSignals, selectIndependentVoiceReports } from "./trust-signals.js";
 import type {
   ReportTrustDecision,
   TrustPolicy,
@@ -35,8 +35,8 @@ export function evaluateTrust(
   if (signals.invalidReportCount > 0) {
     reasons.push(`${signals.invalidReportCount} invalid report(s) were excluded.`);
   }
-  if (signals.independentReporterCount < policy.minimumIndependentReporters) {
-    reasons.push(`Fewer than ${policy.minimumIndependentReporters} independent reporters are present.`);
+  if (signals.independentVoiceCount < policy.minimumIndependentReporters) {
+    reasons.push(`Fewer than ${policy.minimumIndependentReporters} independent reporter/network voices are present.`);
   }
   if (signals.independentIpPrefixCount < policy.minimumIndependentIpPrefixes) {
     reasons.push(`Fewer than ${policy.minimumIndependentIpPrefixes} independent IP prefixes are present.`);
@@ -64,7 +64,7 @@ export function evaluateTrust(
     !subject.verifiedBusiness &&
     !subject.challenged &&
     signals.validReportCount > 0 &&
-    signals.independentReporterCount >= policy.minimumIndependentReporters &&
+    signals.independentVoiceCount >= policy.minimumIndependentReporters &&
     signals.independentIpPrefixCount >= policy.minimumIndependentIpPrefixes &&
     signals.uniqueTimeBucketCount >= policy.minimumTimeBuckets &&
     !signals.coordinatedBurst &&
@@ -78,18 +78,9 @@ export function evaluateTrust(
       : trusted
         ? "KNOWN_SCAM"
         : "SUSPICIOUS";
-  const eligible = new Set<string>();
-  if (trusted) {
-    const bestByReporter = new Map<string, TrustReport>();
-    for (const report of reports) {
-      if (report.valid === false || report.duplicate) continue;
-      const current = bestByReporter.get(report.reporterKey);
-      if (!current || (report.note ?? "").length > (current.note ?? "").length) {
-        bestByReporter.set(report.reporterKey, report);
-      }
-    }
-    for (const report of bestByReporter.values()) eligible.add(report.reportId);
-  }
+  const eligible = new Set<string>(trusted
+    ? selectIndependentVoiceReports(reports, policy).map((report) => report.reportId)
+    : []);
 
   const seenReportIds = new Set<string>();
   const reportDecisions: ReportTrustDecision[] = reports.map((report) => {
@@ -98,15 +89,17 @@ export function evaluateTrust(
     seenReportIds.add(report.reportId);
     if (report.valid === false) reportReasons.push("Invalid report excluded before trust evaluation.");
     if (report.duplicate || repeatedReportId) reportReasons.push("Duplicate report excluded from trust evaluation.");
-    if (!report.valid && !report.duplicate && !repeatedReportId && !eligible.has(report.reportId)) {
-      reportReasons.push(trusted ? "Repeated reporter submission is not an additional independent voice." : "Case has not met trusted eligibility.");
+    if (report.valid !== false && !report.duplicate && !repeatedReportId && !eligible.has(report.reportId)) {
+      reportReasons.push(trusted
+        ? "Reporter or IP prefix is already represented by a stronger independent voice."
+        : "Case has not met trusted eligibility.");
     }
     const isEligible = eligible.has(report.reportId) && !report.duplicate && !repeatedReportId;
-    if (isEligible) reportReasons.push("Representative report from an independent reporter contributes to trusted evidence.");
+    if (isEligible) reportReasons.push("Representative report from a distinct reporter and IP prefix contributes one trusted voice.");
     return {
       reportId: report.reportId,
       status: isEligible ? "eligible" : "ignored",
-      weight: isEligible ? roundWeight(1 / Math.max(1, signals.independentReporterCount)) : 0,
+      weight: isEligible ? roundWeight(1 / Math.max(1, signals.independentVoiceCount)) : 0,
       reasons: reportReasons,
     };
   });

@@ -21,6 +21,7 @@ export interface TrustSubject {
 export interface TrustPolicy {
   minimumIndependentReporters: number;
   minimumIndependentIpPrefixes: number;
+  maximumTrustedReportersPerIpPrefix: number;
   minimumEvidenceScore: number;
   minimumTimeBuckets: number;
   timeBucketMinutes: number;
@@ -44,6 +45,7 @@ export interface TrustSignals {
   invalidReportCount: number;
   independentReporterCount: number;
   independentIpPrefixCount: number;
+  independentVoiceCount: number;
   maxReportsFromOneReporter: number;
   maxReportsFromOneIpPrefix: number;
   maxIpPrefixRatio: number;

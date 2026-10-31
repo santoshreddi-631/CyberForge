@@ -1,5 +1,5 @@
 import { z } from "zod";
-
+import "dotenv/config";
 /**
  * Environment variable schema validated at startup.
  * The application will fail fast with clear messages when misconfigured.
@@ -20,6 +20,15 @@ const envSchema = z.object({
   /** Full PostgreSQL connection string, e.g. postgres://user:pass@host:5432/db */
   DATABASE_URL: z.string().url("DATABASE_URL must be a valid URL"),
   REPORTER_HMAC_SECRET: z.string().min(32).optional(),
+
+  /**
+   * The destructive judging reset is opt-in and only valid for a separately
+   * configured disposable database.
+   */
+  JUDGING_RESET_ENABLED: z.string().optional().transform((value) => value === "true"),
+  JUDGING_DATABASE_URL: z.string().url().optional(),
+  JUDGING_DATABASE_DISPOSABLE: z.string().optional().transform((value) => value === "true"),
+  JUDGING_ENVIRONMENT: z.string().trim().optional(),
 
   /**
    * Ed25519 public key for licence signature verification (hex-encoded).
@@ -76,4 +85,3 @@ export function getEnv(): Env {
 export function _resetEnvCache(): void {
   _env = null;
 }
-

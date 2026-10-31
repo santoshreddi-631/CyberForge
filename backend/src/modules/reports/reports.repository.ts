@@ -96,6 +96,11 @@ export async function storeReport(
 
     await tx.execute(sql`SELECT id FROM cases WHERE id = ${caseRow.id} FOR UPDATE`);
 
+    // Serialize this reporter's velocity check across different cases.
+    await tx.execute(sql`
+      SELECT pg_advisory_xact_lock(hashtextextended(${signals.reporterHmac}, 160183))
+    `);
+
     const [reporter] = await tx
       .insert(schema.reporterSignals)
       .values({ reporterHmac: signals.reporterHmac })
@@ -106,11 +111,12 @@ export async function storeReport(
       .returning({ id: schema.reporterSignals.id });
 
     const [velocity] = await tx.execute(sql`
+      WITH receipt AS MATERIALIZED (SELECT clock_timestamp() AS received_at)
       SELECT count(*)::int AS count
-      FROM reports
+      FROM reports, receipt
       WHERE reporter_signal_id = ${reporter.id}
-        AND reported_at >= (${input.reported_at}::timestamptz - interval '1 hour')
-        AND reported_at <= ${input.reported_at}::timestamptz
+        AND created_at >= (receipt.received_at - interval '1 hour')
+        AND created_at <= receipt.received_at
     `);
     if (Number(velocity.count) >= 3) {
       throw new ReportRateLimitError();
@@ -120,12 +126,12 @@ export async function storeReport(
       INSERT INTO reports(
         report_id, case_id, reporter_signal_id, ip_prefix_hmac,
         occurred_at, reported_at, pincode, scam_type, channel,
-        sanitized_note, has_screenshot, amount_lost_inr
+        sanitized_note, has_screenshot, amount_lost_inr, created_at
       ) VALUES (
         ${input.report_id}, ${caseRow.id}, ${reporter.id}, ${signals.ipPrefixHmac},
         ${input.occurred_at}, ${input.reported_at}, ${input.pincode}, ${input.scam_type},
         ${input.channel}, ${input.sanitized_note}, ${input.has_screenshot},
-        ${input.amount_lost_inr.toFixed(2)}
+        ${input.amount_lost_inr.toFixed(2)}, clock_timestamp()
       )
       RETURNING id
     `);

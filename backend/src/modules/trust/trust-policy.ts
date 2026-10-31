@@ -3,6 +3,8 @@ import type { TrustPolicy } from "./trust.types.js";
 export const DEFAULT_TRUST_POLICY: Readonly<TrustPolicy> = Object.freeze({
   minimumIndependentReporters: 5,
   minimumIndependentIpPrefixes: 3,
+  // A shared network contributes one eligible voice per identifier case.
+  maximumTrustedReportersPerIpPrefix: 1,
   minimumEvidenceScore: 0.65,
   minimumTimeBuckets: 2,
   timeBucketMinutes: 60,

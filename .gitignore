@@ -8,4 +8,10 @@ coverage/
 backend/.tmp-pg*/
 backend/dist/
 backend/node_modules/
-backend/audits
+backend/audits/*
+!backend/audits/INDEPENDENT-AUDIT.md
+!backend/audits/PRD-COMPLIANCE-MATRIX.md
+!backend/audits/JUDGE-QA.md
+!backend/audits/DEMO-SCRIPT.md
+!backend/audits/PHASE-16.md
+!backend/audits/PHASE-17.md
