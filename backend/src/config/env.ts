@@ -25,6 +25,15 @@ const envSchema = z.object({
   REPORTER_HMAC_SECRET: z.string().min(32).optional(),
 
   /**
+   * The destructive judging reset is opt-in and only valid for a separately
+   * configured disposable database.
+   */
+  JUDGING_RESET_ENABLED: z.string().optional().transform((value) => value === "true"),
+  JUDGING_DATABASE_URL: z.string().url().optional(),
+  JUDGING_DATABASE_DISPOSABLE: z.string().optional().transform((value) => value === "true"),
+  JUDGING_ENVIRONMENT: z.string().trim().optional(),
+
+  /**
    * Ed25519 public key for licence signature verification (hex-encoded).
    * Required in production; defaults to a test key in development/test.
    */
@@ -79,4 +88,3 @@ export function getEnv(): Env {
 export function _resetEnvCache(): void {
   _env = null;
 }
-

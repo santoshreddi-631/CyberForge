@@ -62,5 +62,11 @@ describe("Environment validation", () => {
     const env = getEnv();
     expect(env.LOG_LEVEL).toBe("silent");
   });
-});
 
+  it("defaults destructive judging reset controls to disabled", () => {
+    const env = getEnv();
+    expect(env.JUDGING_RESET_ENABLED).toBe(false);
+    expect(env.JUDGING_DATABASE_DISPOSABLE).toBe(false);
+    expect(env.JUDGING_DATABASE_URL).toBeUndefined();
+  });
+});

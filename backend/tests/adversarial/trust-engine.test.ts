@@ -36,6 +36,37 @@ describe("deterministic trust engine adversarial scenarios", () => {
     expect(result.verdict).not.toBe("KNOWN_SCAM");
     expect(result.signals.independentIpPrefixCount).toBe(1);
     expect(result.signals.suspiciousIpConcentration).toBe(true);
+    expect(result.signals.independentVoiceCount).toBe(1);
+  });
+
+  it("caps a large shared-prefix group to one voice while allowing enough independent networks to qualify", () => {
+    const shared = Array.from({ length: 22 }, (_, index) => report(index, {
+      ipPrefixKey: "shared-network",
+      occurredAt: new Date(Date.UTC(2026, 9, 20, 8 + index * 2)).toISOString(),
+      note: `A distinct account describes a specific payment request and callback detail ${index}.`,
+    }));
+    const independent = Array.from({ length: 4 }, (_, index) => report(100 + index, {
+      ipPrefixKey: `independent-network-${index}`,
+      occurredAt: new Date(Date.UTC(2026, 9, 20, 9 + index * 5)).toISOString(),
+    }));
+    const result = evaluateTrust([...shared, ...independent]);
+    const eligibleIds = new Set(result.eligibleReportIds);
+
+    expect(result.signals.independentReporterCount).toBe(26);
+    expect(result.signals.independentVoiceCount).toBe(5);
+    expect(result.verdict).toBe("KNOWN_SCAM");
+    expect(shared.filter((item) => eligibleIds.has(item.reportId))).toHaveLength(1);
+    expect(result.eligibleReportIds).toHaveLength(5);
+  });
+
+  it("does not allow one reporter to gain extra voices by changing networks", () => {
+    const result = evaluateTrust(Array.from({ length: 7 }, (_, index) => report(index, {
+      reporterKey: "same-reporter",
+      ipPrefixKey: `network-${index}`,
+    })));
+    expect(result.signals.independentReporterCount).toBe(1);
+    expect(result.signals.independentVoiceCount).toBe(1);
+    expect(result.verdict).not.toBe("KNOWN_SCAM");
   });
 
   it("counts six submissions by one person as one independent reporter", () => {
@@ -104,7 +135,7 @@ describe("deterministic trust engine adversarial scenarios", () => {
       note: "",
     })));
     expect(result.verdict).not.toBe("KNOWN_SCAM");
-    expect(result.reasons.join(" ")).toContain("independent reporters");
+    expect(result.reasons.join(" ")).toContain("reporter/network voices");
   });
 
   it("keeps invalid phone input outside the trust engine", () => {
