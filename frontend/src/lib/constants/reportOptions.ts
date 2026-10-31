@@ -137,3 +137,15 @@ export const REPORT_SCAM_TYPES: { type: ReportScamType; label: string; descripti
     description: "Any other suspicious fraudulent activity",
   },
 ];
+
+export function getScamTypeLabel(scamType?: string): string {
+  if (!scamType) return "Unspecified Scam";
+  const match = REPORT_SCAM_TYPES.find(
+    (item) => item.type === scamType || item.type.replace(/-/g, "_") === scamType.replace(/-/g, "_")
+  );
+  if (match) return match.label;
+  return scamType
+    .split(/[-_]/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
