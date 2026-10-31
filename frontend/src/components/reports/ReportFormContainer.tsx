@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-
 import {
   ShieldCheck,
   AlertCircle,
@@ -20,22 +19,23 @@ import { validateIdentifier } from "@/lib/utils/lookupValidation";
 import { apiClient, ApiError } from "@/lib/api/client";
 import { CreateReportRequestContract, CreateReportResponseContract } from "@/lib/contracts";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
+import { useLanguage } from "@/hooks/useLanguage";
 import { ReportIdentifierSelector, REPORT_IDENTIFIER_OPTIONS } from "./ReportIdentifierSelector";
 import { REPORT_SCAM_TYPES } from "@/lib/constants/reportOptions";
 
 // Scam category options matching contract ScamCategory enum
-const CATEGORY_OPTIONS: { value: ScamCategory; label: string }[] = [
-  { value: "upi_fraud", label: "UPI / Payment Fraud" },
-  { value: "phishing_url", label: "Phishing Link / Fake Website" },
-  { value: "part_time_job", label: "Part-Time Job / Task Scam" },
-  { value: "lottery_kbc", label: "Lottery / Prize Scam" },
-  { value: "courier_customs", label: "Parcel / Customs Fine Scam" },
-  { value: "loan_app", label: "Loan App Harassment" },
-  { value: "deepfake_impersonation", label: "Digital Arrest / Deepfake" },
-  { value: "aadhaar_pan", label: "Aadhaar / PAN / KYC Fraud" },
-  { value: "crypto_investment", label: "Crypto / Investment Scam" },
-  { value: "electricity_bill", label: "Electricity / Utility Scam" },
-  { value: "other", label: "Other Scam Pattern" },
+const CATEGORY_OPTIONS: { value: ScamCategory; label: string; labelHi: string }[] = [
+  { value: "upi_fraud", label: "UPI / Payment Fraud", labelHi: "UPI / भुगतान धोखाधड़ी" },
+  { value: "phishing_url", label: "Phishing Link / Fake Website", labelHi: "फ़िशिंग लिंक / नकली वेबसाइट" },
+  { value: "part_time_job", label: "Part-Time Job / Task Scam", labelHi: "पार्ट-टाइम जॉब / टास्क स्कैम" },
+  { value: "lottery_kbc", label: "Lottery / Prize Scam", labelHi: "लॉटरी / इनाम धोखाधड़ी" },
+  { value: "courier_customs", label: "Parcel / Customs Fine Scam", labelHi: "पार्सल / सीमा शुल्क जुर्माना स्कैम" },
+  { value: "loan_app", label: "Loan App Harassment", labelHi: "लोन ऐप उत्पीड़न" },
+  { value: "deepfake_impersonation", label: "Digital Arrest / Deepfake", labelHi: "डिजिटल अरेस्ट / डीपफेक" },
+  { value: "aadhaar_pan", label: "Aadhaar / PAN / KYC Fraud", labelHi: "आधार / पैन / KYC फ्रॉड" },
+  { value: "crypto_investment", label: "Crypto / Investment Scam", labelHi: "क्रिप्टो / निवेश धोखाधड़ी" },
+  { value: "electricity_bill", label: "Electricity / Utility Scam", labelHi: "बिजली बिल / उपयोगिता बिल स्कैम" },
+  { value: "other", label: "Other Scam Pattern", labelHi: "अन्य फ्रॉड पैटर्न" },
 ];
 
 // Indian states for optional area field
@@ -74,6 +74,9 @@ type SubmitState =
   | { status: "error"; title: string; description: string; canRetry: boolean };
 
 export function ReportFormContainer() {
+  const { lang, t } = useLanguage();
+  const isHi = lang === "hi";
+
   const [form, setForm] = useState<FormData>({
     identifierType: "phone",
     identifierValue: "",
@@ -105,33 +108,34 @@ export function ReportFormContainer() {
 
     const idValidation = validateIdentifier(form.identifierType, form.identifierValue);
     if (!idValidation.isValid) {
-      newErrors.identifierValue = idValidation.errorMessage;
+      newErrors.identifierValue =
+        idValidation.errorMessage || (isHi ? "कृपया एक मान्य पहचानकर्ता दर्ज करें।" : "Please enter a valid identifier.");
     }
 
     if (!form.category) {
-      newErrors.category = "Please select the type of scam.";
+      newErrors.category = isHi ? "कृपया धोखाधड़ी का प्रकार चुनें।" : "Please select the type of scam.";
     }
 
     const titleTrimmed = form.title.trim();
     if (!titleTrimmed) {
-      newErrors.title = "Please provide a brief title for the report.";
+      newErrors.title = isHi ? "कृपया रिपोर्ट के लिए एक संक्षिप्त शीर्षक प्रदान करें।" : "Please provide a brief title for the report.";
     } else if (titleTrimmed.length < 5) {
-      newErrors.title = "Title should be at least 5 characters.";
+      newErrors.title = isHi ? "शीर्षक कम से कम 5 अक्षरों का होना चाहिए।" : "Title should be at least 5 characters.";
     } else if (titleTrimmed.length > 120) {
-      newErrors.title = "Title should be under 120 characters.";
+      newErrors.title = isHi ? "शीर्षक 120 अक्षरों से अधिक नहीं हो सकता।" : "Title must not exceed 120 characters.";
     }
 
     const descTrimmed = form.description.trim();
     if (!descTrimmed) {
-      newErrors.description = "Please describe what happened.";
-    } else if (descTrimmed.length < 10) {
-      newErrors.description = "Description should be at least 10 characters.";
+      newErrors.description = isHi ? "कृपया संक्षेप में बताएं कि क्या हुआ।" : "Please describe what happened.";
+    } else if (descTrimmed.length < 20) {
+      newErrors.description = isHi ? "कृपया कम से कम 20 अक्षरों का विवरण प्रदान करें।" : "Please provide at least 20 characters describing the incident.";
     } else if (descTrimmed.length > 1000) {
-      newErrors.description = "Description should be under 1000 characters.";
+      newErrors.description = isHi ? "विवरण 1000 अक्षरों से अधिक नहीं हो सकता।" : "Description must not exceed 1000 characters.";
     }
 
-    if (form.pincode && !/^\d{6}$/.test(form.pincode.trim())) {
-      newErrors.pincode = "PIN code must be exactly 6 digits.";
+    if (form.pincode && !/^\d{6}$/.test(form.pincode)) {
+      newErrors.pincode = isHi ? "पिन कोड 6 अंकों का होना चाहिए।" : "PIN code must be exactly 6 digits.";
     }
 
     setErrors(newErrors);
@@ -140,22 +144,25 @@ export function ReportFormContainer() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSubmitting || submitState.status === "success") return;
 
-    if (!validate()) return;
+    if (!validate()) {
+      return;
+    }
 
     setSubmitState({ status: "submitting" });
 
+    // Build the request payload matching CreateReportRequestContract
     const payload: CreateReportRequestContract = {
-      title: form.title.trim(),
-      description: form.description.trim(),
-      category: form.category as ScamCategory,
       identifierType: form.identifierType,
       identifierValue: form.identifierValue.trim(),
-      ...(form.state && { state: form.state }),
-      ...(form.city.trim() && { city: form.city.trim() }),
-      ...(form.pincode.trim() && { pincode: form.pincode.trim() }),
+      category: form.category as ScamCategory,
+      title: form.title.trim(),
+      description: form.description.trim(),
     };
+
+    if (form.state) payload.state = form.state;
+    if (form.city.trim()) payload.city = form.city.trim();
+    if (form.pincode.trim()) payload.pincode = form.pincode.trim();
 
     try {
       const response = await apiClient.post<CreateReportResponseContract>("/reports", payload);
@@ -164,42 +171,37 @@ export function ReportFormContainer() {
       if (err instanceof ApiError) {
         if (err.status === 400) {
           const detail =
-            typeof err.data === "object" && err.data !== null && "detail" in err.data
-              ? String((err.data as { detail: unknown }).detail)
-              : err.message || "Your submission contains invalid information. Please review and try again.";
+            typeof err.data === "object" && err.data !== null && "error" in err.data
+              ? String((err.data as { error: unknown }).error)
+              : err.message || (isHi ? "सबमिशन अस्वीकृत हुआ। कृपया फ़ील्ड्स की जांच करें।" : "The submission was rejected. Please review your entries.");
+
           setSubmitState({
             status: "error",
-            title: "Submission Rejected",
+            title: isHi ? "अमान्य सबमिशन" : "Invalid Submission",
             description: detail,
             canRetry: true,
           });
         } else if (err.status === 429) {
           setSubmitState({
             status: "error",
-            title: "Too Many Reports",
-            description: "You have submitted too many reports recently. Please wait before submitting again.",
-            canRetry: false,
-          });
-        } else if (err.status === 409) {
-          setSubmitState({
-            status: "error",
-            title: "Duplicate Report Detected",
-            description: "A report for this identifier has already been submitted recently. Thank you for your vigilance.",
-            canRetry: false,
+            title: isHi ? "सबमिशन सीमा पार हो गई" : "Submission Rate Limit Exceeded",
+            description: isHi ? "आपने कम समय में बहुत अधिक रिपोर्ट दर्ज की हैं। कृपया कुछ देर प्रतीक्षा करें।" : "You have submitted multiple reports recently. Please wait a few moments before trying again.",
+            canRetry: true,
           });
         } else {
           setSubmitState({
             status: "error",
-            title: "Submission Failed",
-            description: "The server encountered a problem processing your report. Please try again shortly.",
+            title: isHi ? "रिपोर्ट सबमिट करने में असमर्थ" : "Unable to Submit Report",
+            description: isHi ? "सर्वर से कनेक्ट करने में समस्या हुई। कृपया पुनः प्रयास करें।" : "A server disruption occurred while processing your report. Please try again shortly.",
             canRetry: true,
           });
         }
       } else {
+        // Network disruption or backend offline
         setSubmitState({
           status: "error",
-          title: "Service Temporarily Unavailable",
-          description: "Could not connect to the reporting service. Please check your connection and try again.",
+          title: isHi ? "सेवा अस्थायी रूप से अनुपलब्ध है" : "Service Temporarily Unavailable",
+          description: isHi ? "रिपोर्टिंग सेवा से संपर्क नहीं हो सका। कृपया अपनी कनेक्टिविटी जांचें और पुनः प्रयास करें।" : "Could not connect to the reporting service. Please check your connection and try again.",
           canRetry: true,
         });
       }
@@ -217,36 +219,40 @@ export function ReportFormContainer() {
           </div>
           <div className="space-y-2">
             <h2 className="text-2xl font-bold text-emerald-100 tracking-tight">
-              Report Submitted Successfully
+              {t.report.successTitle}
             </h2>
             <p className="text-sm text-slate-300 leading-relaxed max-w-md mx-auto">
-              Thank you for helping protect the community. Your report has been received and will be reviewed by the intelligence network.
+              {t.report.successDesc}
             </p>
           </div>
 
           {data.referenceNumber && (
             <div className="inline-flex flex-col items-center gap-1 px-5 py-3 rounded-xl bg-slate-900 border border-slate-800 text-sm">
-              <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">Reference Number</span>
+              <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">{t.report.refNumber}</span>
               <span className="font-mono font-bold text-teal-300 text-base tracking-wide">
                 {data.referenceNumber}
               </span>
-              <span className="text-[11px] text-slate-400">Keep this for your records</span>
+              <span className="text-[11px] text-slate-400">
+                {isHi ? "भविष्य के संदर्भ के लिए इसे सुरक्षित रखें" : "Keep this for your records"}
+              </span>
             </div>
           )}
 
           <p className="text-xs text-slate-400 max-w-sm mx-auto">
-            Please avoid submitting duplicate reports for the same incident. The backend tracks reports and will process this submission.
+            {isHi
+              ? "कृपया एक ही घटना के लिए दोबारा रिपोर्ट दर्ज न करें। नेटवर्क इसकी समीक्षा करेगा।"
+              : "Please avoid submitting duplicate reports for the same incident. The backend tracks reports and will process this submission."}
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
             <Link href="/">
               <PrimaryButton variant="secondary" size="md" leftIcon={<Home className="w-4 h-4" />}>
-                Return Home
+                {t.report.returnHome}
               </PrimaryButton>
             </Link>
             <Link href="/lookup">
               <PrimaryButton variant="outline" size="md" leftIcon={<Search className="w-4 h-4" />}>
-                Check Another Identifier
+                {t.report.checkAnother}
               </PrimaryButton>
             </Link>
           </div>
@@ -277,10 +283,10 @@ export function ReportFormContainer() {
         <section className="rounded-xl bg-slate-900/80 border border-slate-800 p-5 sm:p-6 space-y-4">
           <div>
             <h2 className="text-sm font-bold text-slate-100 uppercase tracking-wider">
-              Step 1 — Suspicious Identifier
+              {t.report.step1}
             </h2>
             <p className="text-xs text-slate-400 mt-1">
-              Select the type of suspicious contact and enter its value.
+              {t.report.step1Desc}
             </p>
           </div>
 
@@ -292,7 +298,7 @@ export function ReportFormContainer() {
 
           <div className="space-y-1.5">
             <label htmlFor="report-identifier-input" className="block text-xs font-semibold text-slate-300">
-              {currentOption.label} <span className="text-rose-400">*</span>
+              {isHi ? currentOption.labelHi : currentOption.label} <span className="text-rose-400">*</span>
             </label>
             <input
               id="report-identifier-input"
@@ -300,7 +306,7 @@ export function ReportFormContainer() {
               value={form.identifierValue}
               disabled={isSubmitting}
               onChange={(e) => setField("identifierValue", e.target.value)}
-              placeholder={currentOption.placeholder}
+              placeholder={isHi ? currentOption.placeholderHi : currentOption.placeholder}
               className={cn(
                 "w-full h-11 px-4 rounded-lg bg-slate-950 border text-slate-100 placeholder:text-slate-500 text-sm outline-none transition-colors",
                 errors.identifierValue
@@ -321,17 +327,17 @@ export function ReportFormContainer() {
         <section className="rounded-xl bg-slate-900/80 border border-slate-800 p-5 sm:p-6 space-y-4">
           <div>
             <h2 className="text-sm font-bold text-slate-100 uppercase tracking-wider">
-              Step 2 — Scam Details
+              {t.report.step2}
             </h2>
             <p className="text-xs text-slate-400 mt-1">
-              What type of scam was it and what happened?
+              {t.report.step2Desc}
             </p>
           </div>
 
           {/* Category */}
           <div className="space-y-1.5">
             <label htmlFor="report-category" className="block text-xs font-semibold text-slate-300">
-              Scam Type <span className="text-rose-400">*</span>
+              {t.report.categoryLabel} <span className="text-rose-400">*</span>
             </label>
             <div className="relative">
               <select
@@ -347,10 +353,10 @@ export function ReportFormContainer() {
                     : "border-slate-700/80 hover:border-slate-600 focus:border-teal-500"
                 )}
               >
-                <option value="" disabled>Select scam type…</option>
+                <option value="" disabled>{t.report.selectCategory}</option>
                 {CATEGORY_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value} className="bg-slate-900 text-slate-100">
-                    {opt.label}
+                    {isHi ? opt.labelHi : opt.label}
                   </option>
                 ))}
               </select>
@@ -372,7 +378,7 @@ export function ReportFormContainer() {
                 {REPORT_SCAM_TYPES.find(
                   (s) =>
                     s.type === form.category.replace(/_/g, "-").replace("aadhaar-pan", "fake-kyc-link")
-                )?.description ?? "Describe what happened so others can recognise the pattern."}
+                )?.description ?? (isHi ? "विस्तार से बताएं ताकि अन्य नागरिक इस पैटर्न को पहचान सकें।" : "Describe what happened so others can recognise the pattern.")}
               </span>
             </div>
           )}
@@ -380,7 +386,7 @@ export function ReportFormContainer() {
           {/* Title */}
           <div className="space-y-1.5">
             <label htmlFor="report-title" className="block text-xs font-semibold text-slate-300">
-              Brief Title <span className="text-rose-400">*</span>
+              {t.report.titleLabel} <span className="text-rose-400">*</span>
             </label>
             <input
               id="report-title"
@@ -389,7 +395,7 @@ export function ReportFormContainer() {
               disabled={isSubmitting}
               onChange={(e) => setField("title", e.target.value)}
               maxLength={120}
-              placeholder="e.g. Received call asking for OTP claiming to be SBI"
+              placeholder={t.report.titlePlaceholder}
               className={cn(
                 "w-full h-11 px-4 rounded-lg bg-slate-950 border text-slate-100 placeholder:text-slate-500 text-sm outline-none transition-colors",
                 errors.title
@@ -413,7 +419,7 @@ export function ReportFormContainer() {
           {/* Description */}
           <div className="space-y-1.5">
             <label htmlFor="report-description" className="block text-xs font-semibold text-slate-300">
-              What Happened <span className="text-rose-400">*</span>
+              {t.report.descLabel} <span className="text-rose-400">*</span>
             </label>
             <textarea
               id="report-description"
@@ -422,7 +428,7 @@ export function ReportFormContainer() {
               onChange={(e) => setField("description", e.target.value)}
               rows={4}
               maxLength={1000}
-              placeholder="Describe what happened. Do not include your OTP, passwords, PIN, or full bank account numbers."
+              placeholder={t.report.descPlaceholder}
               className={cn(
                 "w-full px-4 py-3 rounded-lg bg-slate-950 border text-slate-100 placeholder:text-slate-500 text-sm outline-none transition-colors resize-none leading-relaxed",
                 errors.description
@@ -450,10 +456,10 @@ export function ReportFormContainer() {
             <MapPin className="w-4 h-4 text-teal-400 mt-0.5 shrink-0" />
             <div>
               <h2 className="text-sm font-bold text-slate-100 uppercase tracking-wider">
-                Step 3 — Area <span className="text-slate-500 font-normal normal-case">(optional)</span>
+                {t.report.step3}
               </h2>
               <p className="text-xs text-slate-400 mt-1">
-                Your area helps map scam hotspots and alert nearby citizens. We do not store your exact address or home location.
+                {t.report.step3Desc}
               </p>
             </div>
           </div>
@@ -462,7 +468,7 @@ export function ReportFormContainer() {
             {/* State */}
             <div className="space-y-1.5">
               <label htmlFor="report-state" className="block text-xs font-semibold text-slate-300">
-                State
+                {t.report.stateLabel}
               </label>
               <div className="relative">
                 <select
@@ -475,7 +481,7 @@ export function ReportFormContainer() {
                     form.state ? "text-slate-100" : "text-slate-500"
                   )}
                 >
-                  <option value="">Select state…</option>
+                  <option value="">{t.report.selectState}</option>
                   {INDIAN_STATES.map((s) => (
                     <option key={s} value={s} className="bg-slate-900 text-slate-100">{s}</option>
                   ))}
@@ -487,7 +493,7 @@ export function ReportFormContainer() {
             {/* City */}
             <div className="space-y-1.5">
               <label htmlFor="report-city" className="block text-xs font-semibold text-slate-300">
-                City / Town
+                {t.report.cityLabel}
               </label>
               <input
                 id="report-city"
@@ -495,7 +501,7 @@ export function ReportFormContainer() {
                 value={form.city}
                 disabled={isSubmitting}
                 onChange={(e) => setField("city", e.target.value)}
-                placeholder="e.g. Bengaluru"
+                placeholder={t.report.cityPlaceholder}
                 className="w-full h-11 px-4 rounded-lg bg-slate-950 border border-slate-700/80 hover:border-slate-600 focus:border-teal-500 text-slate-100 placeholder:text-slate-500 text-sm outline-none transition-colors"
               />
             </div>
@@ -504,7 +510,7 @@ export function ReportFormContainer() {
           {/* PIN code */}
           <div className="space-y-1.5 max-w-[200px]">
             <label htmlFor="report-pincode" className="block text-xs font-semibold text-slate-300">
-              PIN Code
+              {t.report.pincodeLabel}
             </label>
             <input
               id="report-pincode"
@@ -535,15 +541,17 @@ export function ReportFormContainer() {
           <div className="flex items-start gap-3 p-4 rounded-lg bg-slate-950/50 border border-slate-800">
             <EyeOff className="w-5 h-5 text-teal-400 shrink-0 mt-0.5" />
             <div className="space-y-2 text-xs text-slate-300 leading-relaxed">
-              <p className="font-bold text-slate-100 text-sm">Your Privacy Matters</p>
+              <p className="font-bold text-slate-100 text-sm">{t.report.privacyTitle}</p>
               <ul className="space-y-1.5 list-none">
-                <li>• Your identity as a reporter is not displayed publicly.</li>
-                <li>• Scam reports are shared to protect the community, not to expose individuals.</li>
-                <li>• Map visualisation uses area-level aggregation, not exact addresses.</li>
-                <li>• Do not include OTPs, passwords, PINs, or full bank account numbers in your description.</li>
+                <li>• {t.report.privacyP1}</li>
+                <li>• {t.report.privacyP2}</li>
+                <li>• {t.report.privacyP3}</li>
+                <li>• {t.report.privacyP4}</li>
               </ul>
               <p className="text-[11px] text-slate-400 pt-1">
-                Reports are reviewed before being made publicly visible. Submitting false reports may result in your access being restricted.
+                {isHi
+                  ? "सार्वजनिक होने से पहले रिपोर्ट की समीक्षा की जाती है। झूठी रिपोर्ट देने पर पहुंच प्रतिबंधित हो सकती है।"
+                  : "Reports are reviewed before being made publicly visible. Submitting false reports may result in your access being restricted."}
               </p>
             </div>
           </div>
@@ -556,13 +564,17 @@ export function ReportFormContainer() {
             isLoading={isSubmitting}
             className="w-full font-bold text-base"
           >
-            {isSubmitting ? "Submitting Report…" : "Submit Report"}
+            {isSubmitting ? t.report.submittingBtn : t.report.submitBtn}
           </PrimaryButton>
 
           {isSubmitting && (
             <p className="text-center text-xs text-slate-400 flex items-center justify-center gap-2">
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              <span>Sending to the Community Scam Map intelligence network…</span>
+              <span>
+                {isHi
+                  ? "कम्युनिटी स्कैम मैप इंटेलिजेंस नेटवर्क को भेजा जा रहा है…"
+                  : "Sending to the Community Scam Map intelligence network…"}
+              </span>
             </p>
           )}
         </section>

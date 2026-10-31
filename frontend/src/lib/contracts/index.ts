@@ -3,7 +3,6 @@
  */
 import {
   ScamReportSummary,
-  DisputeSubmission,
   ScamCategory,
   IdentifierType,
   LookupIdentifierType,

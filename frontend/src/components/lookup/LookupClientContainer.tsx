@@ -16,11 +16,15 @@ import { apiClient, ApiError } from "@/lib/api/client";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { LoadingSkeleton } from "@/components/ui/LoadingSkeleton";
 import { ErrorState } from "@/components/ui/ErrorState";
+import { useLanguage } from "@/hooks/useLanguage";
 import { IdentifierTypeSelector, IDENTIFIER_OPTIONS } from "./IdentifierTypeSelector";
 import { LookupResultCard } from "./LookupResultCard";
 import { StayAlertSection } from "./StayAlertSection";
 
 export function LookupClientContainer() {
+  const { lang, t } = useLanguage();
+  const isHi = lang === "hi";
+
   const searchParams = useSearchParams();
   const [, startTransition] = useTransition();
 
@@ -82,7 +86,10 @@ export function LookupClientContainer() {
     // 1. Validate input
     const validation = validateIdentifier(selectedType, trimmed);
     if (!validation.isValid) {
-      setValidationError(validation.errorMessage || "Please enter a valid identifier.");
+      setValidationError(
+        validation.errorMessage ||
+          (isHi ? "कृपया एक मान्य पहचानकर्ता दर्ज करें।" : "Please enter a valid identifier.")
+      );
       return;
     }
 
@@ -113,39 +120,40 @@ export function LookupClientContainer() {
           const detail =
             typeof err.data === "object" && err.data !== null && "error" in err.data
               ? String((err.data as { error: unknown }).error)
-              : err.message || "The identifier format is invalid or rejected by verification rules.";
+              : err.message || (isHi ? "पहचानकर्ता प्रारूप अमान्य है।" : "The identifier format is invalid or rejected by verification rules.");
 
           setValidationError(detail);
         } else if (err.status === 403) {
           setApiError({
-            title: "Verification Service License Notice",
-            description: "The verification network license is currently under maintenance. Please contact the administrator.",
+            title: isHi ? "सत्यापन सेवा सूचना" : "Verification Service License Notice",
+            description: isHi ? "सत्यापन सेवा वर्तमान में रखरखाव में है। कृपया व्यवस्थापक से संपर्क करें।" : "The verification network license is currently under maintenance. Please contact the administrator.",
             canRetry: false,
           });
         } else if (err.status === 429) {
           setApiError({
-            title: "Rate Limit Exceeded",
-            description: "You have submitted too many requests in a short period. Please wait a moment before trying again.",
+            title: isHi ? "अनुरोध सीमा पार हो गई" : "Rate Limit Exceeded",
+            description: isHi ? "आपने कम समय में बहुत अधिक अनुरोध किए हैं। कृपया कुछ क्षण प्रतीक्षा करें।" : "You have submitted too many requests in a short period. Please wait a moment before trying again.",
             canRetry: true,
           });
         } else {
           setApiError({
-            title: "Unable to Complete Verification",
-            description: "A server disruption occurred while processing your lookup. Please try again shortly.",
+            title: isHi ? "सत्यापन पूरा करने में असमर्थ" : "Unable to Complete Verification",
+            description: isHi ? "जांच की प्रक्रिया के दौरान सर्वर त्रुटि हुई। कृपया पुनः प्रयास करें।" : "A server disruption occurred while processing your lookup. Please try again shortly.",
             canRetry: true,
           });
         }
       } else {
         // Network error or backend offline
         setApiError({
-          title: "Service Temporarily Unavailable",
-          description:
-            "Could not connect to the verification network (http://localhost:8000). Please ensure your connection is active or retry.",
+          title: isHi ? "सेवा अस्थायी रूप से अनुपलब्ध है" : "Service Temporarily Unavailable",
+          description: isHi
+            ? "सत्यापन नेटवर्क (http://localhost:8000) से संपर्क नहीं हो सका। कृपया अपनी कनेक्टिविटी जांचें या पुनः प्रयास करें।"
+            : "Could not connect to the verification network (http://localhost:8000). Please ensure your connection is active or retry.",
           canRetry: true,
         });
       }
     }
-  }, [inputValue, selectedType]);
+  }, [inputValue, isHi, selectedType]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -162,7 +170,7 @@ export function LookupClientContainer() {
           {/* A. Identifier Type Selector */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2.5">
-              Select Identifier Type
+              {t.lookup.selectType}
             </label>
             <IdentifierTypeSelector
               selectedType={selectedType}
@@ -174,7 +182,7 @@ export function LookupClientContainer() {
           {/* B. Input Field & Clear / Submit controls */}
           <div className="space-y-2">
             <label htmlFor="identifier-input" className="block text-xs font-bold uppercase tracking-wider text-slate-300">
-              {currentOption.label}
+              {isHi ? currentOption.labelHi : currentOption.label}
             </label>
 
             <div className="flex flex-col sm:flex-row items-stretch gap-2.5">
@@ -191,7 +199,7 @@ export function LookupClientContainer() {
                     setInputValue(e.target.value);
                     if (validationError) setValidationError(null);
                   }}
-                  placeholder={currentOption.placeholder}
+                  placeholder={isHi ? currentOption.placeholderHi : currentOption.placeholder}
                   className={cn(
                     "w-full h-12 pl-11 pr-10 rounded-xl bg-slate-950 border text-slate-100 placeholder:text-slate-400 text-sm sm:text-base outline-none transition-all",
                     validationError
@@ -206,7 +214,7 @@ export function LookupClientContainer() {
                     type="button"
                     onClick={handleClear}
                     className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors focus:outline-none"
-                    aria-label="Clear search input"
+                    aria-label={t.lookup.clear}
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -223,7 +231,7 @@ export function LookupClientContainer() {
                     onClick={handleClear}
                     className="h-12 px-3 text-slate-400 hover:text-slate-200"
                   >
-                    Clear
+                    {t.lookup.clear}
                   </PrimaryButton>
                 )}
 
@@ -235,7 +243,7 @@ export function LookupClientContainer() {
                   isLoading={isLoading}
                   className="h-12 px-6 flex-1 sm:flex-initial font-semibold"
                 >
-                  Check Now
+                  {isLoading ? t.lookup.checkingButton : t.lookup.checkButton}
                 </PrimaryButton>
               </div>
             </div>
@@ -248,7 +256,7 @@ export function LookupClientContainer() {
               </p>
             ) : (
               <p className="text-[11px] text-slate-400 mt-1.5">
-                {currentOption.helper}
+                {isHi ? currentOption.helperHi : currentOption.helper}
               </p>
             )}
           </div>
@@ -263,10 +271,10 @@ export function LookupClientContainer() {
             <Loader2 className="w-8 h-8 text-teal-400 animate-spin mx-auto" />
             <div className="space-y-1">
               <h3 className="text-base font-semibold text-slate-100">
-                Searching Community Intelligence Records...
+                {t.lookup.searching}
               </h3>
               <p className="text-xs text-slate-400">
-                Checking reported numbers, UPI IDs, and verified registries.
+                {t.lookup.searchingDesc}
               </p>
             </div>
             <div className="max-w-md mx-auto pt-2">
@@ -296,10 +304,10 @@ export function LookupClientContainer() {
               <ShieldQuestion className="w-6 h-6" />
             </div>
             <h3 className="text-base font-semibold text-slate-200">
-              Enter an Identifier to Run Verification
+              {t.lookup.emptyPrompt}
             </h3>
             <p className="text-xs sm:text-sm text-slate-400 max-w-lg mx-auto leading-relaxed">
-              Verify suspect callers, UPI payment QR handles, suspicious SMS headers, or phishing URLs against thousands of community fraud reports across India.
+              {t.lookup.emptyDesc}
             </p>
           </div>
         )}

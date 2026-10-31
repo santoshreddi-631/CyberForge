@@ -19,6 +19,7 @@ import { LoadingSkeleton } from "@/components/ui/LoadingSkeleton";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
+import { useLanguage } from "@/hooks/useLanguage";
 import { AlertCard } from "./AlertCard";
 
 type FetchState =
@@ -29,6 +30,9 @@ type FetchState =
 type TypeFilter = "ALL" | "SPIKE" | "NEW_TYPE";
 
 export function AlertsFeedContainer() {
+  const { lang, t } = useLanguage();
+  const isHi = lang === "hi";
+
   const [fetchState, setFetchState] = useState<FetchState>({ status: "loading" });
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("ALL");
   const [pincodeQuery, setPincodeQuery] = useState<string>("");
@@ -51,7 +55,7 @@ export function AlertsFeedContainer() {
       if (!response || !Array.isArray(response.alerts)) {
         setFetchState({
           status: "error",
-          message: "The intelligence server returned an unexpected alerts format.",
+          message: isHi ? "सर्वर से अप्रत्याशित अलर्ट प्रारूप प्राप्त हुआ।" : "The intelligence server returned an unexpected alerts format.",
           isNetworkError: false,
         });
         return;
@@ -64,18 +68,22 @@ export function AlertsFeedContainer() {
           status: "error",
           message:
             err.message ||
-            `API error (${err.status}): Could not retrieve threat alerts from GET /alerts.`,
+            (isHi
+              ? `API त्रुटि (${err.status}): GET /alerts से थ्रेट अलर्ट पुनर्प्राप्त नहीं किए जा सके।`
+              : `API error (${err.status}): Could not retrieve threat alerts from GET /alerts.`),
           isNetworkError: err.status === 0,
         });
       } else {
         setFetchState({
           status: "error",
-          message: "Unable to establish connection with the alerts intelligence server.",
+          message: isHi
+            ? "अलर्ट सर्वर से कनेक्शन स्थापित करने में असमर्थ।"
+            : "Unable to establish connection with the alerts intelligence server.",
           isNetworkError: true,
         });
       }
     }
-  }, []);
+  }, [isHi]);
 
   // Initial load on mount (purely asynchronous to avoid cascading renders)
   useEffect(() => {
@@ -89,7 +97,7 @@ export function AlertsFeedContainer() {
           if (!response || !Array.isArray(response.alerts)) {
             setFetchState({
               status: "error",
-              message: "The intelligence server returned an unexpected alerts format.",
+              message: isHi ? "सर्वर से अप्रत्याशित अलर्ट प्रारूप प्राप्त हुआ।" : "The intelligence server returned an unexpected alerts format.",
               isNetworkError: false,
             });
             return;
@@ -104,13 +112,17 @@ export function AlertsFeedContainer() {
               status: "error",
               message:
                 err.message ||
-                `API error (${err.status}): Could not retrieve threat alerts from GET /alerts.`,
+                (isHi
+                  ? `API त्रुटि (${err.status}): GET /alerts से थ्रेट अलर्ट पुनर्प्राप्त नहीं किए जा सके।`
+                  : `API error (${err.status}): Could not retrieve threat alerts from GET /alerts.`),
               isNetworkError: err.status === 0,
             });
           } else {
             setFetchState({
               status: "error",
-              message: "Unable to establish connection with the alerts intelligence server.",
+              message: isHi
+                ? "अलर्ट सर्वर से कनेक्शन स्थापित करने में असमर्थ।"
+                : "Unable to establish connection with the alerts intelligence server.",
               isNetworkError: true,
             });
           }
@@ -123,7 +135,7 @@ export function AlertsFeedContainer() {
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [isHi]);
 
   const handleApplyPincode = (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,13 +150,11 @@ export function AlertsFeedContainer() {
     loadAlerts();
   };
 
-  // Filter alerts by type client-side (does not send undocumented query params)
+  // Filter alerts by active tab
   const displayedAlerts = useMemo(() => {
     if (fetchState.status !== "success") return [];
-    const all = fetchState.data.alerts;
-
-    if (typeFilter === "ALL") return all;
-    return all.filter((a) => a.type?.toUpperCase() === typeFilter);
+    if (typeFilter === "ALL") return fetchState.data.alerts;
+    return fetchState.data.alerts.filter((a) => a.type?.toUpperCase() === typeFilter);
   }, [fetchState, typeFilter]);
 
   // Summary counts calculated exclusively from real returned alerts
@@ -171,17 +181,19 @@ export function AlertsFeedContainer() {
           <Shield className="w-5 h-5 text-teal-400 shrink-0 mt-0.5" />
           <div className="space-y-0.5">
             <span className="font-bold text-slate-100 block">
-              Independent Verification & Responsible Use
+              {isHi ? "स्वतंत्र सत्यापन एवं ज़िम्मेदार उपयोग" : "Independent Verification & Responsible Use"}
             </span>
             <p className="text-slate-400 leading-relaxed text-[11px] sm:text-xs">
-              Alerts highlight unusual reporting patterns (surges or newly observed scam types) detected in neighborhood clusters. Alerts represent community signals and should be verified independently before taking protective action.
+              {isHi
+                ? "अलर्ट पड़ोस के क्षेत्रों में पाए गए असामान्य रिपोर्टिंग पैटर्न (वृद्धि या नए फ्रॉड प्रकार) को रेखांकित करते हैं। किसी भी सुरक्षात्मक कदम से पहले स्वतंत्र रूप से पुष्टि अवश्य करें।"
+                : "Alerts highlight unusual reporting patterns (surges or newly observed scam types) detected in neighborhood clusters. Alerts represent community signals and should be verified independently before taking protective action."}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-teal-500/10 text-teal-300 border border-teal-500/20 flex items-center gap-1.5">
             <CheckCircle2 className="w-3.5 h-3.5" />
-            Anonymized Intelligence
+            {isHi ? "गुमनाम खुफिया जानकारी" : "Anonymized Intelligence"}
           </span>
         </div>
       </div>
@@ -206,7 +218,7 @@ export function AlertsFeedContainer() {
                   : "text-slate-400 hover:text-slate-200"
               }`}
             >
-              All Alerts {summaryCounts ? `(${summaryCounts.total})` : ""}
+              {t.alerts.allAlerts} {summaryCounts ? `(${summaryCounts.total})` : ""}
             </button>
             <button
               type="button"
@@ -220,7 +232,7 @@ export function AlertsFeedContainer() {
               }`}
             >
               <TrendingUp className="w-3.5 h-3.5" />
-              Volume Spikes {summaryCounts ? `(${summaryCounts.spikes})` : ""}
+              {t.alerts.volumeSpikes} {summaryCounts ? `(${summaryCounts.spikes})` : ""}
             </button>
             <button
               type="button"
@@ -234,7 +246,7 @@ export function AlertsFeedContainer() {
               }`}
             >
               <Sparkles className="w-3.5 h-3.5" />
-              New Vectors {summaryCounts ? `(${summaryCounts.newTypes})` : ""}
+              {t.alerts.newVectors} {summaryCounts ? `(${summaryCounts.newTypes})` : ""}
             </button>
           </div>
 
@@ -246,7 +258,7 @@ export function AlertsFeedContainer() {
                 inputMode="numeric"
                 value={pincodeQuery}
                 onChange={(e) => setPincodeQuery(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                placeholder="Filter by PIN (e.g. 560102)..."
+                placeholder={isHi ? "पिन कोड द्वारा फ़िल्टर करें..." : "Filter by PIN (e.g. 560102)..."}
                 className="w-full h-9 pl-8 pr-3 bg-slate-950 border border-slate-700/80 hover:border-slate-600 focus:border-teal-500 text-xs text-slate-100 placeholder:text-slate-500 rounded-lg outline-none font-mono"
               />
               <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 pointer-events-none" />
@@ -263,7 +275,7 @@ export function AlertsFeedContainer() {
               }}
               className="text-xs h-9"
             >
-              Filter
+              {t.alerts.filterBtn}
             </PrimaryButton>
 
             {activePincode && (
@@ -272,7 +284,7 @@ export function AlertsFeedContainer() {
                 onClick={handleClearPincode}
                 className="text-xs text-teal-400 hover:text-teal-300 underline underline-offset-4 px-1 whitespace-nowrap"
               >
-                Clear
+                {t.alerts.clearBtn}
               </button>
             )}
 
@@ -280,8 +292,8 @@ export function AlertsFeedContainer() {
               type="button"
               onClick={() => loadAlerts(activePincode)}
               className="p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors shrink-0"
-              title="Refresh alerts"
-              aria-label="Refresh alerts feed"
+              title={isHi ? "अलर्ट रीफ्रेश करें" : "Refresh alerts"}
+              aria-label={isHi ? "अलर्ट रीफ्रेश करें" : "Refresh alerts feed"}
             >
               <RotateCcw className="w-3.5 h-3.5" />
             </button>
@@ -294,42 +306,50 @@ export function AlertsFeedContainer() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
             <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold block">
-              Active Alerts
+              {t.alerts.activeAlerts}
             </span>
             <span className="text-2xl font-bold font-mono text-slate-100">
               {summaryCounts.total}
             </span>
-            <span className="text-[10px] text-slate-400 block">current signals</span>
+            <span className="text-[10px] text-slate-400 block">
+              {isHi ? "वर्तमान संकेत" : "current signals"}
+            </span>
           </div>
 
           <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
             <span className="text-[10px] text-amber-400 uppercase tracking-wider font-semibold block">
-              Report Surges
+              {t.alerts.reportSurges}
             </span>
             <span className="text-2xl font-bold font-mono text-amber-300">
               {summaryCounts.spikes}
             </span>
-            <span className="text-[10px] text-slate-400 block">SPIKE alerts</span>
+            <span className="text-[10px] text-slate-400 block">
+              {isHi ? "उछाल (SPIKE) अलर्ट" : "SPIKE alerts"}
+            </span>
           </div>
 
           <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
             <span className="text-[10px] text-teal-400 uppercase tracking-wider font-semibold block">
-              Emerging Vectors
+              {t.alerts.emergingVectors}
             </span>
             <span className="text-2xl font-bold font-mono text-teal-300">
               {summaryCounts.newTypes}
             </span>
-            <span className="text-[10px] text-slate-400 block">NEW_TYPE alerts</span>
+            <span className="text-[10px] text-slate-400 block">
+              {isHi ? "नए वेक्टर अलर्ट" : "NEW_TYPE alerts"}
+            </span>
           </div>
 
           <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
             <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold block">
-              Areas Affected
+              {t.alerts.areasAffected}
             </span>
             <span className="text-2xl font-bold font-mono text-slate-200">
               {summaryCounts.uniqueAreas}
             </span>
-            <span className="text-[10px] text-slate-400 block">monitored PINs</span>
+            <span className="text-[10px] text-slate-400 block">
+              {isHi ? "निगरानी पिन कोड" : "monitored PINs"}
+            </span>
           </div>
         </div>
       )}
@@ -345,7 +365,7 @@ export function AlertsFeedContainer() {
 
       {fetchState.status === "error" && (
         <ErrorState
-          title="Threat Alerts Feed Unavailable"
+          title={isHi ? "अलर्ट फ़ीड उपलब्ध नहीं है" : "Threat Alerts Feed Unavailable"}
           description={fetchState.message}
           onRetry={() => loadAlerts(activePincode)}
           action={
@@ -356,21 +376,21 @@ export function AlertsFeedContainer() {
                 onClick={() => loadAlerts(activePincode)}
                 leftIcon={<RotateCcw className="w-4 h-4" />}
               >
-                Retry Connection
+                {isHi ? "पुनः प्रयास करें" : "Retry Connection"}
               </PrimaryButton>
               <Link href="/map">
                 <PrimaryButton variant="outline" size="md">
-                  View Scam Map
+                  {isHi ? t.nav.map : "View Scam Map"}
                 </PrimaryButton>
               </Link>
               <Link href="/lookup">
                 <PrimaryButton variant="outline" size="md" leftIcon={<Search className="w-4 h-4" />}>
-                  Check an Identifier
+                  {isHi ? t.lookup.checkAnother : "Check an Identifier"}
                 </PrimaryButton>
               </Link>
               <Link href="/report">
                 <PrimaryButton variant="primary" size="md" leftIcon={<ShieldAlert className="w-4 h-4" />}>
-                  Report Scam
+                  {isHi ? t.home.reportIncident : "Report Incident"}
                 </PrimaryButton>
               </Link>
             </div>
@@ -380,11 +400,15 @@ export function AlertsFeedContainer() {
 
       {fetchState.status === "success" && displayedAlerts.length === 0 && (
         <EmptyState
-          title="No Active Threat Alerts"
+          title={isHi ? "कोई सक्रिय थ्रेट अलर्ट नहीं" : "No Active Threat Alerts"}
           description={
             activePincode || typeFilter !== "ALL"
-              ? `No alerts match your current filter settings. Try selecting 'All Alerts' or clearing the PIN code filter to check across all monitored locations.`
-              : `No unusual scam report spikes or newly observed patterns currently meet the alert threshold. This reflects normal community reporting activity. Please continue to report suspicious numbers, payment requests, and fraudulent links.`
+              ? (isHi
+                  ? "आपकी वर्तमान फ़िल्टर सेटिंग्स से कोई अलर्ट मेल नहीं खाता। 'सभी अलर्ट' चुनकर या पिन कोड हटाकर पुनः देखें।"
+                  : `No alerts match your current filter settings. Try selecting 'All Alerts' or clearing the PIN code filter to check across all monitored locations.`)
+              : (isHi
+                  ? "वर्तमान में कोई असामान्य स्कैम वृद्धि या नए फ्रॉड पैटर्न दर्ज नहीं हैं। यह सामान्य सामुदायिक गतिविधि दर्शाता है। संदिग्ध नंबरों और लिंक की रिपोर्ट जारी रखें।"
+                  : `No unusual scam report spikes or newly observed patterns currently meet the alert threshold. This reflects normal community reporting activity. Please continue to report suspicious numbers, payment requests, and fraudulent links.`)
           }
           action={
             <div className="flex items-center gap-3">
@@ -397,7 +421,7 @@ export function AlertsFeedContainer() {
                     handleClearPincode();
                   }}
                 >
-                  Clear Filters
+                  {isHi ? "फ़िल्टर साफ़ करें" : "Clear Filters"}
                 </PrimaryButton>
               )}
               <Link href="/report">
@@ -406,7 +430,7 @@ export function AlertsFeedContainer() {
                   size="sm"
                   leftIcon={<ShieldAlert className="w-4 h-4" />}
                 >
-                  Submit a Scam Report
+                  {isHi ? "स्कैम रिपोर्ट दर्ज करें" : "Submit a Scam Report"}
                 </PrimaryButton>
               </Link>
             </div>
@@ -418,9 +442,10 @@ export function AlertsFeedContainer() {
         <div className="space-y-4">
           <div className="flex items-center justify-between text-xs text-slate-400 px-1">
             <span>
-              Showing <strong className="text-slate-200">{displayedAlerts.length}</strong>{" "}
-              {displayedAlerts.length === 1 ? "alert" : "alerts"}
-              {activePincode ? ` for PIN ${activePincode}` : ""}
+              {isHi
+                ? `${displayedAlerts.length} अलर्ट प्रदर्शित`
+                : `Showing ${displayedAlerts.length} ${displayedAlerts.length === 1 ? "alert" : "alerts"}`}
+              {activePincode ? ` (${isHi ? "पिन" : "PIN"} ${activePincode})` : ""}
             </span>
             <span className="text-[11px] font-mono text-slate-400">
               Signal source: GET /alerts
@@ -440,26 +465,28 @@ export function AlertsFeedContainer() {
         <div className="space-y-1 text-center sm:text-left">
           <h4 className="text-sm font-semibold text-slate-200 flex items-center gap-1.5 justify-center sm:justify-start">
             <Info className="w-4 h-4 text-teal-400" />
-            Received an unusual message or payment QR code?
+            {isHi ? "क्या कोई असामान्य संदेश या पेमेंट क्यूआर कोड मिला है?" : "Received an unusual message or payment QR code?"}
           </h4>
           <p className="text-xs text-slate-400">
-            Check the phone number or UPI ID before responding, or submit a new report to help protect your community.
+            {isHi
+              ? "जवाब देने या पैसे भेजने से पहले फ़ोन नंबर या UPI ID की जांच करें, या अपने पड़ोस की सुरक्षा के लिए रिपोर्ट दर्ज करें।"
+              : "Check the phone number or UPI ID before responding, or submit a new report to help protect your community."}
           </p>
         </div>
         <div className="flex items-center gap-2.5 shrink-0">
           <Link href="/lookup">
             <PrimaryButton variant="outline" size="sm" leftIcon={<Search className="w-3.5 h-3.5" />}>
-              Lookup
+              {isHi ? t.nav.lookup : "Lookup"}
             </PrimaryButton>
           </Link>
           <Link href="/map">
             <PrimaryButton variant="secondary" size="sm">
-              Scam Map
+              {isHi ? t.nav.map : "Scam Map"}
             </PrimaryButton>
           </Link>
           <Link href="/report">
             <PrimaryButton variant="primary" size="sm" leftIcon={<ShieldAlert className="w-3.5 h-3.5" />}>
-              Report Incident
+              {isHi ? t.home.reportIncident : "Report Incident"}
             </PrimaryButton>
           </Link>
         </div>

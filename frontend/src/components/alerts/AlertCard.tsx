@@ -16,6 +16,7 @@ import { AlertItemContract } from "@/lib/contracts";
 import { MONITORED_AREAS, getScamTypeLabel } from "@/lib/constants/reportOptions";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface AlertCardProps {
   alert: AlertItemContract;
@@ -23,6 +24,9 @@ interface AlertCardProps {
 }
 
 export function AlertCard({ alert, className = "" }: AlertCardProps) {
+  const { lang, t } = useLanguage();
+  const isHi = lang === "hi";
+
   const isSpike = alert.type?.toUpperCase() === "SPIKE";
   const isNewType = alert.type?.toUpperCase() === "NEW_TYPE";
 
@@ -35,8 +39,8 @@ export function AlertCard({ alert, className = "" }: AlertCardProps) {
     if (matched) {
       return { locality: matched.area, city: matched.city };
     }
-    return { locality: `PIN ${alert.pincode}`, city: "Monitored Area" };
-  }, [alert]);
+    return { locality: `PIN ${alert.pincode}`, city: isHi ? "निगरानी क्षेत्र" : "Monitored Area" };
+  }, [alert, isHi]);
 
   const scamLabel = alert.scam_type ? getScamTypeLabel(alert.scam_type) : null;
 
@@ -57,12 +61,12 @@ export function AlertCard({ alert, className = "" }: AlertCardProps) {
           {isSpike ? (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
               <TrendingUp className="w-3.5 h-3.5 text-amber-400" />
-              Volume Surge (SPIKE)
+              {isHi ? "रिपोर्ट में उछाल (SPIKE)" : "Volume Surge (SPIKE)"}
             </span>
           ) : isNewType ? (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-teal-500/15 text-teal-300 border border-teal-500/30">
               <Sparkles className="w-3.5 h-3.5 text-teal-400" />
-              New Vector (NEW_TYPE)
+              {isHi ? "नया फ्रॉड वेक्टर (NEW_TYPE)" : "New Vector (NEW_TYPE)"}
             </span>
           ) : (
             <StatusBadge status="high" label={alert.type} size="sm" />
@@ -70,7 +74,7 @@ export function AlertCard({ alert, className = "" }: AlertCardProps) {
 
           {alert.window && (
             <span className="text-[11px] font-mono text-slate-400 px-2 py-0.5 rounded bg-slate-950/70 border border-slate-800">
-              Window: {alert.window}
+              {isHi ? "अवधि:" : "Window:"} {alert.window}
             </span>
           )}
         </div>
@@ -80,7 +84,7 @@ export function AlertCard({ alert, className = "" }: AlertCardProps) {
           <div className="flex items-center gap-1.5 text-xs text-slate-400">
             <Clock className="w-3.5 h-3.5 text-slate-500" />
             <time dateTime={alert.timestamp || alert.created_at}>
-              {new Date(alert.timestamp || alert.created_at || "").toLocaleString("en-IN", {
+              {new Date(alert.timestamp || alert.created_at || "").toLocaleString(isHi ? "hi-IN" : "en-IN", {
                 dateStyle: "medium",
                 timeStyle: "short",
               })}
@@ -106,9 +110,13 @@ export function AlertCard({ alert, className = "" }: AlertCardProps) {
             className="text-base sm:text-lg font-bold text-slate-100 tracking-tight"
           >
             {isSpike
-              ? `Report Surge Detected in ${areaInfo.locality}`
+              ? (isHi
+                  ? `${areaInfo.locality} में रिपोर्ट में भारी उछाल दर्ज`
+                  : `Report Surge Detected in ${areaInfo.locality}`)
               : isNewType
-              ? `New Scam Pattern Reported: ${scamLabel || "Unclassified Type"}`
+              ? (isHi
+                  ? `नया स्कैम पैटर्न रिपोर्ट हुआ: ${scamLabel || "अवर्गीकृत"}`
+                  : `New Scam Pattern Reported: ${scamLabel || "Unclassified Type"}`)
               : alert.title || `Scam Alert for PIN ${alert.pincode}`}
           </h3>
         </div>
@@ -117,20 +125,46 @@ export function AlertCard({ alert, className = "" }: AlertCardProps) {
         <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
           {isSpike ? (
             <>
-              Community reports in this area increased significantly in the last{" "}
-              <strong className="text-slate-100">{alert.window || "24 hours"}</strong>.
-              {alert.count !== undefined && (
+              {isHi ? (
                 <>
-                  {" "}The system recorded{" "}
-                  <strong className="text-amber-300 font-mono font-semibold">
-                    {alert.count} reports
-                  </strong>
-                  {alert.baseline_per_day !== undefined && (
+                  पिछले <strong className="text-slate-100">{alert.window || "24 घंटों"}</strong> में इस क्षेत्र में समुदाय रिपोर्टों में उल्लेखनीय वृद्धि देखी गई है।
+                  {alert.count !== undefined && (
                     <>
-                      , compared to the prior daily baseline average of{" "}
-                      <span className="font-mono text-slate-200">
-                        {alert.baseline_per_day.toFixed(1)}/day
-                      </span>.
+                      {" "}सिस्टम ने{" "}
+                      <strong className="text-amber-300 font-mono font-semibold">
+                        {alert.count} रिपोर्टें
+                      </strong>{" "}
+                      दर्ज की हैं
+                      {alert.baseline_per_day !== undefined && (
+                        <>
+                          , जबकि पिछले 7 दिनों का दैनिक औसत{" "}
+                          <span className="font-mono text-slate-200">
+                            {alert.baseline_per_day.toFixed(1)}/दिन
+                          </span>{" "}
+                          था।
+                        </>
+                      )}
+                    </>
+                  )}
+                </>
+              ) : (
+                <>
+                  Community reports in this area increased significantly in the last{" "}
+                  <strong className="text-slate-100">{alert.window || "24 hours"}</strong>.
+                  {alert.count !== undefined && (
+                    <>
+                      {" "}The system recorded{" "}
+                      <strong className="text-amber-300 font-mono font-semibold">
+                        {alert.count} reports
+                      </strong>
+                      {alert.baseline_per_day !== undefined && (
+                        <>
+                          , compared to the prior daily baseline average of{" "}
+                          <span className="font-mono text-slate-200">
+                            {alert.baseline_per_day.toFixed(1)}/day
+                          </span>.
+                        </>
+                      )}
                     </>
                   )}
                 </>
@@ -138,12 +172,21 @@ export function AlertCard({ alert, className = "" }: AlertCardProps) {
             </>
           ) : isNewType ? (
             <>
-              A scam category ({scamLabel || alert.scam_type}) not observed in this area over
-              the preceding 30 days was reported within the last{" "}
-              <strong className="text-slate-100">{alert.window || "24 hours"}</strong>. Stay cautious of unfamiliar communication channels.
+              {isHi ? (
+                <>
+                  एक नई धोखाधड़ी श्रेणी ({scamLabel || alert.scam_type}), जो पिछले 30 दिनों में इस इलाके में नहीं देखी गई थी, पिछले{" "}
+                  <strong className="text-slate-100">{alert.window || "24 घंटों"}</strong> में रिपोर्ट की गई है। अज्ञात संचार माध्यमों से सतर्क रहें।
+                </>
+              ) : (
+                <>
+                  A scam category ({scamLabel || alert.scam_type}) not observed in this area over
+                  the preceding 30 days was reported within the last{" "}
+                  <strong className="text-slate-100">{alert.window || "24 hours"}</strong>. Stay cautious of unfamiliar communication channels.
+                </>
+              )}
             </>
           ) : (
-            alert.summary || "Unusual community reporting activity flagged by the intelligence engine."
+            alert.summary || (isHi ? "सिस्टम द्वारा असामान्य रिपोर्टिंग गतिविधि चिह्नित की गई है।" : "Unusual community reporting activity flagged by the intelligence engine.")
           )}
         </p>
 
@@ -153,24 +196,28 @@ export function AlertCard({ alert, className = "" }: AlertCardProps) {
             {alert.count !== undefined && (
               <div className="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800 space-y-0.5">
                 <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider block">
-                  Incident Volume
+                  {isHi ? "घटना संख्या" : "Incident Volume"}
                 </span>
                 <span className="text-base font-bold font-mono text-amber-300">
                   {alert.count}
                 </span>
-                <span className="text-[10px] text-slate-400 ml-1">in {alert.window || "24h"}</span>
+                <span className="text-[10px] text-slate-400 ml-1">
+                  {isHi ? `(अवधि: ${alert.window || "24h"})` : `in ${alert.window || "24h"}`}
+                </span>
               </div>
             )}
 
             {alert.baseline_per_day !== undefined && (
               <div className="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800 space-y-0.5">
                 <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider block">
-                  Baseline Average
+                  {isHi ? "दैनिक औसत" : "Baseline Average"}
                 </span>
                 <span className="text-base font-bold font-mono text-slate-200">
                   {alert.baseline_per_day.toFixed(1)}
                 </span>
-                <span className="text-[10px] text-slate-400 ml-1">reports/day</span>
+                <span className="text-[10px] text-slate-400 ml-1">
+                  {isHi ? "रिपोर्ट/दिन" : "reports/day"}
+                </span>
               </div>
             )}
 
@@ -179,12 +226,14 @@ export function AlertCard({ alert, className = "" }: AlertCardProps) {
               alert.baseline_per_day > 0 && (
                 <div className="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800 space-y-0.5 col-span-2 sm:col-span-1">
                   <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider block">
-                    Surge Multiple
+                    {isHi ? "उछाल अनुपात" : "Surge Multiple"}
                   </span>
                   <span className="text-base font-bold font-mono text-rose-300">
                     {(alert.count / alert.baseline_per_day).toFixed(1)}x
                   </span>
-                  <span className="text-[10px] text-slate-400 ml-1">of baseline</span>
+                  <span className="text-[10px] text-slate-400 ml-1">
+                    {isHi ? "औसत से अधिक" : "of baseline"}
+                  </span>
                 </div>
               )}
           </div>
@@ -192,7 +241,7 @@ export function AlertCard({ alert, className = "" }: AlertCardProps) {
 
         {isNewType && alert.scam_type && (
           <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800 text-xs flex items-center justify-between">
-            <span className="text-slate-400">Newly Observed Pattern:</span>
+            <span className="text-slate-400">{isHi ? "नया देखा गया पैटर्न:" : "Newly Observed Pattern:"}</span>
             <span className="font-semibold text-teal-300 font-mono">
               {scamLabel}
             </span>
@@ -204,7 +253,11 @@ export function AlertCard({ alert, className = "" }: AlertCardProps) {
       <div className="pt-3 border-t border-slate-800/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
         <p className="text-[11px] text-slate-400 flex items-center gap-1.5">
           <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-          <span>Community signal • Independently verify before trusting payment requests.</span>
+          <span>
+            {isHi
+              ? "सामुदायिक संकेत • भुगतान अनुरोधों पर भरोसा करने से पहले स्वतंत्र रूप से पुष्टि करें।"
+              : "Community signal • Independently verify before trusting payment requests."}
+          </span>
         </p>
 
         <div className="flex flex-wrap items-center gap-2 self-stretch sm:self-auto shrink-0">
@@ -215,7 +268,7 @@ export function AlertCard({ alert, className = "" }: AlertCardProps) {
               className="text-xs"
               leftIcon={<Map className="w-3 h-3" />}
             >
-              View on Map
+              {isHi ? t.nav.map : "View on Map"}
             </PrimaryButton>
           </Link>
           <Link href={`/lookup`}>
@@ -225,7 +278,7 @@ export function AlertCard({ alert, className = "" }: AlertCardProps) {
               className="text-xs"
               leftIcon={<Search className="w-3 h-3" />}
             >
-              Lookup
+              {isHi ? t.nav.lookup : "Lookup"}
             </PrimaryButton>
           </Link>
           <Link href={`/report`}>
@@ -235,7 +288,7 @@ export function AlertCard({ alert, className = "" }: AlertCardProps) {
               className="text-xs"
               leftIcon={<ShieldAlert className="w-3 h-3" />}
             >
-              Report Scam
+              {isHi ? t.nav.report : "Report Scam"}
             </PrimaryButton>
           </Link>
         </div>
