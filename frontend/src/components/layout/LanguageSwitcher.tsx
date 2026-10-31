@@ -11,33 +11,27 @@ export interface LanguageSwitcherProps {
 }
 
 export function LanguageSwitcher({ className, compact = false }: LanguageSwitcherProps) {
-  const { lang, setLanguage, isMounted } = useLanguage();
-
-  if (!isMounted) {
-    return (
-      <div className={cn("h-8 w-20 bg-slate-800/40 rounded-lg animate-pulse", className)} />
-    );
-  }
+  const { lang, setLanguage } = useLanguage();
 
   return (
     <div
       className={cn(
-        "inline-flex items-center rounded-lg border border-slate-700/80 bg-slate-900/80 p-0.5 text-xs font-medium text-slate-300",
+        "inline-flex items-center rounded-full border border-[#E4DEFD] bg-[#F0EDFF] p-1 text-xs font-medium text-[#171638] shadow-sm",
         className
       )}
       role="group"
       aria-label="Language selection"
     >
-      <Languages className="w-3.5 h-3.5 ml-2 mr-1 text-slate-400 shrink-0" aria-hidden="true" />
+      <Languages className="w-3.5 h-3.5 ml-2 mr-1 text-[#6035E8] shrink-0" aria-hidden="true" />
       <button
         type="button"
         onClick={() => setLanguage("en")}
         aria-pressed={lang === "en"}
         className={cn(
-          "rounded-md px-2 py-1 transition-colors",
+          "rounded-full px-2.5 py-1 transition-all duration-150 font-medium cursor-pointer",
           lang === "en"
-            ? "bg-teal-500/20 text-teal-300 font-semibold"
-            : "hover:text-slate-100 hover:bg-slate-800/60"
+            ? "bg-[#6035E8] text-white font-bold shadow-sm"
+            : "text-[#545277] hover:text-[#171638] hover:bg-white/60"
         )}
       >
         {compact ? "EN" : "English"}
@@ -47,10 +41,10 @@ export function LanguageSwitcher({ className, compact = false }: LanguageSwitche
         onClick={() => setLanguage("hi")}
         aria-pressed={lang === "hi"}
         className={cn(
-          "rounded-md px-2 py-1 transition-colors",
+          "rounded-full px-2.5 py-1 transition-all duration-150 font-medium cursor-pointer",
           lang === "hi"
-            ? "bg-teal-500/20 text-teal-300 font-semibold"
-            : "hover:text-slate-100 hover:bg-slate-800/60"
+            ? "bg-[#6035E8] text-white font-bold shadow-sm"
+            : "text-[#545277] hover:text-[#171638] hover:bg-white/60"
         )}
       >
         {compact ? "हि" : "हिन्दी"}

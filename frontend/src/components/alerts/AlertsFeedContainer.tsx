@@ -179,14 +179,16 @@ export function AlertsFeedContainer() {
   return (
     <div className="space-y-6">
       {/* ── Responsible Messaging & Privacy Notice ──────────────────── */}
-      <div className="rounded-xl bg-slate-900/90 border border-slate-800 p-4 text-xs text-slate-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md">
-        <div className="flex items-start gap-3">
-          <Shield className="w-5 h-5 text-teal-400 shrink-0 mt-0.5" />
-          <div className="space-y-0.5">
-            <span className="font-bold text-slate-100 block">
+      <div className="rounded-2xl bg-white border border-[#EAE6FD] p-5 text-xs text-[#545277] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+        <div className="flex items-start gap-3.5">
+          <div className="w-9 h-9 rounded-full bg-[#6035E8]/10 text-[#6035E8] flex items-center justify-center shrink-0 mt-0.5">
+            <Shield className="w-4 h-4" />
+          </div>
+          <div className="space-y-1">
+            <span className="font-bold text-[#171638] text-sm block">
               {isHi ? "स्वतंत्र सत्यापन एवं ज़िम्मेदार उपयोग" : "Independent Verification & Responsible Use"}
             </span>
-            <p className="text-slate-400 leading-relaxed text-[11px] sm:text-xs">
+            <p className="text-[#837FA8] leading-relaxed text-xs">
               {isHi
                 ? "अलर्ट पड़ोस के क्षेत्रों में पाए गए असामान्य रिपोर्टिंग पैटर्न (वृद्धि या नए फ्रॉड प्रकार) को रेखांकित करते हैं। किसी भी सुरक्षात्मक कदम से पहले स्वतंत्र रूप से पुष्टि अवश्य करें।"
                 : "Alerts highlight unusual reporting patterns (surges or newly observed scam types) detected in neighborhood clusters. Alerts represent community signals and should be verified independently before taking protective action."}
@@ -194,31 +196,31 @@ export function AlertsFeedContainer() {
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-teal-500/10 text-teal-300 border border-teal-500/20 flex items-center gap-1.5">
-            <CheckCircle2 className="w-3.5 h-3.5" />
+          <span className="px-3.5 py-1.5 rounded-full text-xs font-bold bg-[#F0EDFF] text-[#6035E8] border border-[#DDD6FE] flex items-center gap-1.5 shadow-sm">
+            <CheckCircle2 className="w-3.5 h-3.5 text-[#6035E8]" />
             {isHi ? "गुमनाम खुफिया जानकारी" : "Anonymized Intelligence"}
           </span>
         </div>
       </div>
 
       {/* ── Toolbar: Type Filter Tabs & PIN Code Filter ──────────────── */}
-      <div className="rounded-xl bg-slate-900/60 border border-slate-800 p-4 space-y-3">
+      <div className="rounded-2xl bg-white border border-[#EAE6FD] p-4 sm:p-5 space-y-3 shadow-sm">
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           {/* Type Filter Tabs */}
           <div
             role="tablist"
             aria-label="Filter alerts by type"
-            className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-lg border border-slate-800 overflow-x-auto"
+            className="flex items-center gap-1.5 bg-[#F0EDFF] p-1.5 rounded-full border border-[#EAE6FD] overflow-x-auto"
           >
             <button
               type="button"
               role="tab"
               aria-selected={typeFilter === "ALL"}
               onClick={() => setTypeFilter("ALL")}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${
+              className={`px-3.5 py-1.5 rounded-full text-xs transition-all whitespace-nowrap cursor-pointer ${
                 typeFilter === "ALL"
-                  ? "bg-teal-500/20 text-teal-300 font-semibold shadow-xs"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "bg-[#6035E8] text-white font-bold shadow-xs"
+                  : "text-[#545277] hover:text-[#171638]"
               }`}
             >
               {t.alerts.allAlerts} {summaryCounts ? `(${summaryCounts.total})` : ""}
@@ -228,10 +230,10 @@ export function AlertsFeedContainer() {
               role="tab"
               aria-selected={typeFilter === "SPIKE"}
               onClick={() => setTypeFilter("SPIKE")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs transition-all whitespace-nowrap cursor-pointer ${
                 typeFilter === "SPIKE"
-                  ? "bg-amber-500/20 text-amber-300 font-semibold shadow-xs"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "bg-[#FFC928] text-[#171638] font-bold shadow-xs"
+                  : "text-[#545277] hover:text-[#171638]"
               }`}
             >
               <TrendingUp className="w-3.5 h-3.5" />
@@ -242,10 +244,10 @@ export function AlertsFeedContainer() {
               role="tab"
               aria-selected={typeFilter === "NEW_TYPE"}
               onClick={() => setTypeFilter("NEW_TYPE")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs transition-all whitespace-nowrap cursor-pointer ${
                 typeFilter === "NEW_TYPE"
-                  ? "bg-teal-500/20 text-teal-300 font-semibold shadow-xs"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "bg-[#08C9C5] text-white font-bold shadow-xs"
+                  : "text-[#545277] hover:text-[#171638]"
               }`}
             >
               <Sparkles className="w-3.5 h-3.5" />
@@ -262,21 +264,21 @@ export function AlertsFeedContainer() {
                 value={pincodeQuery}
                 onChange={(e) => setPincodeQuery(e.target.value.replace(/\D/g, "").slice(0, 6))}
                 placeholder={isHi ? "पिन कोड द्वारा फ़िल्टर करें..." : "Filter by PIN (e.g. 560102)..."}
-                className="w-full h-9 pl-8 pr-3 bg-slate-950 border border-slate-700/80 hover:border-slate-600 focus:border-teal-500 text-xs text-slate-100 placeholder:text-slate-500 rounded-lg outline-none font-mono"
+                className="w-full h-11 pl-9 pr-3 bg-[#F6F4FE] border border-[#EAE6FD] hover:border-[#6035E8]/40 focus:border-[#6035E8] focus:bg-white text-xs text-[#171638] placeholder:text-[#837FA8] rounded-xl outline-none font-mono transition-colors"
               />
-              <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 pointer-events-none" />
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#837FA8] pointer-events-none" />
             </form>
 
             <PrimaryButton
               type="button"
-              variant="secondary"
+              variant="purple"
               size="sm"
               onClick={() => {
                 const cleanPin = pincodeQuery.trim();
                 setActivePincode(cleanPin);
                 loadAlerts(cleanPin);
               }}
-              className="text-xs h-9"
+              className="text-xs h-11"
             >
               {t.alerts.filterBtn}
             </PrimaryButton>
@@ -285,7 +287,7 @@ export function AlertsFeedContainer() {
               <button
                 type="button"
                 onClick={handleClearPincode}
-                className="text-xs text-teal-400 hover:text-teal-300 underline underline-offset-4 px-1 whitespace-nowrap"
+                className="text-xs text-[#6035E8] hover:text-[#4317BD] font-bold underline underline-offset-4 px-1 whitespace-nowrap cursor-pointer"
               >
                 {t.alerts.clearBtn}
               </button>
@@ -294,7 +296,7 @@ export function AlertsFeedContainer() {
             <button
               type="button"
               onClick={() => loadAlerts(activePincode)}
-              className="p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors shrink-0"
+              className="p-2.5 rounded-full text-[#545277] hover:text-[#171638] hover:bg-[#F0EDFF] transition-colors shrink-0 cursor-pointer"
               title={isHi ? "अलर्ट रीफ्रेश करें" : "Refresh alerts"}
               aria-label={isHi ? "अलर्ट रीफ्रेश करें" : "Refresh alerts feed"}
             >
@@ -306,51 +308,51 @@ export function AlertsFeedContainer() {
 
       {/* ── Summary Metrics Bar (Derived strictly from real alerts) ─── */}
       {summaryCounts && summaryCounts.total > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
-            <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold block">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+          <div className="p-4 rounded-2xl bg-white border border-[#EAE6FD] space-y-1 shadow-sm">
+            <span className="text-[11px] text-[#837FA8] uppercase tracking-wider font-bold block">
               {t.alerts.activeAlerts}
             </span>
-            <span className="text-2xl font-bold font-mono text-slate-100">
+            <span className="text-3xl font-black font-mono text-[#171638]">
               {summaryCounts.total}
             </span>
-            <span className="text-[10px] text-slate-400 block">
+            <span className="text-[11px] text-[#545277] font-medium block">
               {isHi ? "वर्तमान संकेत" : "current signals"}
             </span>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
-            <span className="text-[10px] text-amber-400 uppercase tracking-wider font-semibold block">
+          <div className="p-4 rounded-2xl bg-white border border-[#EAE6FD] space-y-1 shadow-sm">
+            <span className="text-[11px] text-amber-600 uppercase tracking-wider font-bold block">
               {t.alerts.reportSurges}
             </span>
-            <span className="text-2xl font-bold font-mono text-amber-300">
+            <span className="text-3xl font-black font-mono text-amber-500">
               {summaryCounts.spikes}
             </span>
-            <span className="text-[10px] text-slate-400 block">
+            <span className="text-[11px] text-[#545277] font-medium block">
               {isHi ? "उछाल (SPIKE) अलर्ट" : "SPIKE alerts"}
             </span>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
-            <span className="text-[10px] text-teal-400 uppercase tracking-wider font-semibold block">
+          <div className="p-4 rounded-2xl bg-white border border-[#EAE6FD] space-y-1 shadow-sm">
+            <span className="text-[11px] text-[#08C9C5] uppercase tracking-wider font-bold block">
               {t.alerts.emergingVectors}
             </span>
-            <span className="text-2xl font-bold font-mono text-teal-300">
+            <span className="text-3xl font-black font-mono text-[#08C9C5]">
               {summaryCounts.newTypes}
             </span>
-            <span className="text-[10px] text-slate-400 block">
+            <span className="text-[11px] text-[#545277] font-medium block">
               {isHi ? "नए वेक्टर अलर्ट" : "NEW_TYPE alerts"}
             </span>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
-            <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold block">
+          <div className="p-4 rounded-2xl bg-white border border-[#EAE6FD] space-y-1 shadow-sm">
+            <span className="text-[11px] text-[#6035E8] uppercase tracking-wider font-bold block">
               {t.alerts.areasAffected}
             </span>
-            <span className="text-2xl font-bold font-mono text-slate-200">
+            <span className="text-3xl font-black font-mono text-[#6035E8]">
               {summaryCounts.uniqueAreas}
             </span>
-            <span className="text-[10px] text-slate-400 block">
+            <span className="text-[11px] text-[#545277] font-medium block">
               {isHi ? "निगरानी पिन कोड" : "monitored PINs"}
             </span>
           </div>
@@ -464,19 +466,19 @@ export function AlertsFeedContainer() {
       )}
 
       {/* ── Context & Navigation Footer ─────────────────────────────── */}
-      <div className="rounded-xl bg-slate-900/40 border border-slate-800 p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="space-y-1 text-center sm:text-left">
-          <h4 className="text-sm font-semibold text-slate-200 flex items-center gap-1.5 justify-center sm:justify-start">
-            <Info className="w-4 h-4 text-teal-400" />
+      <div className="rounded-[2rem] bg-white border border-[#EAE6FD] p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-5 shadow-sm">
+        <div className="space-y-1.5 text-center sm:text-left">
+          <h4 className="text-base sm:text-lg font-black text-[#171638] flex items-center gap-2 justify-center sm:justify-start">
+            <Info className="w-4 h-4 text-[#6035E8]" />
             {isHi ? "क्या कोई असामान्य संदेश या पेमेंट क्यूआर कोड मिला है?" : "Received an unusual message or payment QR code?"}
           </h4>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs sm:text-sm text-[#545277] font-medium max-w-xl leading-relaxed">
             {isHi
               ? "जवाब देने या पैसे भेजने से पहले फ़ोन नंबर या UPI ID की जांच करें, या अपने पड़ोस की सुरक्षा के लिए रिपोर्ट दर्ज करें।"
               : "Check the phone number or UPI ID before responding, or submit a new report to help protect your community."}
           </p>
         </div>
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex items-center gap-3 shrink-0">
           <Link href="/lookup">
             <PrimaryButton variant="outline" size="sm" leftIcon={<Search className="w-3.5 h-3.5" />}>
               {isHi ? t.nav.lookup : "Lookup"}

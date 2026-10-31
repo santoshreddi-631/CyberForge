@@ -32,37 +32,39 @@ export function AlertsPageClient() {
       />
 
       {/* ── Educational Guide on Alert Mechanics ───────────────────── */}
-      <div className="mb-6 rounded-xl bg-slate-900/60 border border-slate-800 p-4 sm:p-5 space-y-3 text-xs text-slate-300">
-        <div className="flex items-center gap-2 font-bold text-slate-100">
-          <Bell className="w-4 h-4 text-teal-400" />
+      <div className="mb-6 rounded-[2rem] bg-white border border-[#EAE6FD] p-6 sm:p-7 space-y-4 text-xs text-[#545277] shadow-sm">
+        <div className="flex items-center gap-2.5 font-black text-[#171638] text-sm sm:text-base">
+          <div className="w-8 h-8 rounded-full bg-[#6035E8]/10 text-[#6035E8] flex items-center justify-center shrink-0">
+            <Bell className="w-4 h-4" />
+          </div>
           <span>{t.alerts.guideTitle}</span>
         </div>
-        <p className="text-slate-400 leading-relaxed text-[11px] sm:text-xs">
+        <p className="text-[#545277] leading-relaxed text-xs sm:text-sm font-medium">
           {t.alerts.guideDesc}
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-          <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800 space-y-1">
-            <div className="flex items-center gap-1.5 font-semibold text-amber-300">
-              <TrendingUp className="w-3.5 h-3.5" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
+          <div className="p-4 rounded-2xl bg-[#FFF9EB] border border-[#FDE68A] space-y-1">
+            <div className="flex items-center gap-2 font-bold text-amber-900 text-xs sm:text-sm">
+              <TrendingUp className="w-4 h-4 text-amber-600" />
               <span>{t.alerts.spikeTitle}</span>
             </div>
-            <p className="text-[11px] text-slate-400 leading-relaxed">
+            <p className="text-[11px] sm:text-xs text-amber-800 leading-relaxed font-medium">
               {t.alerts.spikeDesc}
             </p>
           </div>
 
-          <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800 space-y-1">
-            <div className="flex items-center gap-1.5 font-semibold text-teal-300">
-              <Sparkles className="w-3.5 h-3.5" />
+          <div className="p-4 rounded-2xl bg-[#E6FAF9] border border-[#99F0ED] space-y-1">
+            <div className="flex items-center gap-2 font-bold text-teal-950 text-xs sm:text-sm">
+              <Sparkles className="w-4 h-4 text-[#08C9C5]" />
               <span>{t.alerts.newTypeTitle}</span>
             </div>
-            <p className="text-[11px] text-slate-400 leading-relaxed">
+            <p className="text-[11px] sm:text-xs text-teal-900 leading-relaxed font-medium">
               {t.alerts.newTypeDesc}
             </p>
           </div>
         </div>
-        <div className="flex items-start gap-2 pt-2 border-t border-slate-800/80 text-[11px] text-slate-400 leading-relaxed">
-          <AlertCircle className="w-3.5 h-3.5 text-slate-500 shrink-0 mt-0.5" />
+        <div className="flex items-start gap-2 pt-3 border-t border-[#EAE6FD] text-[11px] text-[#837FA8] leading-relaxed font-medium">
+          <AlertCircle className="w-3.5 h-3.5 text-[#837FA8] shrink-0 mt-0.5" />
           <span>
             {isHi
               ? "अलर्ट केवल सांख्यिकीय सामुदायिक संकेत हैं और किसी व्यक्ति या व्यवसाय के विरुद्ध कानूनी दोष सिद्ध नहीं करते।"

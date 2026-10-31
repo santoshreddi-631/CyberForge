@@ -161,7 +161,7 @@ export function GeospatialMapView({
   return (
     <div
       ref={containerRef}
-      className={`relative w-full h-[520px] md:h-[620px] rounded-2xl border border-slate-800 bg-[#070c18] overflow-hidden select-none ${className}`}
+      className={`relative w-full h-[520px] md:h-[620px] rounded-[2.5rem] border border-[#EAE6FD] bg-[#120D2C] overflow-hidden select-none shadow-xl shadow-[#6035E8]/10 ${className}`}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
@@ -174,14 +174,14 @@ export function GeospatialMapView({
       aria-label="Interactive Scam Clusters Map of India"
     >
       {/* Background Geo Matrix Grid */}
-      <div className="absolute inset-0 pointer-events-none opacity-20 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px]" />
+      <div className="absolute inset-0 pointer-events-none opacity-25 bg-[radial-gradient(#6035E8_1px,transparent_1px)] [background-size:24px_24px]" />
 
       {/* Map Control Buttons */}
-      <div className="absolute top-4 right-4 z-20 flex flex-col gap-1.5 bg-slate-900/90 border border-slate-700/80 rounded-xl p-1.5 shadow-xl backdrop-blur-md">
+      <div className="absolute top-4 right-4 z-20 flex flex-col gap-1.5 bg-white/95 border border-[#EAE6FD] rounded-2xl p-1.5 shadow-xl backdrop-blur-md">
         <button
           type="button"
           onClick={handleZoomIn}
-          className="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 active:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-400"
+          className="p-2 rounded-xl text-[#171638] hover:text-[#6035E8] hover:bg-[#F0EDFF] active:bg-[#E0DCFC] transition-colors focus:outline-none focus:ring-2 focus:ring-[#6035E8] cursor-pointer"
           title="Zoom In"
           aria-label="Zoom In"
         >
@@ -190,17 +190,17 @@ export function GeospatialMapView({
         <button
           type="button"
           onClick={handleZoomOut}
-          className="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 active:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-400"
+          className="p-2 rounded-xl text-[#171638] hover:text-[#6035E8] hover:bg-[#F0EDFF] active:bg-[#E0DCFC] transition-colors focus:outline-none focus:ring-2 focus:ring-[#6035E8] cursor-pointer"
           title="Zoom Out"
           aria-label="Zoom Out"
         >
           <ZoomOut className="w-4 h-4" />
         </button>
-        <div className="h-px bg-slate-800 my-0.5" />
+        <div className="h-px bg-[#EAE6FD] my-0.5" />
         <button
           type="button"
           onClick={handleReset}
-          className="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 active:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-400"
+          className="p-2 rounded-xl text-[#171638] hover:text-[#6035E8] hover:bg-[#F0EDFF] active:bg-[#E0DCFC] transition-colors focus:outline-none focus:ring-2 focus:ring-[#6035E8] cursor-pointer"
           title="Reset View"
           aria-label="Reset View"
         >
@@ -209,37 +209,37 @@ export function GeospatialMapView({
       </div>
 
       {/* Map Legend */}
-      <div className="absolute bottom-4 left-4 z-20 p-3 rounded-xl bg-slate-950/90 border border-slate-800 shadow-xl backdrop-blur-md text-xs text-slate-300 space-y-2 max-w-[240px]">
-        <div className="flex items-center gap-1.5 font-semibold text-slate-200">
-          <Layers className="w-3.5 h-3.5 text-teal-400" />
+      <div className="absolute bottom-4 left-4 z-20 p-4 rounded-2xl bg-white/95 border border-[#EAE6FD] shadow-xl backdrop-blur-md text-xs text-[#171638] space-y-2 max-w-[240px]">
+        <div className="flex items-center gap-1.5 font-bold text-[#171638]">
+          <Layers className="w-3.5 h-3.5 text-[#6035E8]" />
           <span>Scam Activity Severity</span>
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 font-medium">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_8px_#ef4444]" />
-            <span className="text-slate-300">CRIT (Critical Volume)</span>
+            <span className="text-[#545277]">CRIT (Critical Volume)</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_#f59e0b]" />
-            <span className="text-slate-300">HIGH (Elevated Volume)</span>
+            <span className="text-[#545277]">HIGH (Elevated Volume)</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-teal-400 shadow-[0_0_8px_#14b8a6]" />
-            <span className="text-slate-300">MED (Moderate Volume)</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-[#08C9C5] shadow-[0_0_8px_#08C9C5]" />
+            <span className="text-[#545277]">MED (Moderate Volume)</span>
           </div>
         </div>
-        <p className="text-[10px] text-slate-400 border-t border-slate-800 pt-1.5 leading-tight">
+        <p className="text-[10px] text-[#837FA8] border-t border-[#EAE6FD] pt-1.5 leading-tight font-medium">
           Aggregated by PIN code from community reports over the last 7 days.
         </p>
       </div>
 
       {/* Coordinates / Zoom Level Info Pill */}
-      <div className="absolute top-4 left-4 z-20 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-800 text-[11px] font-mono text-slate-400 backdrop-blur-md">
-        <span className="text-teal-400 font-semibold">GIS Engine</span>
-        <span>•</span>
-        <span>Zoom: {zoom.toFixed(1)}x</span>
-        <span>•</span>
-        <span>{clusters.length} clusters</span>
+      <div className="absolute top-4 left-4 z-20 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/95 border border-[#EAE6FD] text-[11px] font-mono text-[#171638] backdrop-blur-md shadow-sm">
+        <span className="text-[#6035E8] font-bold">GIS Engine</span>
+        <span className="text-[#DDD6FE]">•</span>
+        <span className="font-medium text-[#545277]">Zoom: {zoom.toFixed(1)}x</span>
+        <span className="text-[#DDD6FE]">•</span>
+        <span className="font-bold text-[#08C9C5]">{clusters.length} clusters</span>
       </div>
 
       {/* SVG Canvas */}
@@ -255,8 +255,8 @@ export function GeospatialMapView({
         <defs>
           {/* Subtle gradient for map landmass */}
           <radialGradient id="landmassGradient" cx="50%" cy="50%" r="65%">
-            <stop offset="0%" stopColor="#111c35" stopOpacity="0.85" />
-            <stop offset="100%" stopColor="#0b1325" stopOpacity="0.7" />
+            <stop offset="0%" stopColor="#281A5E" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#191040" stopOpacity="0.85" />
           </radialGradient>
 
           {/* Radial glow filter */}
@@ -270,7 +270,7 @@ export function GeospatialMapView({
         </defs>
 
         {/* Latitude / Longitude Reference Lines */}
-        <g stroke="#1a2744" strokeWidth="1" strokeDasharray="3 3">
+        <g stroke="#2D1F6E" strokeWidth="1" strokeDasharray="3 3">
           {/* Latitude lines */}
           <line x1="20" y1="216" x2="780" y2="216" /> {/* ~28.5N */}
           <line x1="20" y1="416" x2="780" y2="416" /> {/* ~19.5N */}
@@ -285,7 +285,7 @@ export function GeospatialMapView({
         <path
           d={INDIA_COASTLINE_PATH}
           fill="url(#landmassGradient)"
-          stroke="#1e3a66"
+          stroke="#4D2DBB"
           strokeWidth="1.5"
           strokeLinejoin="round"
           className="transition-colors"
@@ -418,31 +418,31 @@ export function GeospatialMapView({
       {/* Floating Hover Tooltip */}
       {hoveredCluster && hoverPos && (
         <div
-          className="absolute z-30 pointer-events-none p-2.5 rounded-lg bg-slate-900/95 border border-slate-700 shadow-2xl backdrop-blur-md text-xs space-y-1 transform -translate-x-1/2 -translate-y-full mb-3"
+          className="absolute z-30 pointer-events-none p-3.5 rounded-2xl bg-white/95 border border-[#EAE6FD] shadow-2xl backdrop-blur-md text-xs space-y-1 transform -translate-x-1/2 -translate-y-full mb-3"
           style={{
             left: `${hoverPos.x}px`,
             top: `${hoverPos.y - 12}px`,
           }}
         >
-          <div className="flex items-center gap-1.5 font-bold text-slate-100">
-            <MapPin className="w-3.5 h-3.5 text-teal-400" />
+          <div className="flex items-center gap-1.5 font-bold text-[#171638]">
+            <MapPin className="w-3.5 h-3.5 text-[#6035E8]" />
             <span>{hoveredCluster.locality}</span>
           </div>
-          <p className="text-[11px] text-slate-400">
+          <p className="text-[11px] text-[#545277] font-medium">
             {hoveredCluster.city} ({hoveredCluster.pincode})
           </p>
-          <div className="flex items-center gap-2 pt-1 border-t border-slate-800 text-[11px]">
-            <span className="font-mono font-bold text-teal-300">
+          <div className="flex items-center gap-2 pt-1.5 border-t border-[#EAE6FD] text-[11px]">
+            <span className="font-mono font-black text-[#08C9C5]">
               {hoveredCluster.count} reports
             </span>
-            <span className="text-slate-500">•</span>
+            <span className="text-[#DDD6FE]">•</span>
             <span
-              className={`font-semibold ${
+              className={`font-bold ${
                 hoveredCluster.severity === "CRIT"
-                  ? "text-rose-400"
+                  ? "text-rose-600"
                   : hoveredCluster.severity === "HIGH"
-                  ? "text-amber-400"
-                  : "text-teal-400"
+                  ? "text-amber-600"
+                  : "text-[#08C9C5]"
               }`}
             >
               {hoveredCluster.severity}

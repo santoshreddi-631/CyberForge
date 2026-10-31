@@ -51,9 +51,9 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
 
     return (
       <div className={cn("relative flex items-center w-full", className)}>
-        <div className="absolute left-3.5 flex items-center pointer-events-none text-slate-400">
+        <div className="absolute left-4 flex items-center pointer-events-none text-[#837FA8]">
           {isLoading ? (
-            <Loader2 className="w-4 h-4 animate-spin text-teal-400" />
+            <Loader2 className="w-4 h-4 animate-spin text-[#6035E8]" />
           ) : (
             <Search className="w-4 h-4" />
           )}
@@ -66,7 +66,7 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
           onChange={handleTextChange}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="w-full h-11 pl-10 pr-10 bg-slate-900/90 hover:bg-slate-900 focus:bg-slate-900 text-slate-100 placeholder:text-slate-400 text-sm rounded-lg border border-slate-700/80 focus:border-teal-500 focus:ring-1 focus:ring-teal-500/50 outline-none transition-colors"
+          className="w-full h-12 pl-11 pr-11 bg-[#F6F4FE] hover:bg-white focus:bg-white text-[#171638] placeholder:text-[#837FA8] text-sm rounded-full border border-[#EAE6FD] hover:border-[#6035E8]/40 focus:border-[#6035E8] focus:ring-4 focus:ring-[#6035E8]/10 outline-none transition-all shadow-sm"
           {...props}
         />
 
@@ -74,7 +74,7 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
           <button
             type="button"
             onClick={handleClear}
-            className="absolute right-3 p-1 rounded-md text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors focus:outline-none"
+            className="absolute right-3.5 p-1 rounded-full text-[#837FA8] hover:text-[#171638] hover:bg-[#F0EDFF] transition-colors focus:outline-none cursor-pointer"
             title="Clear search"
             aria-label="Clear search input"
           >
