@@ -65,6 +65,27 @@ export interface AlertsResponseContract {
   updatedAt: string;
 }
 
+export interface MapClusterItem {
+  pincode: string;
+  locality: string;
+  city: string;
+  count: number;
+  top_scam_type: string;
+  severity: "CRIT" | "HIGH" | "MED" | string;
+  lat: number;
+  lng: number;
+}
+
+export interface MapQueryParamsContract {
+  pincode?: string;
+  days?: number;
+  radius_km?: number;
+}
+
+export interface MapResponseContract {
+  clusters: MapClusterItem[];
+}
+
 export type CreateDisputeRequestContract = DisputeSubmission;
 
 export interface CreateDisputeResponseContract {
