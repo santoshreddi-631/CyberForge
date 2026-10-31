@@ -4,7 +4,35 @@
 
 export type LanguageCode = "en" | "hi";
 
-export type IdentifierType = "phone" | "upi" | "bank" | "url" | "handle" | "other";
+export type LookupIdentifierType = "phone" | "upi" | "url" | "sender_id";
+
+export type LookupVerdict =
+  | "KNOWN_SCAM"
+  | "SUSPICIOUS"
+  | "NO_REPORTS"
+  | "VERIFIED_BUSINESS";
+
+export interface LookupEvidenceItem {
+  occurred_at?: string;
+  channel?: string;
+  scam_type?: string;
+  pincode?: string;
+}
+
+export interface BackendLookupResult {
+  verdict: LookupVerdict;
+  report_count?: number;
+  distinct_reporters?: number;
+  first_seen?: string;
+  last_seen?: string;
+  scam_type?: string;
+  display_value?: string;
+  evidence?: LookupEvidenceItem[];
+  challenged?: boolean;
+  business_name?: string;
+}
+
+export type IdentifierType = "phone" | "upi" | "bank" | "url" | "sender_id" | "handle" | "other";
 
 export type ScamCategory =
   | "upi_fraud"

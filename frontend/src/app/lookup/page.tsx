@@ -1,28 +1,41 @@
+import React, { Suspense } from "react";
 import { Metadata } from "next";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { LoadingSkeleton } from "@/components/ui/LoadingSkeleton";
+import { LookupClientContainer } from "@/components/lookup/LookupClientContainer";
 
 export const metadata: Metadata = {
-  title: "Check Scam | Community Scam Map",
-  description: "Verify Indian phone numbers, UPI IDs, bank accounts, and links against community fraud records.",
+  title: "Check Before You Trust | Community Scam Map",
+  description:
+    "Check suspicious numbers, payment IDs and links before interacting or making a payment.",
 };
 
 export default function LookupPage() {
   return (
-    <PageContainer>
+    <PageContainer maxWidth="default">
       <PageHeader
-        title="Check Fraud & Scam Records"
-        description="Search suspect phone numbers, UPI IDs, bank accounts, or suspicious links before transferring funds."
-        badge={<StatusBadge status="cleared" label="Database Active" />}
+        title="Check Before You Trust"
+        description="Check suspicious numbers, payment IDs and links before interacting or making a payment."
+        badge={<StatusBadge status="cleared" label="Verification Engine Active" />}
         breadcrumbs={[
           { label: "Home", href: "/" },
-          { label: "Check Scam" },
+          { label: "Check an Identifier" },
         ]}
       />
-      <div className="rounded-xl border border-dashed border-slate-800 bg-slate-900/40 p-8 text-center text-slate-400">
-        <p className="text-sm">Lookup interface foundation prepared for Phase 2 implementation.</p>
-      </div>
+
+      {/* Client container wrapped in Suspense boundary for useSearchParams compatibility */}
+      <Suspense
+        fallback={
+          <div className="w-full max-w-4xl mx-auto space-y-6 pt-4">
+            <LoadingSkeleton variant="card" count={1} className="h-44" />
+            <LoadingSkeleton variant="row" count={2} />
+          </div>
+        }
+      >
+        <LookupClientContainer />
+      </Suspense>
     </PageContainer>
   );
 }
