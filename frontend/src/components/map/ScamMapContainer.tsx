@@ -15,8 +15,6 @@ import {
   EyeOff,
   Filter,
   CheckCircle2,
-  Clock,
-  Calendar,
 } from "lucide-react";
 import { apiClient, ApiError } from "@/lib/api/client";
 import {
@@ -24,12 +22,8 @@ import {
   MapResponseContract,
   MapGeoJsonFeature,
 } from "@/lib/contracts";
-import {
-  MONITORED_AREAS,
-  REPORT_SCAM_TYPES,
-} from "@/lib/constants/reportOptions";
+import { MONITORED_AREAS } from "@/lib/constants/reportOptions";
 import { ErrorState } from "@/components/ui/ErrorState";
-import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingSkeleton } from "@/components/ui/LoadingSkeleton";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -189,9 +183,12 @@ export function ScamMapContainer() {
 
   // Trigger load when timeFilter or categoryFilter changes
   useEffect(() => {
-    fetchMapData({ days: timeFilter, category: categoryFilter, pincode: pincodeFilter });
+    const timer = setTimeout(() => {
+      fetchMapData({ days: timeFilter, category: categoryFilter, pincode: pincodeFilter });
+    }, 0);
 
     return () => {
+      clearTimeout(timer);
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
@@ -410,7 +407,6 @@ export function ScamMapContainer() {
             >
               {t.map.filterPin}
             </PrimaryButton>
-          </form>
 
             {(pincodeFilter ||
               cityFilter !== "ALL" ||
@@ -419,11 +415,12 @@ export function ScamMapContainer() {
               <button
                 type="button"
                 onClick={handleClearFilter}
-                className="text-xs text-[#6035E8] hover:text-[#4317BD] font-bold underline underline-offset-4 px-2"
+                className="text-xs text-[#6035E8] hover:text-[#4317BD] font-bold underline underline-offset-4 px-2 cursor-pointer"
               >
                 {t.map.clearFilters}
               </button>
             )}
+          </form>
 
           {/* View mode toggle (Map / List / Split) */}
           <div className="flex items-center gap-1 bg-[#F0EDFF] p-1.5 rounded-full border border-[#EAE6FD] shrink-0 self-start md:self-auto">
@@ -462,12 +459,29 @@ export function ScamMapContainer() {
             </button>
             <button
               type="button"
-              onClick={() => fetchMapData({ pincode: pincodeFilter })}
-              className="p-1.5 rounded-full text-[#545277] hover:text-[#171638] hover:bg-white/80 transition-colors ml-1 cursor-pointer"
-              title={isHi ? "डेटा रीफ्रेश करें" : "Refresh map data"}
-              aria-label={isHi ? "डेटा रीफ्रेश करें" : "Refresh map data"}
+              disabled={isRefreshing}
+              onClick={() =>
+                fetchMapData({
+                  days: timeFilter,
+                  category: categoryFilter,
+                  pincode: pincodeFilter,
+                })
+              }
+              className={`p-1.5 rounded-full text-[#545277] hover:text-[#171638] hover:bg-white/80 transition-colors ml-1 cursor-pointer ${
+                isRefreshing ? "animate-spin text-[#6035E8]" : ""
+              }`}
+              title={
+                isHi
+                  ? `डेटा रीफ्रेश करें${formattedLastUpdated ? ` (अंतिम: ${formattedLastUpdated})` : ""}`
+                  : `Refresh map data${formattedLastUpdated ? ` (Last: ${formattedLastUpdated})` : ""}`
+              }
+              aria-label={
+                isHi
+                  ? `डेटा रीफ्रेश करें${formattedLastUpdated ? ` (अंतिम: ${formattedLastUpdated})` : ""}`
+                  : `Refresh map data${formattedLastUpdated ? ` (Last: ${formattedLastUpdated})` : ""}`
+              }
             >
-              <RotateCcw className="w-3.5 h-3.5" />
+              <RotateCcw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
             </button>
           </div>
         </div>
@@ -683,34 +697,15 @@ export function ScamMapContainer() {
                       )}
                     </div>
                   </div>
-                ) : (
-                  <>
-                    {selectedCluster ? (
-                      <ClusterDetailCard
-                        cluster={selectedCluster}
-                        onClose={() => setSelectedCluster(null)}
-                      />
-                    ) : (
-                      <div className="rounded-2xl border border-dashed border-[#DDD6FE] bg-white p-6 text-center text-[#545277] space-y-2 shadow-sm">
-                        <MapPin className="w-6 h-6 mx-auto text-[#6035E8]" />
-                        <p className="text-sm font-bold text-[#171638]">
-                          {t.map.selectArea}
-                        </p>
-                        <p className="text-xs text-[#837FA8]">
-                          {t.map.selectAreaDesc}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Directory Mini-list below detail card */}
-                    <ClusterListView
-                      clusters={displayedClusters}
-                      selectedCluster={selectedCluster}
-                      onSelectCluster={(cluster) => setSelectedCluster(cluster)}
-                      className="max-h-[380px]"
-                    />
-                  </>
                 )}
+
+                {/* Directory Mini-list below detail card */}
+                <ClusterListView
+                  clusters={displayedClusters}
+                  selectedCluster={selectedCluster}
+                  onSelectCluster={(cluster) => setSelectedCluster(cluster)}
+                  className="max-h-[380px]"
+                />
               </div>
             </div>
           )}
@@ -763,39 +758,9 @@ export function ScamMapContainer() {
                       </PrimaryButton>
                     </Link>
                   </div>
-                }
-              />
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
-                <div className="md:col-span-7">
-                  <ClusterListView
-                    clusters={displayedClusters}
-                    selectedCluster={selectedCluster}
-                    onSelectCluster={(cluster) => setSelectedCluster(cluster)}
-                  />
-                </div>
-                <div className="md:col-span-5">
-                  {selectedCluster ? (
-                    <ClusterDetailCard
-                      cluster={selectedCluster}
-                      onClose={() => setSelectedCluster(null)}
-                    />
-                  ) : (
-                    <div className="rounded-2xl border border-dashed border-[#DDD6FE] bg-white p-8 text-center text-[#545277] space-y-2 shadow-sm">
-                      <MapPin className="w-6 h-6 mx-auto text-[#6035E8]" />
-                      <p className="text-sm font-bold text-[#171638]">
-                        {isHi ? "एक क्लस्टर चुनें" : "Select a Cluster"}
-                      </p>
-                      <p className="text-xs text-[#837FA8]">
-                        {isHi
-                          ? "समूहीकृत मेट्रिक्स और पैटर्न देखने के लिए डायरेक्टरी से किसी भी क्षेत्र पर क्लिक करें।"
-                          : "Click any item from the directory to review aggregated metrics and patterns."}
-                      </p>
-                    </div>
-                  )}
-                </div>
+                )}
               </div>
-            )
+            </div>
           )}
         </div>
       )}
