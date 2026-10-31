@@ -3,17 +3,19 @@
 import React from "react";
 import Link from "next/link";
 import { ShieldAlert, ExternalLink, Phone, ShieldCheck } from "lucide-react";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export function AppFooter() {
   const currentYear = 2026;
+  const { t } = useLanguage();
 
   const navLinks = [
-    { label: "Home", href: "/" },
-    { label: "Check an Identifier", href: "/lookup" },
-    { label: "Report a Scam", href: "/report" },
-    { label: "Live Scam Map", href: "/map" },
-    { label: "Threat Alerts", href: "/alerts" },
-    { label: "Business Disputes", href: "/disputes" },
+    { label: t.nav.home, href: "/" },
+    { label: t.nav.lookup, href: "/lookup" },
+    { label: t.nav.report, href: "/report" },
+    { label: t.nav.map, href: "/map" },
+    { label: t.nav.alerts, href: "/alerts" },
+    { label: t.nav.disputes, href: "/disputes" },
   ];
 
   return (
@@ -36,18 +38,18 @@ export function AppFooter() {
               </div>
             </Link>
             <p className="text-slate-400 text-xs sm:text-sm leading-relaxed max-w-md">
-              A community-driven cybersecurity intelligence network helping citizens across India verify suspicious phone numbers, UPI handles, bank accounts, and fraudulent websites.
+              {t.footer.about}
             </p>
             <div className="flex items-center gap-2 text-xs text-slate-400 pt-1">
               <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>Dedicated to proactive cyber fraud prevention across Indian communities.</span>
+              <span>{t.footer.subtext}</span>
             </div>
           </div>
 
           {/* Quick Navigation */}
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200 mb-4">
-              Navigation
+              {t.footer.quickNav}
             </h4>
             <ul className="space-y-2.5 text-xs sm:text-sm">
               {navLinks.map((link) => (
@@ -66,11 +68,11 @@ export function AppFooter() {
           {/* Emergency & Official Resources */}
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200 mb-4">
-              Emergency Helplines
+              {t.footer.emergency}
             </h4>
             <div className="space-y-3 text-xs sm:text-sm">
               <div className="p-3 rounded-lg bg-slate-900 border border-slate-800">
-                <div className="text-[11px] text-slate-400 font-medium">National Cyber Helpline</div>
+                <div className="text-[11px] text-slate-400 font-medium">{t.footer.helplineName}</div>
                 <a
                   href="tel:1930"
                   className="text-base font-black text-teal-400 hover:text-teal-300 transition-colors flex items-center gap-1.5 mt-0.5"
@@ -91,7 +93,7 @@ export function AppFooter() {
                   <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
                 </a>
                 <p className="text-[11px] text-slate-400 mt-1">
-                  Official Government of India Cyber Crime Reporting Portal
+                  {t.footer.govPortal}
                 </p>
               </div>
             </div>
@@ -101,10 +103,10 @@ export function AppFooter() {
         {/* Privacy Notice & Copyright */}
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-400">
           <p className="text-center md:text-left max-w-2xl leading-relaxed">
-            Privacy-First Architecture: Personal reporter identities and pinpoint coordinates are never disclosed. All map coordinates are aggregated at area level.
+            {t.footer.privacyNotice}
           </p>
           <div className="text-center md:text-right shrink-0">
-            <p>© {currentYear} Community Scam Map. Built for citizen awareness in India.</p>
+            <p>© {currentYear} {t.footer.copyright}</p>
           </div>
         </div>
       </div>

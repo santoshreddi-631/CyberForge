@@ -4,48 +4,69 @@ import React from "react";
 import { Phone, QrCode, Globe, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { LookupIdentifierType } from "@/types";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export interface IdentifierTypeOption {
   type: LookupIdentifierType;
   label: string;
+  labelHi: string;
   shortLabel: string;
+  shortLabelHi: string;
   icon: React.ElementType;
   placeholder: string;
+  placeholderHi: string;
   helper: string;
+  helperHi: string;
 }
 
 export const IDENTIFIER_OPTIONS: IdentifierTypeOption[] = [
   {
     type: "phone",
     label: "Phone Number",
+    labelHi: "फ़ोन नंबर",
     shortLabel: "Phone",
+    shortLabelHi: "फ़ोन",
     icon: Phone,
     placeholder: "e.g. +91 98765 43210, 1800 1600, or 1930",
+    placeholderHi: "उदा. +91 98765 43210, 1800 1600 या 1930",
     helper: "Accepts 10-digit mobiles, toll-free (1800/1860), or official helplines.",
+    helperHi: "10-अंकों का मोबाइल, टोल-फ्री (1800/1860) या आधिकारिक हेल्पलाइन दर्ज करें।",
   },
   {
     type: "upi",
     label: "UPI ID",
+    labelHi: "UPI ID",
     shortLabel: "UPI",
+    shortLabelHi: "UPI",
     icon: QrCode,
     placeholder: "e.g. username@okaxis, merchant@upi",
+    placeholderHi: "उदा. username@okaxis, merchant@upi",
     helper: "Accepts standard VPA formats (handle@bank or mobile@vpa).",
+    helperHi: "मानक VPA प्रारूप (handle@bank या mobile@vpa) स्वीकार्य हैं।",
   },
   {
     type: "url",
     label: "URL / Website",
+    labelHi: "वेबसाइट लिंक",
     shortLabel: "Link",
+    shortLabelHi: "लिंक",
     icon: Globe,
     placeholder: "e.g. https://sbi-kyc.in/pay or suspected-link.com",
+    placeholderHi: "उदा. https://sbi-kyc.in/pay या संदिग्ध वेबसाइट",
     helper: "Accepts full links or website domains.",
+    helperHi: "पूरा लिंक या वेबसाइट डोमेन दर्ज करें।",
   },
   {
     type: "sender_id",
     label: "SMS Sender ID",
+    labelHi: "SMS प्रेषक ID",
     shortLabel: "SMS ID",
+    shortLabelHi: "SMS ID",
     icon: MessageSquare,
     placeholder: "e.g. HDFCBK, SBIINB, or VM-AXISBK",
+    placeholderHi: "उदा. HDFCBK, SBIINB या VM-AXISBK",
     helper: "Accepts 6-letter SMS headers with or without telecom prefix.",
+    helperHi: "दूरसंचार उपसर्ग के साथ या बिना 6-अक्षरों का SMS हेडर।",
   },
 ];
 
@@ -60,6 +81,9 @@ export function IdentifierTypeSelector({
   onSelectType,
   disabled = false,
 }: IdentifierTypeSelectorProps) {
+  const { lang } = useLanguage();
+  const isHi = lang === "hi";
+
   return (
     <div
       role="tablist"
@@ -87,8 +111,8 @@ export function IdentifierTypeSelector({
             )}
           >
             <Icon className={cn("w-4 h-4 shrink-0", isSelected ? "text-teal-400" : "text-slate-500")} />
-            <span className="hidden sm:inline">{opt.label}</span>
-            <span className="sm:hidden">{opt.shortLabel}</span>
+            <span className="hidden sm:inline">{isHi ? opt.labelHi : opt.label}</span>
+            <span className="sm:hidden">{isHi ? opt.shortLabelHi : opt.shortLabel}</span>
           </button>
         );
       })}

@@ -1,60 +1,61 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import { Search, AlertTriangle, Map, Bell, ArrowUpRight } from "lucide-react";
-
-interface ActionCard {
-  title: string;
-  description: string;
-  destination: string;
-  icon: React.ElementType;
-  accent: string;
-  badge?: string;
-}
-
-const actionCards: ActionCard[] = [
-  {
-    title: "Check an Identifier",
-    description: "Check whether a phone number, UPI ID, URL or SMS sender ID has been reported.",
-    destination: "/lookup",
-    icon: Search,
-    accent: "text-sky-400 bg-sky-500/10 border-sky-500/20 group-hover:border-sky-500/40",
-  },
-  {
-    title: "Report a Scam",
-    description: "Help others by reporting suspicious identifiers and fraudulent transactions.",
-    destination: "/report",
-    icon: AlertTriangle,
-    accent: "text-amber-400 bg-amber-500/10 border-amber-500/20 group-hover:border-amber-500/40",
-    badge: "Protect Others",
-  },
-  {
-    title: "Explore Scam Map",
-    description: "Discover reported scam activity and geographic risk clusters across areas.",
-    destination: "/map",
-    icon: Map,
-    accent: "text-teal-400 bg-teal-500/10 border-teal-500/20 group-hover:border-teal-500/40",
-  },
-  {
-    title: "View Alerts",
-    description: "Stay informed about emerging scam patterns, fake APKs, and phishing campaigns.",
-    destination: "/alerts",
-    icon: Bell,
-    accent: "text-rose-400 bg-rose-500/10 border-rose-500/20 group-hover:border-rose-500/40",
-    badge: "Live Feed",
-  },
-];
+import { useLanguage } from "@/hooks/useLanguage";
 
 export function QuickActions() {
+  const { lang, t } = useLanguage();
+  const isHi = lang === "hi";
+
+  const actionCards = [
+    {
+      title: isHi ? t.home.qaCheckTitle : "Check an Identifier",
+      description: isHi ? t.home.qaCheckDesc : "Check whether a phone number, UPI ID, URL or SMS sender ID has been reported.",
+      destination: "/lookup",
+      icon: Search,
+      accent: "text-sky-400 bg-sky-500/10 border-sky-500/20 group-hover:border-sky-500/40",
+      cta: isHi ? "शुरू करें" : "Get started",
+    },
+    {
+      title: isHi ? t.home.qaReportTitle : "Report a Scam",
+      description: isHi ? t.home.qaReportDesc : "Help others by reporting suspicious identifiers and fraudulent transactions.",
+      destination: "/report",
+      icon: AlertTriangle,
+      accent: "text-amber-400 bg-amber-500/10 border-amber-500/20 group-hover:border-amber-500/40",
+      badge: isHi ? "दूसरों की रक्षा करें" : "Protect Others",
+      cta: isHi ? "रिपोर्ट करें" : "Report now",
+    },
+    {
+      title: isHi ? t.home.qaMapTitle : "Explore Scam Map",
+      description: isHi ? t.home.qaMapDesc : "Discover reported scam activity and geographic risk clusters across areas.",
+      destination: "/map",
+      icon: Map,
+      accent: "text-teal-400 bg-teal-500/10 border-teal-500/20 group-hover:border-teal-500/40",
+      cta: isHi ? "नक्शा खोलें" : "Open map",
+    },
+    {
+      title: isHi ? t.home.qaAlertsTitle : "View Alerts",
+      description: isHi ? t.home.qaAlertsDesc : "Stay informed about emerging scam patterns, fake APKs, and phishing campaigns.",
+      destination: "/alerts",
+      icon: Bell,
+      accent: "text-rose-400 bg-rose-500/10 border-rose-500/20 group-hover:border-rose-500/40",
+      badge: isHi ? "लाइव फीड" : "Live Feed",
+      cta: isHi ? "अलर्ट देखें" : "View alerts",
+    },
+  ];
+
   return (
     <section className="py-12 md:py-16 border-b border-slate-800/80 bg-slate-950/40">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-3">
           <div>
             <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-              Community Action Center
+              {isHi ? t.home.quickActionsTitle : "Community Action Center"}
             </h2>
             <p className="text-sm text-slate-400 mt-1">
-              Direct tools to verify suspected cyber fraud, submit intel, and monitor regional threats.
+              {isHi ? t.home.quickActionsSubtitle : "Direct tools to verify suspected cyber fraud, submit intel, and monitor regional threats."}
             </p>
           </div>
         </div>
@@ -96,7 +97,7 @@ export function QuickActions() {
                 </div>
 
                 <div className="mt-5 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400 group-hover:text-slate-200">
-                  <span className="font-medium">Get started</span>
+                  <span className="font-medium">{card.cta}</span>
                   <span className="text-teal-400 font-semibold text-xs tracking-wider">→</span>
                 </div>
               </Link>
