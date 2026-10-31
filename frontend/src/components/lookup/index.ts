@@ -1,2 +1,4 @@
-// Feature components for Lookup screen (Phase 2)
-export {};
+export * from "./IdentifierTypeSelector";
+export * from "./LookupResultCard";
+export * from "./StayAlertSection";
+export * from "./LookupClientContainer";

@@ -1,9 +1,11 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import { ShieldAlert, ExternalLink, Phone, ShieldCheck } from "lucide-react";
 
 export function AppFooter() {
-  const currentYear = new Date().getFullYear();
+  const currentYear = 2026;
 
   const navLinks = [
     { label: "Home", href: "/" },
