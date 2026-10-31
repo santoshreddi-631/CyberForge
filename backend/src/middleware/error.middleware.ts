@@ -56,14 +56,14 @@ export const errorMiddleware: ErrorRequestHandler = (
   // ── Known application errors ────────────────────────────────────────────
   if (err instanceof AppError) {
     if (!err.expose || err.statusCode >= 500) {
-      logger.error({ err }, "Application error");
+      logger.error({ errorType: err.name, statusCode: err.statusCode }, "Application error");
     }
     res.status(err.statusCode).json({ error: err.message } satisfies ErrorResponse);
     return;
   }
 
   // ── Unexpected errors – never expose internals ──────────────────────────
-  logger.error({ err }, "Unhandled error");
+  logger.error({ errorType: err instanceof Error ? err.name : "UnknownError" }, "Unhandled error");
   res.status(500).json({ error: "Internal server error" } satisfies ErrorResponse);
 };
 

@@ -45,6 +45,8 @@ export function ScamMapContainer() {
     try {
       // Standard 7 days window and 2 km radius per PRD specifications
       const params: Record<string, string | number> = {
+        pincode: (pincode && pincode.trim().length > 0) ? pincode.trim() : "560102",
+        radius_km: 2,
         days: 7,
       };
 
@@ -97,7 +99,7 @@ export function ScamMapContainer() {
     async function fetchInitialData() {
       try {
         const response = await apiClient.get<MapResponseContract>("/map", {
-          params: { days: 7 },
+          params: { pincode: "560102", days: 7, radius_km: 2 },
         });
 
         if (!ignore) {

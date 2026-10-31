@@ -3,7 +3,9 @@ import { generateKeyPairSync, sign } from "node:crypto";
 import request from "supertest";
 import { createApp } from "../src/app.js";
 import {
+  activateLicense,
   licenseCanonicalPayload,
+  LicenseValidationError,
   verifyLicenseSignature,
 } from "../src/modules/licensing/license.service.js";
 
@@ -30,6 +32,31 @@ describe("signed licence primitives", () => {
     expect(verifyLicenseSignature(document, key)).toBe(true);
     expect(verifyLicenseSignature({ ...document, licensee: "Tampered" }, key)).toBe(false);
     expect(verifyLicenseSignature({ ...document, signature: "invalid" }, key)).toBe(false);
+  });
+
+  it("canonicalizes signed offset timestamps for persisted revalidation", () => {
+    const pair = generateKeyPairSync("ed25519");
+    const document = {
+      licensee: "Judge",
+      expires_at: "2027-01-01T05:30:00+05:30",
+      signature: "",
+    };
+    document.signature = sign(
+      null,
+      licenseCanonicalPayload(document.licensee, document.expires_at),
+      pair.privateKey,
+    ).toString("base64");
+    expect(verifyLicenseSignature(document, publicKeyHex(pair.publicKey))).toBe(true);
+  });
+
+  it("rejects a signed licence whose expiry has already passed", async () => {
+    await expect(
+      activateLicense({
+        licensee: "Judge",
+        expires_at: "2020-01-01T00:00:00.000Z",
+        signature: "not-used",
+      }),
+    ).rejects.toBeInstanceOf(LicenseValidationError);
   });
 });
 

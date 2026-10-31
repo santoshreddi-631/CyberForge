@@ -39,7 +39,8 @@ export function AlertsFeedContainer() {
     setFetchState({ status: "loading" });
 
     try {
-      const params: Record<string, string> = {};
+      const activePincode = (pincode && pincode.trim().length > 0) ? pincode.trim() : "560102";
+      const params: Record<string, string> = { pincode: activePincode };
       if (pincode && pincode.trim().length > 0) {
         params.pincode = pincode.trim();
       }
@@ -83,7 +84,9 @@ export function AlertsFeedContainer() {
 
     async function fetchInitialAlerts() {
       try {
-        const response = await apiClient.get<AlertsResponseContract>("/alerts");
+        const response = await apiClient.get<AlertsResponseContract>("/alerts", {
+          params: { pincode: "560102" },
+        });
 
         if (!ignore) {
           if (!response || !Array.isArray(response.alerts)) {

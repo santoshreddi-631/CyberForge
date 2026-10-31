@@ -38,7 +38,11 @@ let cachedLicense: StoredLicense | null = null;
 let clockRollbackDetected = false;
 
 function canonicalPayload(licensee: string, expiresAt: string): Buffer {
-  return Buffer.from(JSON.stringify({ licensee, expires_at: expiresAt }), "utf8");
+  const parsedExpiry = new Date(expiresAt);
+  const canonicalExpiry = Number.isFinite(parsedExpiry.getTime())
+    ? parsedExpiry.toISOString()
+    : expiresAt;
+  return Buffer.from(JSON.stringify({ licensee, expires_at: canonicalExpiry }), "utf8");
 }
 
 function publicKeyFromHex(value: string): ReturnType<typeof createPublicKey> {
@@ -101,9 +105,17 @@ async function readStoredLicense(client: DatabaseClient): Promise<StoredLicense 
   `);
   if (!row) return null;
   const result = row as { licensee: string; expires_at: string; signature: string };
+  const document: LicenseDocument = {
+    licensee: result.licensee,
+    expires_at: new Date(result.expires_at).toISOString(),
+    signature: result.signature,
+  };
+  if (!verifyLicenseSignature(document, getEnv().LICENCE_PUBLIC_KEY_HEX)) {
+    return null;
+  }
   return {
     licensee: result.licensee,
-    expiresAt: new Date(result.expires_at).toISOString(),
+    expiresAt: document.expires_at,
     signature: result.signature,
   };
 }
@@ -146,10 +158,13 @@ export async function getLicenseStatus(now = new Date()): Promise<LicenseStatus>
 
 export async function activateLicense(document: LicenseDocument, now = new Date()): Promise<LicenseStatus> {
   const env = getEnv();
+  const expiresAt = new Date(document.expires_at);
+  if (!Number.isFinite(expiresAt.getTime()) || expiresAt.getTime() <= now.getTime()) {
+    throw new LicenseValidationError("Licence is already expired");
+  }
   if (!verifyLicenseSignature(document, env.LICENCE_PUBLIC_KEY_HEX)) {
     throw new LicenseValidationError("Invalid licence signature");
   }
-  const expiresAt = new Date(document.expires_at);
   const client = getDb();
 
   const stored = await client.db.transaction(async (tx: SqlExecutor) => {

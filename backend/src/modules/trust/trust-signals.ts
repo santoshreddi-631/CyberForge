@@ -35,6 +35,103 @@ function countValues(values: string[]): Map<string, number> {
   return counts;
 }
 
+function uniqueValidReports(reports: TrustReport[]): TrustReport[] {
+  const seen = new Set<string>();
+  const valid: TrustReport[] = [];
+  for (const report of reports) {
+    if (report.valid === false || report.duplicate || seen.has(report.reportId)) continue;
+    seen.add(report.reportId);
+    valid.push(report);
+  }
+  return valid;
+}
+
+function isBetterEdgeReport(candidate: PreparedReport, current: PreparedReport): boolean {
+  if (candidate.evidenceQuality !== current.evidenceQuality) {
+    return candidate.evidenceQuality > current.evidenceQuality;
+  }
+  if (candidate.noteTokenCount !== current.noteTokenCount) {
+    return candidate.noteTokenCount > current.noteTokenCount;
+  }
+  const candidateTime = candidate.occurredTime;
+  const currentTime = current.occurredTime;
+  if (candidateTime !== currentTime) return candidateTime < currentTime;
+  return candidate.reportId.localeCompare(current.reportId) < 0;
+}
+
+/**
+ * Selects independent reporter/network pairs using deterministic maximum
+ * bipartite matching. A reporter and an IP prefix can each contribute at
+ * most `maximumTrustedReportersPerIpPrefix` selected reports per case.
+ */
+function selectIndependentVoicesFromPrepared(
+  reports: PreparedReport[],
+  policy: TrustPolicy,
+): PreparedReport[] {
+  const edgeReports = new Map<string, Map<string, PreparedReport>>();
+  for (const report of reports) {
+    const byPrefix = edgeReports.get(report.reporterKey) ?? new Map<string, PreparedReport>();
+    const current = byPrefix.get(report.ipPrefixKey);
+    if (!current || isBetterEdgeReport(report, current)) byPrefix.set(report.ipPrefixKey, report);
+    edgeReports.set(report.reporterKey, byPrefix);
+  }
+
+  const adjacency = new Map<string, Array<{ prefix: string; report: PreparedReport }>>();
+  for (const [reporter, byPrefix] of edgeReports) {
+    adjacency.set(reporter, [...byPrefix.entries()]
+      .map(([prefix, report]) => ({ prefix, report }))
+      .sort((left, right) => {
+        if (left.report.evidenceQuality !== right.report.evidenceQuality) {
+          return right.report.evidenceQuality - left.report.evidenceQuality;
+        }
+        return left.prefix.localeCompare(right.prefix);
+      }));
+  }
+
+  const capacity = Math.max(1, Math.floor(policy.maximumTrustedReportersPerIpPrefix));
+  const prefixOwner = new Map<string, string>();
+  const reporterPrefix = new Map<string, string>();
+  const reporters = [...adjacency.keys()].sort((left, right) => {
+    const leftBest = adjacency.get(left)?.[0]?.report.evidenceQuality ?? 0;
+    const rightBest = adjacency.get(right)?.[0]?.report.evidenceQuality ?? 0;
+    return rightBest - leftBest || left.localeCompare(right);
+  });
+
+  const assign = (reporter: string, visitedSlots: Set<string>): boolean => {
+    for (const edge of adjacency.get(reporter) ?? []) {
+      for (let slot = 0; slot < capacity; slot += 1) {
+        const slotKey = `${edge.prefix}\u0000${slot}`;
+        if (visitedSlots.has(slotKey)) continue;
+        visitedSlots.add(slotKey);
+        const owner = prefixOwner.get(slotKey);
+        if (!owner || assign(owner, visitedSlots)) {
+          prefixOwner.set(slotKey, reporter);
+          reporterPrefix.set(reporter, edge.prefix);
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+
+  for (const reporter of reporters) assign(reporter, new Set<string>());
+
+  return [...reporterPrefix.entries()]
+    .map(([reporter, prefix]) => edgeReports.get(reporter)?.get(prefix))
+    .filter((report): report is PreparedReport => report !== undefined)
+    .sort((left, right) => left.reportId.localeCompare(right.reportId));
+}
+
+export function selectIndependentVoiceReports(
+  reports: TrustReport[],
+  policy: TrustPolicy,
+): TrustReport[] {
+  return selectIndependentVoicesFromPrepared(
+    uniqueValidReports(reports).map((report) => prepareReport(report, policy)),
+    policy,
+  );
+}
+
 function calculateBurstCount(times: number[], windowMs: number): number {
   let left = 0;
   let maximum = 0;
@@ -55,20 +152,12 @@ function calculateCopiedNoteRatio(reports: PreparedReport[]): number {
 
 function calculateEvidenceScore(
   reports: PreparedReport[],
-  signals: Pick<TrustSignals, "independentReporterCount" | "independentIpPrefixCount" | "coordinatedBurst" | "suspiciousIpConcentration">,
+  signals: Pick<TrustSignals, "independentVoiceCount" | "independentIpPrefixCount" | "coordinatedBurst" | "suspiciousIpConcentration">,
   policy: TrustPolicy,
 ): number {
   if (reports.length === 0) return 0;
-  const representative = new Map<string, PreparedReport>();
-  for (const report of reports) {
-    const current = representative.get(report.reporterKey);
-    if (!current || report.evidenceQuality > current.evidenceQuality) {
-      representative.set(report.reporterKey, report);
-    }
-  }
-  const averageEvidence = [...representative.values()]
-    .reduce((sum, report) => sum + report.evidenceQuality, 0) / representative.size;
-  const reporterDiversity = Math.min(1, signals.independentReporterCount / policy.minimumIndependentReporters);
+  const averageEvidence = reports.reduce((sum, report) => sum + report.evidenceQuality, 0) / reports.length;
+  const reporterDiversity = Math.min(1, signals.independentVoiceCount / policy.minimumIndependentReporters);
   const ipDiversity = Math.min(1, signals.independentIpPrefixCount / policy.minimumIndependentIpPrefixes);
   let score = averageEvidence * 0.5 + reporterDiversity * 0.25 + ipDiversity * 0.25;
   if (signals.coordinatedBurst) score -= policy.coordinatedBurstPenalty;
@@ -82,10 +171,10 @@ export function buildTrustSignals(
   reports: TrustReport[],
   policy: TrustPolicy,
 ): TrustSignals {
-  const seenReportIds = new Set<string>();
   const duplicateReports: TrustReport[] = [];
   const invalidReports = reports.filter((report) => report.valid === false);
   const validReports: TrustReport[] = [];
+  const seenReportIds = new Set<string>();
   for (const report of reports) {
     if (report.valid === false) continue;
     if (report.duplicate || seenReportIds.has(report.reportId)) {
@@ -98,6 +187,7 @@ export function buildTrustSignals(
   const prepared = validReports.map((report) => prepareReport(report, policy));
   const reporterCounts = countValues(prepared.map((report) => report.reporterKey));
   const ipCounts = countValues(prepared.map((report) => report.ipPrefixKey));
+  const independentVoices = selectIndependentVoicesFromPrepared(prepared, policy);
   const independentReporterCount = reporterCounts.size;
   const independentIpPrefixCount = ipCounts.size;
   const maxReportsFromOneReporter = Math.max(0, ...reporterCounts.values());
@@ -118,6 +208,7 @@ export function buildTrustSignals(
   const partialSignals = {
     independentReporterCount,
     independentIpPrefixCount,
+    independentVoiceCount: independentVoices.length,
     coordinatedBurst,
     suspiciousIpConcentration,
   };
@@ -128,16 +219,17 @@ export function buildTrustSignals(
     invalidReportCount: invalidReports.length,
     independentReporterCount,
     independentIpPrefixCount,
+    independentVoiceCount: independentVoices.length,
     maxReportsFromOneReporter,
     maxReportsFromOneIpPrefix,
     maxIpPrefixRatio: Number(maxIpPrefixRatio.toFixed(4)),
     uniqueTimeBucketCount: timeBuckets.size,
     maxBurstCount,
     copiedNoteRatio: Number(copiedNoteRatio.toFixed(4)),
-    averageEvidenceQuality: prepared.length === 0
+    averageEvidenceQuality: independentVoices.length === 0
       ? 0
-      : Number((prepared.reduce((sum, report) => sum + report.evidenceQuality, 0) / prepared.length).toFixed(4)),
-    evidenceScore: calculateEvidenceScore(prepared, partialSignals, policy),
+      : Number((independentVoices.reduce((sum, report) => sum + report.evidenceQuality, 0) / independentVoices.length).toFixed(4)),
+    evidenceScore: calculateEvidenceScore(independentVoices, partialSignals, policy),
     coordinatedBurst,
     suspiciousIpConcentration,
     repeatedReporter,
