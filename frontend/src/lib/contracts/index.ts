@@ -2,20 +2,26 @@
  * API Contracts defining request & response payloads for Community Scam Map
  */
 import {
-  ScamLookupResult,
   ScamReportSummary,
   FraudAlert,
   DisputeSubmission,
   ScamCategory,
   IdentifierType,
+  LookupIdentifierType,
+  BackendLookupResult,
 } from "@/types";
+
+export interface LookupRequestParams {
+  type: LookupIdentifierType;
+  value: string;
+}
 
 export interface LookupRequestContract {
   query: string;
-  type?: IdentifierType;
+  type?: LookupIdentifierType;
 }
 
-export type LookupResponseContract = ScamLookupResult;
+export type LookupResponseContract = BackendLookupResult;
 
 export interface CreateReportRequestContract {
   title: string;
