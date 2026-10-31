@@ -1,0 +1,46 @@
+{
+  "app": {
+    "name": "Community Scam Map",
+    "tagline": "India's Community-Driven Cyber Fraud Intelligence Network",
+    "badge": "Citizen Defense Grid"
+  },
+  "nav": {
+    "home": "Home",
+    "lookup": "Check Scam",
+    "report": "Report Fraud",
+    "map": "Scam Map",
+    "alerts": "Live Alerts",
+    "disputes": "Business Disputes",
+    "admin": "Admin Portal"
+  },
+  "common": {
+    "search": "Search",
+    "searchPlaceholder": "Search phone number (+91), UPI ID, bank account, or URL...",
+    "filter": "Filter",
+    "viewAll": "View All",
+    "learnMore": "Learn More",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "loading": "Loading intelligence data...",
+    "verified": "Verified Scam",
+    "underReview": "Under Review",
+    "disputed": "Disputed",
+    "safe": "Low Risk / Cleared",
+    "highRisk": "High Risk",
+    "critical": "Critical Alert",
+    "retry": "Try Again",
+    "noResults": "No records found",
+    "errorOccurred": "Something went wrong while retrieving data"
+  },
+  "status": {
+    "verifiedScam": "Confirmed Fraud",
+    "investigating": "Under Investigation",
+    "disputed": "Dispute In Progress",
+    "resolved": "Resolved / Cleared",
+    "flagged": "Community Flagged"
+  },
+  "languages": {
+    "en": "English",
+    "hi": "हिन्दी (Hindi)"
+  }
+}
