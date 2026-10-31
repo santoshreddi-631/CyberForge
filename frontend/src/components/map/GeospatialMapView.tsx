@@ -863,293 +863,166 @@ export function GeospatialMapView({
 
   return (
     <div
-      ref={containerRef}
-      className={`relative w-full h-[520px] md:h-[620px] rounded-[2.5rem] border border-[#EAE6FD] bg-[#120D2C] overflow-hidden select-none shadow-xl shadow-[#6035E8]/10 ${className}`}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      style={{ cursor: isDragging ? "grabbing" : "grab" }}
-      role="application"
-      aria-label="Interactive Scam Clusters Map of India"
+      className={`relative w-full h-[600px] sm:h-[660px] rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 shadow-2xl flex flex-col ${className}`}
     >
-      {/* Background Geo Matrix Grid */}
-      <div className="absolute inset-0 pointer-events-none opacity-25 bg-[radial-gradient(#6035E8_1px,transparent_1px)] [background-size:24px_24px]" />
+      {/* ── Top Bar: Layer Controls & Basemap Provider Selector ──────── */}
+      <div className="absolute top-3 left-3 z-10 flex flex-wrap items-center gap-1.5 p-1.5 rounded-xl bg-slate-900/95 border border-slate-700/80 backdrop-blur-md shadow-xl text-xs max-w-[calc(100%-80px)] sm:max-w-none">
+        {/* Layer Toggles */}
+        <button
+          type="button"
+          onClick={() => setShowMarkers((v) => !v)}
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-medium transition-all ${
+            showMarkers
+              ? "bg-teal-500/20 text-teal-300 border border-teal-500/40"
+              : "text-slate-400 hover:text-slate-200 border border-transparent"
+          }`}
+          title={isHi ? "स्थान और मार्कर नाम दिखाएं / छिपाएं" : "Toggle area labels & markers"}
+        >
+          <MapPin className="w-3.5 h-3.5" />
+          <span>{isHi ? "स्थान नाम व मार्कर" : "Markers & Names"}</span>
+        </button>
 
-      {/* Map Control Buttons */}
-      <div className="absolute top-4 right-4 z-20 flex flex-col gap-1.5 bg-white/95 border border-[#EAE6FD] rounded-2xl p-1.5 shadow-xl backdrop-blur-md">
+        <button
+          type="button"
+          onClick={() => setShowClusters((v) => !v)}
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-medium transition-all ${
+            showClusters
+              ? "bg-amber-500/20 text-amber-300 border border-amber-500/40"
+              : "text-slate-400 hover:text-slate-200 border border-transparent"
+          }`}
+          title={isHi ? "क्लस्टर समूहीकरण दिखाएं / छिपाएं" : "Toggle clustering"}
+        >
+          <Radio className="w-3.5 h-3.5" />
+          <span>{isHi ? "क्लस्टर" : "Clusters"}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setShowHeatmap((v) => !v)}
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-medium transition-all ${
+            showHeatmap
+              ? "bg-rose-500/20 text-rose-300 border border-rose-500/40"
+              : "text-slate-400 hover:text-slate-200 border border-transparent"
+          }`}
+          title={isHi ? "घनत्व हीटमैप दिखाएं / छिपाएं" : "Toggle scam density heatmap"}
+        >
+          <Flame className="w-3.5 h-3.5" />
+          <span>{isHi ? "हीटमैप" : "Heatmap"}</span>
+        </button>
+
+        {/* Basemap Provider Selector */}
+        <div className="h-4 w-px bg-slate-700/80 mx-0.5 hidden sm:block" />
+
+        <div className="flex items-center gap-1">
+          <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider flex items-center gap-1 pl-1">
+            <Globe2 className="w-3 h-3 text-slate-400" />
+            <span className="hidden md:inline">Base:</span>
+          </span>
+          <button
+            type="button"
+            onClick={() => setActiveProvider("openfreemap")}
+            className={`px-2 py-0.5 rounded-md text-[11px] font-semibold transition-all ${
+              activeProvider === "openfreemap"
+                ? "bg-slate-700 text-teal-300 shadow-sm border border-teal-500/30"
+                : "text-slate-400 hover:text-slate-200"
+            }`}
+            title="OpenFreeMap with enhanced high-contrast labels (No key needed)"
+          >
+            OpenFreeMap
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveProvider("maptiler")}
+            className={`px-2 py-0.5 rounded-md text-[11px] font-semibold transition-all ${
+              activeProvider === "maptiler"
+                ? "bg-slate-700 text-teal-300 shadow-sm border border-teal-500/30"
+                : "text-slate-400 hover:text-slate-200"
+            }`}
+            title="MapTiler Streets (Requires NEXT_PUBLIC_MAPTILER_API_KEY)"
+          >
+            MapTiler
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveProvider("esri")}
+            className={`px-2 py-0.5 rounded-md text-[11px] font-semibold transition-all ${
+              activeProvider === "esri"
+                ? "bg-slate-700 text-teal-300 shadow-sm border border-teal-500/30"
+                : "text-slate-400 hover:text-slate-200"
+            }`}
+            title="Esri ArcGIS World Basemap"
+          >
+            ArcGIS
+          </button>
+        </div>
+      </div>
+
+      {/* ── Zoom and Reset Controls (Top Right) ─────────────────────── */}
+      <div className="absolute top-3 right-3 z-10 flex flex-col gap-1.5 p-1 rounded-xl bg-slate-900/90 border border-slate-700/80 backdrop-blur-md shadow-xl">
         <button
           type="button"
           onClick={handleZoomIn}
-          className="p-2 rounded-xl text-[#171638] hover:text-[#6035E8] hover:bg-[#F0EDFF] active:bg-[#E0DCFC] transition-colors focus:outline-none focus:ring-2 focus:ring-[#6035E8] cursor-pointer"
-          title="Zoom In"
-          aria-label="Zoom In"
+          className="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
+          title={isHi ? "ज़ूम इन" : "Zoom in"}
+          aria-label="Zoom in"
         >
           <ZoomIn className="w-4 h-4" />
         </button>
         <button
           type="button"
           onClick={handleZoomOut}
-          className="p-2 rounded-xl text-[#171638] hover:text-[#6035E8] hover:bg-[#F0EDFF] active:bg-[#E0DCFC] transition-colors focus:outline-none focus:ring-2 focus:ring-[#6035E8] cursor-pointer"
-          title="Zoom Out"
-          aria-label="Zoom Out"
+          className="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
+          title={isHi ? "ज़ूम आउट" : "Zoom out"}
+          aria-label="Zoom out"
         >
           <ZoomOut className="w-4 h-4" />
         </button>
-        <div className="h-px bg-[#EAE6FD] my-0.5" />
         <button
           type="button"
           onClick={handleReset}
-          className="p-2 rounded-xl text-[#171638] hover:text-[#6035E8] hover:bg-[#F0EDFF] active:bg-[#E0DCFC] transition-colors focus:outline-none focus:ring-2 focus:ring-[#6035E8] cursor-pointer"
-          title="Reset View"
-          aria-label="Reset View"
+          className="p-2 rounded-lg text-slate-300 hover:text-teal-400 hover:bg-slate-800 transition-colors"
+          title={isHi ? "भारत केंद्रित दृश्य रीसेट करें" : "Reset to All India view"}
+          aria-label="Reset map view"
         >
           <RotateCcw className="w-4 h-4" />
         </button>
       </div>
 
-      {/* Map Legend */}
-      <div className="absolute bottom-4 left-4 z-20 p-4 rounded-2xl bg-white/95 border border-[#EAE6FD] shadow-xl backdrop-blur-md text-xs text-[#171638] space-y-2 max-w-[240px]">
-        <div className="flex items-center gap-1.5 font-bold text-[#171638]">
-          <Layers className="w-3.5 h-3.5 text-[#6035E8]" />
-          <span>Scam Activity Severity</span>
-        </div>
-        <div className="space-y-1.5 font-medium">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_8px_#ef4444]" />
-            <span className="text-[#545277]">CRIT (Critical Volume)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_#f59e0b]" />
-            <span className="text-[#545277]">HIGH (Elevated Volume)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#08C9C5] shadow-[0_0_8px_#08C9C5]" />
-            <span className="text-[#545277]">MED (Moderate Volume)</span>
-          </div>
-        </div>
-        <p className="text-[10px] text-[#837FA8] border-t border-[#EAE6FD] pt-1.5 leading-tight font-medium">
-          Aggregated by PIN code from community reports over the last 7 days.
-        </p>
+      {/* ── Tested Locations Quick-Jump Bar (Top-Center Floating Pills) ─ */}
+      <div className="absolute top-14 left-3 z-10 hidden sm:flex items-center gap-1.5 p-1 rounded-xl bg-slate-900/85 border border-slate-800/80 backdrop-blur-md shadow-lg text-[11px]">
+        <span className="text-slate-400 pl-1.5 pr-0.5 font-medium flex items-center gap-1 text-[10px] uppercase tracking-wider">
+          <Navigation className="w-3 h-3 text-teal-400" />
+          <span>Jump:</span>
+        </span>
+        {TEST_LOCATIONS.map((loc) => (
+          <button
+            key={loc.name}
+            type="button"
+            onClick={() => handleJumpToLocation(loc)}
+            className={`px-2 py-0.5 rounded-lg font-medium transition-all ${
+              activeLocation === loc.name
+                ? "bg-teal-500/25 text-teal-300 border border-teal-500/50"
+                : "text-slate-300 hover:text-white hover:bg-slate-800 border border-transparent"
+            }`}
+            title={`Inspect ${loc.name} labels and street grid at zoom 11`}
+          >
+            {loc.name}
+          </button>
+        ))}
       </div>
 
-      {/* Coordinates / Zoom Level Info Pill */}
-      <div className="absolute top-4 left-4 z-20 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/95 border border-[#EAE6FD] text-[11px] font-mono text-[#171638] backdrop-blur-md shadow-sm">
-        <span className="text-[#6035E8] font-bold">GIS Engine</span>
-        <span className="text-[#DDD6FE]">•</span>
-        <span className="font-medium text-[#545277]">Zoom: {zoom.toFixed(1)}x</span>
-        <span className="text-[#DDD6FE]">•</span>
-        <span className="font-bold text-[#08C9C5]">{clusters.length} clusters</span>
-      </div>
+      {/* ── Map Container Canvas ────────────────────────────────────── */}
+      <div
+        ref={mapContainerRef}
+        className="w-full flex-1 bg-slate-950"
+        style={{ minHeight: "100%" }}
+      />
 
-      {/* SVG Canvas */}
-      <svg
-        viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
-        className="w-full h-full"
-        style={{
-          transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-          transformOrigin: "center center",
-          transition: isDragging ? "none" : "transform 0.15s ease-out",
-        }}
-      >
-        <defs>
-          {/* Subtle gradient for map landmass */}
-          <radialGradient id="landmassGradient" cx="50%" cy="50%" r="65%">
-            <stop offset="0%" stopColor="#281A5E" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="#191040" stopOpacity="0.85" />
-          </radialGradient>
-
-          {/* Radial glow filter */}
-          <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="3.5" result="coloredBlur" />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-
-        {/* Latitude / Longitude Reference Lines */}
-        <g stroke="#2D1F6E" strokeWidth="1" strokeDasharray="3 3">
-          {/* Latitude lines */}
-          <line x1="20" y1="216" x2="780" y2="216" /> {/* ~28.5N */}
-          <line x1="20" y1="416" x2="780" y2="416" /> {/* ~19.5N */}
-          <line x1="20" y1="560" x2="780" y2="560" /> {/* ~13.0N */}
-          {/* Longitude lines */}
-          <line x1="260" y1="20" x2="260" y2="680" /> {/* ~77E */}
-          <line x1="150" y1="20" x2="150" y2="680" /> {/* ~73E */}
-          <line x1="540" y1="20" x2="540" y2="680" /> {/* ~88E */}
-        </g>
-
-        {/* India Continental Coastline & Territorial Polygon */}
-        <path
-          d={INDIA_COASTLINE_PATH}
-          fill="url(#landmassGradient)"
-          stroke="#4D2DBB"
-          strokeWidth="1.5"
-          strokeLinejoin="round"
-          className="transition-colors"
-        />
-
-        {/* Regional Hub Labels for Geographical Anchor */}
-        {REGIONAL_REFERENCE_HUBS.map((hub) => {
-          const pt = projectCoords(hub.lat, hub.lng);
-          return (
-            <g key={hub.name} className="pointer-events-none opacity-45">
-              <circle cx={pt.x} cy={pt.y} r="2.5" fill="#475569" />
-              <text
-                x={pt.x + 5}
-                y={pt.y + 3}
-                fontSize="9"
-                fill="#64748b"
-                fontFamily="monospace"
-                letterSpacing="0.5px"
-              >
-                {hub.name}
-              </text>
-            </g>
-          );
-        })}
-
-        {/* Cluster Markers */}
-        {clusters.map((cluster) => {
-          const pt = projectCoords(cluster.lat, cluster.lng);
-          const isSelected =
-            selectedCluster?.pincode === cluster.pincode &&
-            selectedCluster?.locality === cluster.locality;
-          const colors = getSeverityColors(cluster.severity);
-
-          // Scaled size based on report count
-          const baseRadius = Math.min(Math.max(12, 10 + cluster.count * 1.2), 26);
-
-          return (
-            <g
-              key={`${cluster.pincode}-${cluster.locality}`}
-              transform={`translate(${pt.x}, ${pt.y})`}
-              className="cursor-pointer transition-transform duration-150 focus:outline-none"
-              tabIndex={0}
-              role="button"
-              aria-label={`Scam cluster in ${cluster.locality}, ${cluster.city}. PIN ${cluster.pincode}. ${cluster.count} reports. Severity ${cluster.severity}.`}
-              onClick={(e) => {
-                e.stopPropagation();
-                onSelectCluster(cluster);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  onSelectCluster(cluster);
-                }
-              }}
-              onMouseEnter={(e) => {
-                setHoveredCluster(cluster);
-                const rect = containerRef.current?.getBoundingClientRect();
-                if (rect) {
-                  setHoverPos({
-                    x: e.clientX - rect.left,
-                    y: e.clientY - rect.top,
-                  });
-                }
-              }}
-              onMouseLeave={() => {
-                setHoveredCluster(null);
-                setHoverPos(null);
-              }}
-            >
-              {/* Animated Ripple Pulse Ring for Critical and Selected items */}
-              {(cluster.severity?.toUpperCase() === "CRIT" || isSelected) && (
-                <circle
-                  r={baseRadius + 14}
-                  fill="none"
-                  stroke={colors.fill}
-                  strokeWidth="2"
-                  opacity="0.6"
-                  className="animate-ping origin-center"
-                  style={{ animationDuration: "2.4s" }}
-                />
-              )}
-
-              {/* Selection Halo Ring */}
-              {isSelected && (
-                <circle
-                  r={baseRadius + 8}
-                  fill="none"
-                  stroke="#38bdf8"
-                  strokeWidth="2.5"
-                  strokeDasharray="4 2"
-                  className="animate-spin"
-                  style={{ animationDuration: "12s" }}
-                />
-              )}
-
-              {/* Outer Glow Halo */}
-              <circle
-                r={baseRadius + 4}
-                fill={colors.bg}
-                stroke={colors.fill}
-                strokeWidth="1.2"
-                strokeOpacity="0.8"
-                filter="url(#glow)"
-              />
-
-              {/* Core Solid Circle */}
-              <circle
-                r={baseRadius}
-                fill="#0f172a"
-                stroke={colors.fill}
-                strokeWidth="2"
-              />
-
-              {/* Report Count inside marker */}
-              <text
-                textAnchor="middle"
-                dominantBaseline="central"
-                fontSize={baseRadius > 16 ? "11" : "9.5"}
-                fontWeight="bold"
-                fill={colors.fill}
-                fontFamily="monospace"
-              >
-                {cluster.count}
-              </text>
-            </g>
-          );
-        })}
-      </svg>
-
-      {/* Floating Hover Tooltip */}
-      {hoveredCluster && hoverPos && (
-        <div
-          className="absolute z-30 pointer-events-none p-3.5 rounded-2xl bg-white/95 border border-[#EAE6FD] shadow-2xl backdrop-blur-md text-xs space-y-1 transform -translate-x-1/2 -translate-y-full mb-3"
-          style={{
-            left: `${hoverPos.x}px`,
-            top: `${hoverPos.y - 12}px`,
-          }}
-        >
-          <div className="flex items-center gap-1.5 font-bold text-[#171638]">
-            <MapPin className="w-3.5 h-3.5 text-[#6035E8]" />
-            <span>{hoveredCluster.locality}</span>
-          </div>
-          <p className="text-[11px] text-[#545277] font-medium">
-            {hoveredCluster.city} ({hoveredCluster.pincode})
-          </p>
-          <div className="flex items-center gap-2 pt-1.5 border-t border-[#EAE6FD] text-[11px]">
-            <span className="font-mono font-black text-[#08C9C5]">
-              {hoveredCluster.count} reports
-            </span>
-            <span className="text-[#DDD6FE]">•</span>
-            <span
-              className={`font-bold ${
-                hoveredCluster.severity === "CRIT"
-                  ? "text-rose-600"
-                  : hoveredCluster.severity === "HIGH"
-                  ? "text-amber-600"
-                  : "text-[#08C9C5]"
-              }`}
-            >
-              {hoveredCluster.severity}
-            </span>
+      {/* ── Error Fallback ─────────────────────────────────────────── */}
+      {mapError && (
+        <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center z-20">
+          <div className="p-3 rounded-full bg-rose-500/10 text-rose-400 mb-3 border border-rose-500/30">
+            <MapPin className="w-7 h-7" />
           </div>
           <h3 className="text-base font-bold text-slate-200 mb-1">
             {isHi ? "नक्शा रेंडर करने में असमर्थ" : "Map Rendering Unavailable"}
