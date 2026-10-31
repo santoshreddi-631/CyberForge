@@ -155,6 +155,23 @@ describe("deterministic trust engine adversarial scenarios", () => {
     expect(result.verdict).toBe("KNOWN_SCAM");
   });
 
+  it("trips target circuit breaker when a distributed bot flood targets one number from 10 different networks in 10 minutes", () => {
+    const botReports = Array.from({ length: 10 }, (_, index) => report(index, {
+      reporterKey: `bot-reporter-${index}`,
+      ipPrefixKey: `distinct-bot-ip-network-${index}`,
+      occurredAt: new Date(Date.UTC(2026, 9, 20, 10, index)).toISOString(),
+      note: `Distinct generated note description with detail ${index} regarding caller demands and transactions.`,
+    }));
+
+    const result = evaluateTrust(botReports);
+    expect(result.circuitBreakerTripped).toBe(true);
+    expect(result.signals.circuitBreakerTripped).toBe(true);
+    expect(result.signals.circuitBreakerSurgeCount).toBe(10);
+    expect(result.verdict).toBe("SUSPICIOUS");
+    expect(result.trusted).toBe(false);
+    expect(result.reasons.join(" ")).toContain("Target circuit breaker tripped");
+  });
+
   it("is deterministic for identical inputs", () => {
     const reports = Array.from({ length: 7 }, (_, index) => report(index));
     expect(evaluateTrust(reports)).toEqual(evaluateTrust(reports));

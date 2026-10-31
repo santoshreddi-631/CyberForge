@@ -36,6 +36,10 @@ export const MONITORED_AREAS: AreaInfo[] = [
   { code: "302017", area: "Malviya Nagar", city: "Jaipur", lat: 26.857, lng: 75.808 },
   { code: "226010", area: "Gomti Nagar", city: "Lucknow", lat: 26.854, lng: 80.999 },
   { code: "682030", area: "Kakkanad", city: "Kochi", lat: 10.0159, lng: 76.3419 },
+  { code: "530001", area: "Dwaraka Nagar", city: "Visakhapatnam", lat: 17.7231, lng: 83.3012 },
+  { code: "520001", area: "Governorpet", city: "Vijayawada", lat: 16.5103, lng: 80.6276 },
+  { code: "522001", area: "Arundelpet", city: "Guntur", lat: 16.3008, lng: 80.4428 },
+  { code: "535579", area: "Vizianagaram Locality", city: "Vizianagaram", lat: 18.1124, lng: 83.3978 },
 ];
 
 export type ReportChannel =

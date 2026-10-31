@@ -20,4 +20,6 @@ export const DEFAULT_TRUST_POLICY: Readonly<TrustPolicy> = Object.freeze({
   repeatedReporterPenalty: 0.15,
   coordinatedBurstPenalty: 0.2,
   ipConcentrationPenalty: 0.2,
+  circuitBreakerWindowMinutes: 15,
+  circuitBreakerThreshold: 8,
 });

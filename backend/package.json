@@ -17,6 +17,7 @@
     "test:coverage": "vitest run --coverage",
     "db:migrate": "node --env-file-if-exists=.env src/db/migrations/run.js",
     "license:issue": "tsx scripts/issue-license.ts",
+    "db:cleanup-demo": "tsx scripts/cleanup-demo-data.ts",
     "test:db:prepare": "tsx scripts/prepare-test-db.ts",
     "db:seed": "node --env-file-if-exists=.env src/db/seeds/run.js",
     "test:db": "vitest run tests/database.test.js"

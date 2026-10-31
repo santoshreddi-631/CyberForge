@@ -47,6 +47,9 @@ export function evaluateTrust(
   if (signals.suspiciousIpConcentration) {
     reasons.push("IP-prefix concentration is treated as coordinated-risk evidence, not independent corroboration.");
   }
+  if (signals.circuitBreakerTripped) {
+    reasons.push("Target circuit breaker tripped: acute report surge detected (" + signals.circuitBreakerSurgeCount + " reports in <=" + policy.circuitBreakerWindowMinutes + "m). Identifier is locked in cooling-off protection and cannot be promoted to KNOWN_SCAM.");
+  }
   if (signals.coordinatedBurst) {
     reasons.push("A short coordinated burst with concentration or copied notes is discounted.");
   }
@@ -63,6 +66,7 @@ export function evaluateTrust(
   const trusted =
     !subject.verifiedBusiness &&
     !subject.challenged &&
+    !signals.circuitBreakerTripped &&
     signals.validReportCount > 0 &&
     signals.independentVoiceCount >= policy.minimumIndependentReporters &&
     signals.independentIpPrefixCount >= policy.minimumIndependentIpPrefixes &&
@@ -108,6 +112,7 @@ export function evaluateTrust(
     verdict,
     status: trusted ? "eligible" : "ignored",
     trusted,
+    circuitBreakerTripped: signals.circuitBreakerTripped,
     score: signals.evidenceScore,
     reasons,
     signals,

@@ -29,6 +29,7 @@ curl http://localhost:3001/health
 | `npm run test:coverage` | Vitest with V8 coverage |
 | `npm run db:migrate` | Apply PostgreSQL migrations |
 | `npm run db:seed` | Upsert Appendix B/C reference data |
+| `npm run db:cleanup-demo` | Delete marked demo reports in an isolated judging database |
 | `npm run license:issue` | Generate an offline demonstration licence/keypair |
 | `npm run test:db:prepare` | Reset and seed a validated local `*_test` database |
 
@@ -68,6 +69,13 @@ openssl req -x509 -newkey rsa:2048 -nodes `
 `NODE_ENV=production`; use a separate disposable judging deployment/database.
 The database-name suffix is not used as the safety control.
 
+For local judge cleanup, set `CLEANUP_DEMO_DATA=true` and run
+`npm run db:cleanup-demo`. This command only runs in the explicitly configured
+disposable judging database and deletes report IDs with known demo prefixes
+(`judge-demo-`, `bot-`, `phase11-`, `phase17-`, `phase18-`, `rep_test_`, and
+`demo-`). It preserves areas, scam types, channels, verified identifiers,
+licence state, and the normalized schema.
+
 ## Architecture
 
 ```
@@ -87,6 +95,23 @@ tests/
   health.test.ts                        — health + middleware + stub tests
   env.test.ts                           — environment validation tests
 ```
+
+## Frontend endpoint coverage
+
+The Next.js frontend is wired to every product API:
+
+| Backend endpoint | Frontend usage |
+|---|---|
+| `POST /reports` | Report form |
+| `GET /lookup` | Lookup page and result links |
+| `GET /api/v1/map` | Map page |
+| `GET /alerts` | Alerts page |
+| `POST /challenges` | Dispute form |
+
+`GET /health`, `GET/POST /license`, and `POST /admin/reset` are operational or
+judging endpoints and are intentionally not called by the public frontend.
+`GET /map` remains as the legacy/contract-compatible alias; the frontend uses
+the richer `/api/v1/map` response.
 
 ## Trust rules (anti-abuse)
 

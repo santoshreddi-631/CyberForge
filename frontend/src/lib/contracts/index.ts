@@ -97,14 +97,43 @@ export interface MapClusterItem {
   lng: number;
 }
 
+export interface MapFeatureProperties {
+  pincode: string;
+  area: string;
+  locality: string;
+  city: string;
+  report_count: number;
+  dominant_category: string;
+  top_scam_type: string;
+  risk_level: "CRIT" | "HIGH" | "MED" | string;
+  severity: "CRIT" | "HIGH" | "MED" | string;
+}
+
+export interface MapGeoJsonFeature {
+  type: "Feature";
+  geometry: {
+    type: "Point";
+    coordinates: [number, number]; // [lng, lat]
+  };
+  properties: MapFeatureProperties;
+}
+
 export interface MapQueryParamsContract {
   pincode?: string;
   days?: number;
   radius_km?: number;
+  category?: string;
+  format?: string;
 }
 
 export interface MapResponseContract {
   clusters: MapClusterItem[];
+  success?: boolean;
+  type?: "FeatureCollection";
+  generated_at?: string;
+  period_days?: number;
+  total_reports?: number;
+  features?: MapGeoJsonFeature[];
 }
 
 export interface ChallengeRequestContract {

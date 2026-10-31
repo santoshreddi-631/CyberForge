@@ -15,6 +15,11 @@ if (!url)
 const parsed = new URL(url);
 if (!parsed.pathname.endsWith('_test') || !['127.0.0.1', 'localhost'].includes(parsed.hostname))
     throw new Error('Refusing destructive reset outside local *_test database');
+process.env.DATABASE_URL = url;
+process.env.JUDGING_RESET_ENABLED = 'true';
+process.env.JUDGING_DATABASE_URL = url;
+process.env.JUDGING_DATABASE_DISPOSABLE = 'true';
+process.env.JUDGING_ENVIRONMENT = 'judging';
 const client = createClient(url);
 const secret = randomBytes(32).toString('hex');
 async function reset() { await client.sql.unsafe('DROP SCHEMA IF EXISTS restricted CASCADE; DROP SCHEMA IF EXISTS drizzle CASCADE; DROP SCHEMA public CASCADE; CREATE SCHEMA public'); }

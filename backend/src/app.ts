@@ -77,6 +77,7 @@ export function createApp(
   app.use("/reports", reportsRouter);
   app.use("/lookup", lookupRouter);
   app.use("/map", mapRouter);
+  app.use("/api/v1/map", mapRouter);
   app.use("/alerts", alertsRouter);
   app.use("/admin/reset", resetRouter);
   app.use("/challenges", challengesRouter);

@@ -143,8 +143,8 @@ export function LookupResultCard({ result, searchedValue }: LookupResultCardProp
                 </div>
                 <div className="text-lg font-bold text-rose-300 mt-1">
                   {isHi
-                    ? `${distinct_reporters} नागरिकों द्वारा रिपोर्ट`
-                    : `Reported by ${distinct_reporters} ${distinct_reporters === 1 ? "person" : "people"}`}
+                    ? `${Math.max(1, distinct_reporters || 1)} नागरिकों द्वारा रिपोर्ट`
+                    : `Reported by ${Math.max(1, distinct_reporters || 1)} ${Math.max(1, distinct_reporters || 1) === 1 ? "person" : "people"}`}
                 </div>
                 {report_count && report_count > distinct_reporters && (
                   <div className="text-[11px] text-slate-400 mt-0.5">
@@ -245,8 +245,8 @@ export function LookupResultCard({ result, searchedValue }: LookupResultCardProp
                 </div>
                 <div className="text-base font-bold text-amber-300 mt-1">
                   {isHi
-                    ? `${distinct_reporters} नागरिकों द्वारा रिपोर्ट`
-                    : `Reported by ${distinct_reporters} ${distinct_reporters === 1 ? "person" : "people"}`}
+                    ? `${Math.max(1, distinct_reporters || 1)} नागरिकों द्वारा रिपोर्ट`
+                    : `Reported by ${Math.max(1, distinct_reporters || 1)} ${Math.max(1, distinct_reporters || 1) === 1 ? "person" : "people"}`}
                 </div>
               </div>
             )}
