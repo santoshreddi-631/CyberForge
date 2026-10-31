@@ -4,3 +4,8 @@ coverage/
 .env
 .env.*
 !.env.example
+
+backend/.tmp-pg*/
+backend/dist/
+backend/node_modules/
+backend/audits
