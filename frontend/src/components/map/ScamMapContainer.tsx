@@ -15,8 +15,6 @@ import {
   EyeOff,
   Filter,
   CheckCircle2,
-  Clock,
-  Calendar,
 } from "lucide-react";
 import { apiClient, ApiError } from "@/lib/api/client";
 import {
@@ -24,12 +22,8 @@ import {
   MapResponseContract,
   MapGeoJsonFeature,
 } from "@/lib/contracts";
-import {
-  MONITORED_AREAS,
-  REPORT_SCAM_TYPES,
-} from "@/lib/constants/reportOptions";
+import { MONITORED_AREAS } from "@/lib/constants/reportOptions";
 import { ErrorState } from "@/components/ui/ErrorState";
-import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingSkeleton } from "@/components/ui/LoadingSkeleton";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -189,9 +183,12 @@ export function ScamMapContainer() {
 
   // Trigger load when timeFilter or categoryFilter changes
   useEffect(() => {
-    fetchMapData({ days: timeFilter, category: categoryFilter, pincode: pincodeFilter });
+    const timer = setTimeout(() => {
+      fetchMapData({ days: timeFilter, category: categoryFilter, pincode: pincodeFilter });
+    }, 0);
 
     return () => {
+      clearTimeout(timer);
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
@@ -408,33 +405,8 @@ export function ScamMapContainer() {
               size="sm"
               className="text-xs h-11"
             >
-              <div className="relative flex-1">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={pincodeFilter}
-                  onChange={(e) =>
-                    setPincodeFilter(
-                      e.target.value.replace(/\D/g, "").slice(0, 6)
-                    )
-                  }
-                  placeholder={
-                    isHi ? "6-अंकों का पिन कोड..." : "6-digit PIN..."
-                  }
-                  className="w-full h-9 px-3 pl-8 rounded-lg bg-slate-950 border border-slate-700/80 hover:border-slate-600 focus:border-teal-500 text-xs text-slate-100 placeholder:text-slate-500 outline-none transition-colors font-mono"
-                />
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 pointer-events-none" />
-              </div>
-
-              <PrimaryButton
-                type="submit"
-                variant="secondary"
-                size="sm"
-                className="h-9 text-xs px-2.5"
-              >
-                {t.map.filterPin}
-              </PrimaryButton>
-            </form>
+              {t.map.filterPin}
+            </PrimaryButton>
 
             {(pincodeFilter ||
               cityFilter !== "ALL" ||
@@ -443,12 +415,12 @@ export function ScamMapContainer() {
               <button
                 type="button"
                 onClick={handleClearFilter}
-                className="text-xs text-[#6035E8] hover:text-[#4317BD] font-bold underline underline-offset-4 px-2"
+                className="text-xs text-[#6035E8] hover:text-[#4317BD] font-bold underline underline-offset-4 px-2 cursor-pointer"
               >
                 {t.map.clearFilters}
               </button>
             )}
-          </div>
+          </form>
 
           {/* View mode toggle (Map / List / Split) */}
           <div className="flex items-center gap-1 bg-[#F0EDFF] p-1.5 rounded-full border border-[#EAE6FD] shrink-0 self-start md:self-auto">
@@ -487,12 +459,29 @@ export function ScamMapContainer() {
             </button>
             <button
               type="button"
-              onClick={() => loadMapData(pincodeFilter)}
-              className="p-1.5 rounded-full text-[#545277] hover:text-[#171638] hover:bg-white/80 transition-colors ml-1 cursor-pointer"
-              title={isHi ? "डेटा रीफ्रेश करें" : "Refresh map data"}
-              aria-label={isHi ? "डेटा रीफ्रेश करें" : "Refresh map data"}
+              disabled={isRefreshing}
+              onClick={() =>
+                fetchMapData({
+                  days: timeFilter,
+                  category: categoryFilter,
+                  pincode: pincodeFilter,
+                })
+              }
+              className={`p-1.5 rounded-full text-[#545277] hover:text-[#171638] hover:bg-white/80 transition-colors ml-1 cursor-pointer ${
+                isRefreshing ? "animate-spin text-[#6035E8]" : ""
+              }`}
+              title={
+                isHi
+                  ? `डेटा रीफ्रेश करें${formattedLastUpdated ? ` (अंतिम: ${formattedLastUpdated})` : ""}`
+                  : `Refresh map data${formattedLastUpdated ? ` (Last: ${formattedLastUpdated})` : ""}`
+              }
+              aria-label={
+                isHi
+                  ? `डेटा रीफ्रेश करें${formattedLastUpdated ? ` (अंतिम: ${formattedLastUpdated})` : ""}`
+                  : `Refresh map data${formattedLastUpdated ? ` (Last: ${formattedLastUpdated})` : ""}`
+              }
             >
-              <RotateCcw className="w-3.5 h-3.5" />
+              <RotateCcw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
             </button>
           </div>
         </div>
@@ -681,34 +670,15 @@ export function ScamMapContainer() {
                       {t.map.selectAreaDesc}
                     </p>
                   </div>
-                ) : (
-                  <>
-                    {selectedCluster ? (
-                      <ClusterDetailCard
-                        cluster={selectedCluster}
-                        onClose={() => setSelectedCluster(null)}
-                      />
-                    ) : (
-                      <div className="rounded-xl border border-dashed border-slate-800 bg-slate-900/40 p-6 text-center text-slate-400 space-y-2">
-                        <MapPin className="w-6 h-6 mx-auto text-slate-500" />
-                        <p className="text-sm font-semibold text-slate-300">
-                          {t.map.selectArea}
-                        </p>
-                        <p className="text-xs text-slate-400">
-                          {t.map.selectAreaDesc}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Directory Mini-list below detail card */}
-                    <ClusterListView
-                      clusters={displayedClusters}
-                      selectedCluster={selectedCluster}
-                      onSelectCluster={(cluster) => setSelectedCluster(cluster)}
-                      className="max-h-[380px]"
-                    />
-                  </>
                 )}
+
+                {/* Directory Mini-list below detail card */}
+                <ClusterListView
+                  clusters={displayedClusters}
+                  selectedCluster={selectedCluster}
+                  onSelectCluster={(cluster) => setSelectedCluster(cluster)}
+                  className="max-h-[380px]"
+                />
               </div>
             </div>
           )}
@@ -762,39 +732,9 @@ export function ScamMapContainer() {
                         : "Click any item from the directory to review aggregated metrics and patterns."}
                     </p>
                   </div>
-                }
-              />
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
-                <div className="md:col-span-7">
-                  <ClusterListView
-                    clusters={displayedClusters}
-                    selectedCluster={selectedCluster}
-                    onSelectCluster={(cluster) => setSelectedCluster(cluster)}
-                  />
-                </div>
-                <div className="md:col-span-5">
-                  {selectedCluster ? (
-                    <ClusterDetailCard
-                      cluster={selectedCluster}
-                      onClose={() => setSelectedCluster(null)}
-                    />
-                  ) : (
-                    <div className="rounded-xl border border-dashed border-slate-800 bg-slate-900/40 p-8 text-center text-slate-400 space-y-2">
-                      <MapPin className="w-6 h-6 mx-auto text-slate-500" />
-                      <p className="text-sm font-semibold text-slate-300">
-                        {isHi ? "एक क्लस्टर चुनें" : "Select a Cluster"}
-                      </p>
-                      <p className="text-xs text-slate-400">
-                        {isHi
-                          ? "समूहीकृत मेट्रिक्स और पैटर्न देखने के लिए डायरेक्टरी से किसी भी क्षेत्र पर क्लिक करें।"
-                          : "Click any item from the directory to review aggregated metrics and patterns."}
-                      </p>
-                    </div>
-                  )}
-                </div>
+                )}
               </div>
-            )
+            </div>
           )}
         </div>
       )}
