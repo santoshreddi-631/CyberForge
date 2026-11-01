@@ -5,7 +5,6 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import {
   ShieldAlert,
-  ShieldCheck,
   Search,
   RotateCcw,
   MapPin,
@@ -273,25 +272,26 @@ export function ScamMapContainer() {
 
   // Derived summary metrics
   const summaryMetrics = useMemo(() => {
-    if (
-      fetchState.status !== "success" ||
-      !fetchState.data.clusters ||
-      fetchState.data.clusters.length === 0
-    ) {
+    if (fetchState.status !== "success" || !fetchState.data.clusters) {
       return null;
     }
 
     const clusters = displayedClusters;
-    const totalReports =
-      fetchState.data.total_reports !== undefined
-        ? fetchState.data.total_reports
-        : clusters.reduce((acc, c) => acc + (c.count || 0), 0);
+    const isFiltered = cityFilter !== "ALL" || Boolean(pincodeFilter.trim());
+
+    // When a city or PIN filter is active, report totals MUST reflect ONLY the displayed clusters.
+    // When viewing all areas unfiltered, use the backend-provided total_reports.
+    const totalReports = isFiltered
+      ? clusters.reduce((acc, c) => acc + (c.count || 0), 0)
+      : (fetchState.data.total_reports !== undefined
+          ? fetchState.data.total_reports
+          : clusters.reduce((acc, c) => acc + (c.count || 0), 0));
 
     const criticalHotspots = clusters.filter(
       (c) => c.severity?.toUpperCase() === "CRIT"
     ).length;
 
-    // Dominant scam type across all clusters
+    // Dominant scam type across displayed clusters
     const typeCount: Record<string, number> = {};
     clusters.forEach((c) => {
       if (c.top_scam_type) {
@@ -320,7 +320,7 @@ export function ScamMapContainer() {
           ? "कोई दर्ज नहीं"
           : "None reported",
     };
-  }, [fetchState, displayedClusters, isHi]);
+  }, [fetchState, displayedClusters, cityFilter, pincodeFilter, isHi]);
 
   const formattedLastUpdated = useMemo(() => {
     if (!lastUpdated) return null;
@@ -506,7 +506,13 @@ export function ScamMapContainer() {
           <div className="p-5 rounded-2xl bg-white border border-[#EAE6FD] space-y-1.5 shadow-sm">
             <div className="flex items-center gap-2 text-xs font-bold text-[#837FA8] uppercase tracking-wider">
               <Activity className="w-3.5 h-3.5 text-[#08C9C5]" />
-              <span>{t.map.reports7Days}</span>
+              <span>
+                {timeFilter === 1
+                  ? isHi ? "24 घंटे की रिपोर्टें" : "24-Hour Reports"
+                  : timeFilter === 30
+                  ? isHi ? "30 दिनों की रिपोर्टें" : "30-Day Reports"
+                  : isHi ? "7 दिनों की रिपोर्टें" : "7-Day Reports"}
+              </span>
             </div>
             <p className="text-3xl font-black font-mono text-[#08C9C5]">
               {summaryMetrics.totalReports}
@@ -614,24 +620,24 @@ export function ScamMapContainer() {
         <div className="space-y-4">
           {/* Informational banner when 0 clusters match current filters */}
           {displayedClusters.length === 0 && (
-            <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 px-4 py-3 text-xs text-emerald-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+            <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-900 dark:text-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
               <div className="flex items-center gap-2.5">
-                <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                <ShieldAlert className="w-4 h-4 text-amber-500 shrink-0" />
                 <span>
                   {pincodeFilter || cityFilter !== "ALL" || categoryFilter !== "ALL"
                     ? isHi
-                      ? `चुने गए फ़िल्टर (${pincodeFilter ? `पिन: ${pincodeFilter} ` : ""}${cityFilter !== "ALL" ? `शहर: ${cityFilter} ` : ""}) के लिए पिछले ${timeFilter} दिनों में 0 स्कैम क्लस्टर दर्ज हैं। यह क्षेत्र वर्तमान में सुरक्षित है।`
-                      : `Zero scam clusters recorded for active filter (${pincodeFilter ? `PIN: ${pincodeFilter} ` : ""}${cityFilter !== "ALL" ? `City: ${cityFilter} ` : ""}) over the selected window (${timeFilter}d). This area is currently clear of reported fraud.`
+                      ? `चुने गए फ़िल्टर (${pincodeFilter ? `पिन: ${pincodeFilter} ` : ""}${cityFilter !== "ALL" ? `शहर: ${cityFilter} ` : ""}) के लिए पिछले ${timeFilter} दिनों में कोई योग्य स्कैम क्लस्टर उपलब्ध नहीं हैं। इसका यह अर्थ नहीं है कि यह क्षेत्र धोखाधड़ी-मुक्त है।`
+                      : `No eligible scam clusters are currently available for this area and time period (${pincodeFilter ? `PIN: ${pincodeFilter} ` : ""}${cityFilter !== "ALL" ? `City: ${cityFilter} ` : ""}${timeFilter}d). This does not mean the area is scam-free.`
                     : isHi
-                    ? `इस समय अंतराल में कोई सक्रिय स्कैम क्लस्टर रिपोर्ट नहीं हुआ। सतर्क रहें और संदिग्ध गतिविधियों की रिपोर्ट करें।`
-                    : `No scam clusters reported across monitored areas in this time window. Stay alert and report suspicious attempts.`}
+                    ? `इस समय अंतराल (${timeFilter} दिन) में कोई योग्य स्कैम क्लस्टर उपलब्ध नहीं हैं। इसका यह अर्थ नहीं है कि यह क्षेत्र धोखाधड़ी-मुक्त है।`
+                    : `No eligible scam clusters are currently available for this area and time period (${timeFilter}d). This does not mean the area is scam-free.`}
                 </span>
               </div>
               {(pincodeFilter || cityFilter !== "ALL" || categoryFilter !== "ALL" || timeFilter !== 7) && (
                 <button
                   type="button"
                   onClick={handleClearFilter}
-                  className="inline-flex items-center gap-1 font-medium text-emerald-400 hover:text-emerald-300 underline underline-offset-2 shrink-0 self-start sm:self-auto"
+                  className="inline-flex items-center gap-1 font-bold text-amber-700 dark:text-amber-300 hover:underline underline-offset-2 shrink-0 self-start sm:self-auto cursor-pointer"
                 >
                   {t.map.clearFilters}
                 </button>
@@ -658,6 +664,7 @@ export function ScamMapContainer() {
                 {selectedCluster ? (
                   <ClusterDetailCard
                     cluster={selectedCluster}
+                    timeFilter={timeFilter}
                     onClose={() => setSelectedCluster(null)}
                   />
                 ) : (
@@ -698,6 +705,7 @@ export function ScamMapContainer() {
                 <div className="max-w-xl mx-auto">
                   <ClusterDetailCard
                     cluster={selectedCluster}
+                    timeFilter={timeFilter}
                     onClose={() => setSelectedCluster(null)}
                   />
                 </div>
@@ -718,6 +726,7 @@ export function ScamMapContainer() {
                 {selectedCluster ? (
                   <ClusterDetailCard
                     cluster={selectedCluster}
+                    timeFilter={timeFilter}
                     onClose={() => setSelectedCluster(null)}
                   />
                 ) : (
