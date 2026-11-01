@@ -18,6 +18,22 @@ async function main(): Promise<void> {
   // Fail fast if env is invalid
   const env = getEnv();
 
+  // ── Auto-migrate and seed database on startup (for Free Tier cloud deploys) ──
+  try {
+    const { getDb } = await import("./db/client.js");
+    const { runMigrations } = await import("./db/migrations/run.js");
+    const { seed } = await import("./db/seeds/run.js");
+
+    const client = getDb();
+    logger.info("Executing database schema migrations...");
+    await runMigrations(client);
+    logger.info("Executing reference data seed...");
+    await seed(client);
+    logger.info("Database schema and seeds are ready");
+  } catch (dbErr) {
+    logger.error({ err: dbErr }, "Database auto-migration/seed error on startup");
+  }
+
   const app = createApp();
 
   const server = app.listen(env.PORT, env.HOST, () => {
