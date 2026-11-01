@@ -18,6 +18,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 
 interface ClusterDetailCardProps {
   cluster: MapClusterItem;
+  timeFilter?: 1 | 7 | 30;
   onClose?: () => void;
   className?: string;
 }
@@ -53,7 +54,12 @@ export function getScamTypeLabel(scamType: string, isHi: boolean = false): strin
     .join(" ");
 }
 
-export function ClusterDetailCard({ cluster, onClose, className = "" }: ClusterDetailCardProps) {
+export function ClusterDetailCard({
+  cluster,
+  timeFilter = 7,
+  onClose,
+  className = "",
+}: ClusterDetailCardProps) {
   const { lang, t } = useLanguage();
   const isHi = lang === "hi";
 
@@ -61,20 +67,27 @@ export function ClusterDetailCard({ cluster, onClose, className = "" }: ClusterD
   const scamLabel = getScamTypeLabel(cluster.top_scam_type, isHi);
 
   const getSeverityDescription = (sev: string) => {
+    const periodText =
+      timeFilter === 1
+        ? isHi ? "पिछले 24 घंटों" : "the past 24 hours"
+        : timeFilter === 30
+        ? isHi ? "पिछले 30 दिनों" : "the past 30 days"
+        : isHi ? "पिछले 7 दिनों" : "the past 7 days";
+
     switch (sev) {
       case "CRIT":
         return isHi
-          ? "पिछले 7 दिनों में इस क्षेत्र में उच्च मात्रा में धोखाधड़ी दर्ज की गई है। निवासियों को अत्यधिक सतर्क रहने की सलाह दी जाती है।"
-          : "High volume of scam activity reported in this area over the past 7 days. High vigilance advised for residents.";
+          ? `${periodText} में इस क्षेत्र में उच्च मात्रा में धोखाधड़ी दर्ज की गई है। निवासियों को अत्यधिक सतर्क रहने की सलाह दी जाती है।`
+          : `High volume of scam activity reported in this area over ${periodText}. High vigilance advised for residents.`;
       case "HIGH":
         return isHi
-          ? "पिछले 7 दिनों में इस क्षेत्र में स्कैम रिपोर्टों में वृद्धि देखी गई है। अप्रत्याशित भुगतान अनुरोधों की पुष्टि करें।"
-          : "Elevated scam reports noted in this area over the past 7 days. Verify unexpected payment requests.";
+          ? `${periodText} में इस क्षेत्र में स्कैम रिपोर्टों में वृद्धि देखी गई है। अप्रत्याशित भुगतान अनुरोधों की पुष्टि करें।`
+          : `Elevated scam reports noted in this area over ${periodText}. Verify unexpected payment requests.`;
       case "MED":
       default:
         return isHi
-          ? "पिछले 7 दिनों में इस क्षेत्र में मध्यम स्कैम रिपोर्टें दर्ज की गई हैं। सामान्य सावधानी बरतने की सलाह दी जाती है।"
-          : "Moderate scam reports recorded in this area over the past 7 days. Standard caution recommended.";
+          ? `${periodText} में इस क्षेत्र में मध्यम स्कैम रिपोर्टें दर्ज की गई हैं। सामान्य सावधानी बरतने की सलाह दी जाती है।`
+          : `Moderate scam reports recorded in this area over ${periodText}. Standard caution recommended.`;
     }
   };
 
@@ -141,7 +154,11 @@ export function ClusterDetailCard({ cluster, onClose, className = "" }: ClusterD
       <div className="grid grid-cols-2 gap-3 my-4">
         <div className="p-4 rounded-2xl bg-[#F6F4FE] border border-[#EAE6FD]">
           <span className="text-[11px] font-bold text-[#837FA8] uppercase tracking-wider block">
-            {isHi ? t.map.reports7Days : "Reports (7 Days)"}
+            {timeFilter === 1
+              ? isHi ? "रिपोर्ट्स (24 घंटे)" : "Reports (24 Hours)"
+              : timeFilter === 30
+              ? isHi ? "रिपोर्ट्स (30 दिन)" : "Reports (30 Days)"
+              : isHi ? "रिपोर्ट्स (7 दिन)" : "Reports (7 Days)"}
           </span>
           <div className="flex items-baseline gap-1.5 mt-1">
             <span className="text-2xl font-black font-mono text-[#08C9C5]">
