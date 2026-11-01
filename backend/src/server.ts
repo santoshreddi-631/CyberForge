@@ -29,7 +29,21 @@ async function main(): Promise<void> {
     await runMigrations(client);
     logger.info("Executing reference data seed...");
     await seed(client);
-    logger.info("Database schema and seeds are ready");
+
+    // Ensure baseline valid production license is active if unconfigured
+    const { getLicenseStatus, activateLicense } = await import("./modules/licensing/license.service.js");
+    const status = await getLicenseStatus();
+    if (!status.valid) {
+      const prodLicense = {
+        licensee: "Demo Bank - 1 Year Production",
+        expires_at: "2027-11-01T00:19:27.675Z",
+        signature: "D8cBr3/Chxj7CHPQAccZdDbOxJc1+4iNdM/yl05DuReBYzyPHnk6V8OcBkRUcdVh/vq8YqxmoEdhxrqsxXKYCA==",
+      };
+      await activateLicense(prodLicense);
+      logger.info("Baseline 1-year production license activated successfully");
+    }
+
+    logger.info("Database schema, seeds, and licence are ready");
   } catch (dbErr) {
     logger.error({ err: dbErr }, "Database auto-migration/seed error on startup");
   }
