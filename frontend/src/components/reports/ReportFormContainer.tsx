@@ -243,11 +243,13 @@ export function ReportFormContainer() {
 
     setSubmitState({ status: "submitting" });
 
-    const matchedArea = MONITORED_AREAS.find((a) => a.code === form.pincode.trim()) || {
-      area: form.city.trim() || "HSR Layout",
-      city: form.city.trim() || "Bengaluru",
-      code: form.pincode.trim() || "560102",
-    };
+    const enteredPin = form.pincode.trim();
+    const isValidPin = /^\d{6}$/.test(enteredPin);
+    const matchedArea = isValidPin ? MONITORED_AREAS.find((a) => a.code === enteredPin) : undefined;
+
+    const pincode = isValidPin ? enteredPin : "560102";
+    const city = form.city.trim() || matchedArea?.city || "India";
+    const locality = matchedArea?.area || form.city.trim() || `Area ${pincode}`;
 
     const reportId = typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
       ? crypto.randomUUID()
@@ -285,9 +287,9 @@ export function ReportFormContainer() {
       scam_type: mapCategoryToScamType(form.category),
       identifier_type: form.identifierType,
       identifier_value: form.identifierValue.trim(),
-      pincode: form.pincode.trim() || matchedArea.code,
-      locality: matchedArea.area,
-      city: form.city.trim() || matchedArea.city,
+      pincode: pincode,
+      locality: locality,
+      city: city,
       note: form.description.trim() || form.title.trim() || null,
       has_screenshot: Boolean(form.hasScreenshot),
       amount_lost_inr: amountLostInr,

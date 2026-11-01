@@ -130,7 +130,7 @@ export function LookupResultCard({ result, searchedValue }: LookupResultCardProp
             <p className="text-sm text-[#6E6D8F] leading-relaxed">
               {isHi
                 ? "यह पहचानकर्ता नागरिकों द्वारा बार-बार धोखाधड़ी के लिए रिपोर्ट किया गया है। इस स्रोत को धन हस्तांतरित न करें, गोपनीय विवरण साझा न करें और न ही कोई भुगतान अनुरोध स्वीकार करें।"
-                : "This identifier has been repeatedly reported by citizens for fraudulent activities. Do not transfer funds, share bank details, or approve payment requests from this source."}
+                : "Reported by community members. Multiple independent citizen reports have been recorded for this identifier. Exercise caution: do not transfer funds, share bank details, or approve payment requests."}
             </p>
           </div>
 
