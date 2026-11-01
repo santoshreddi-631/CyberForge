@@ -656,6 +656,7 @@ export function ScamMapContainer() {
                   onSelectCluster={(cluster) => setSelectedCluster(cluster)}
                   searchedCoordinates={searchedCoordinates}
                   isHi={isHi}
+                  cityFilter={cityFilter}
                 />
               </div>
 
@@ -699,6 +700,7 @@ export function ScamMapContainer() {
                 onSelectCluster={(cluster) => setSelectedCluster(cluster)}
                 searchedCoordinates={searchedCoordinates}
                 isHi={isHi}
+                cityFilter={cityFilter}
               />
 
               {selectedCluster && (
