@@ -1,6 +1,9 @@
 /**
- * Comprehensive Indian Postal Code and Geographic Centroid Resolver.
- * Maps any valid 6-digit Indian PIN code or city name to authoritative coordinates.
+ * Authoritative Indian Postal Code and Geographic Centroid Resolver.
+ * Maps valid Indian PIN codes to public reference centroids.
+ *
+ * PRD Compliance Rule: Centroids are strictly public reference points,
+ * NEVER reporter coordinates or client-submitted GPS.
  */
 
 interface GeoCoordinate {
@@ -8,7 +11,7 @@ interface GeoCoordinate {
   lng: number;
 }
 
-// Major Indian cities and district centroids
+// Fixed public centroids for major Indian cities and districts
 const CITY_CENTROIDS: Record<string, GeoCoordinate> = {
   guntur: { lat: 16.3067, lng: 80.4365 },
   vijayawada: { lat: 16.5062, lng: 80.648 },
@@ -40,7 +43,7 @@ const CITY_CENTROIDS: Record<string, GeoCoordinate> = {
   tirupati: { lat: 13.6288, lng: 79.4192 },
 };
 
-// Two-digit postal prefix mapping covering all Indian Postal Circles
+// Two-digit postal prefix public circle centroids across India
 const POSTAL_PREFIX_CENTROIDS: Record<string, GeoCoordinate> = {
   "11": { lat: 28.6139, lng: 77.209 }, // Delhi
   "12": { lat: 28.4595, lng: 77.0266 }, // Haryana (Gurugram/Faridabad)
@@ -113,36 +116,16 @@ const POSTAL_PREFIX_CENTROIDS: Record<string, GeoCoordinate> = {
   "85": { lat: 25.7711, lng: 87.481 }, // Bihar (Purnea)
 };
 
-// Geographic center of India (default fallback)
 const DEFAULT_INDIA_CENTROID: GeoCoordinate = { lat: 21.1458, lng: 79.0882 };
 
 /**
- * Resolves map coordinates for any Indian PIN code or location.
- * Priority:
- * 1. Provided explicit coordinates (from map picker or client geocoder).
- * 2. Matched city name.
- * 3. 2-digit PIN code prefix.
- * 4. National centroid fallback.
+ * Resolves map centroid coordinates strictly from public geographic dictionaries.
+ * It NEVER accepts or returns personal reporter coordinates.
  */
 export function resolvePostalCoordinates(
   pincode: string,
-  inputLat?: number | null,
-  inputLng?: number | null,
   city?: string | null
 ): GeoCoordinate {
-  if (
-    typeof inputLat === "number" &&
-    typeof inputLng === "number" &&
-    Number.isFinite(inputLat) &&
-    Number.isFinite(inputLng) &&
-    inputLat >= 6.0 &&
-    inputLat <= 38.0 &&
-    inputLng >= 68.0 &&
-    inputLng <= 98.0
-  ) {
-    return { lat: inputLat, lng: inputLng };
-  }
-
   if (city) {
     const normalizedCity = city.trim().toLowerCase();
     if (CITY_CENTROIDS[normalizedCity]) {

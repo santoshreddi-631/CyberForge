@@ -70,7 +70,7 @@ export async function storeReport(
     if (!existingArea) {
       const resolvedLocality = input.locality?.trim() || `Area ${input.pincode}`;
       const resolvedCity = input.city?.trim() || "India";
-      const coords = resolvePostalCoordinates(input.pincode, input.lat, input.lng, resolvedCity);
+      const coords = resolvePostalCoordinates(input.pincode, resolvedCity);
       await tx
         .insert(schema.areas)
         .values({

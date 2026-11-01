@@ -290,8 +290,6 @@ export function ReportFormContainer() {
       pincode: pincode,
       locality: locality,
       city: city,
-      lat: matchedArea ? matchedArea.lat : undefined,
-      lng: matchedArea ? matchedArea.lng : undefined,
       note: form.description.trim() || form.title.trim() || null,
       has_screenshot: Boolean(form.hasScreenshot),
       amount_lost_inr: amountLostInr,
