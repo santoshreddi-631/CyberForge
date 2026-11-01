@@ -35,7 +35,7 @@ export function getBaseApiUrl(): string {
   if (envUrl && envUrl.trim().length > 0) {
     return envUrl.replace(/\/+$/, "");
   }
-  return "http://localhost:3001";
+  return "https://cyberforge-405x.onrender.com";
 }
 
 /**
