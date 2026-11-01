@@ -31,8 +31,7 @@ import { ClusterListView } from "./ClusterListView";
 
 // Dynamically import MapLibre map component to avoid SSR/window issues in Next.js
 const GeospatialMapView = dynamic(
-  () =>
-    import("./GeospatialMapView").then((mod) => mod.GeospatialMapView),
+  () => import("./GeospatialMapView"),
   {
     ssr: false,
     loading: () => (

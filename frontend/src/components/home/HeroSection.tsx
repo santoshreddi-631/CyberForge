@@ -99,7 +99,7 @@ export function HeroSection() {
                 onSubmit={handleSearchSubmit}
                 role="search"
                 aria-label="Check suspicious identifier"
-                className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 p-2 sm:p-2.5 rounded-2xl sm:rounded-full bg-white shadow-[0_16px_40px_rgba(23,22,56,0.22)] border-2 border-white/90 focus-within:ring-4 focus-within:ring-[#08C9C5]/40 transition-all duration-200"
+                className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 p-2 sm:p-2.5 rounded-2xl sm:rounded-full bg-white shadow-[0_16px_40px_rgba(23,22,56,0.22)] border-2 border-white/90 focus-within:ring-4 focus-within:ring-[#08C9C5]/40 transition-[box-shadow,border-color] duration-200"
               >
                 <div className="relative flex-1 flex items-center min-w-0">
                   <div className="pl-3.5 pr-2 flex items-center pointer-events-none text-[#6035E8]">
@@ -117,7 +117,7 @@ export function HeroSection() {
 
                 <button
                   type="submit"
-                  className="h-12 px-7 rounded-xl sm:rounded-full bg-[#08C9C5] hover:bg-[#06B5B1] active:bg-[#059E9A] text-[#171638] font-black text-sm sm:text-base shadow-md transition-all duration-150 flex items-center justify-center gap-2 shrink-0 active:scale-95 cursor-pointer"
+                  className="h-12 px-7 rounded-xl sm:rounded-full bg-[#08C9C5] hover:bg-[#06B5B1] active:bg-[#059E9A] text-[#171638] font-black text-sm sm:text-base shadow-md transition-colors duration-150 flex items-center justify-center gap-2 shrink-0 active:scale-95 cursor-pointer"
                 >
                   <span>{t.home.checkButton}</span>
                   <ArrowRight className="w-4 h-4 stroke-[3]" />
@@ -180,7 +180,10 @@ export function HeroSection() {
                 {/* Visual Top Bar */}
                 <div className="flex items-center justify-between pb-4 border-b border-white/15">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-3 h-3 rounded-full bg-[#08C9C5] animate-ping" />
+                    <span className="relative flex h-2.5 w-2.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#08C9C5] opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#08C9C5]" />
+                    </span>
                     <span className="text-xs font-bold uppercase tracking-wider text-purple-100">
                       Live Defense Radar
                     </span>
