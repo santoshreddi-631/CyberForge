@@ -177,3 +177,192 @@ describe("deterministic trust engine adversarial scenarios", () => {
     expect(evaluateTrust(reports)).toEqual(evaluateTrust(reports));
   });
 });
+
+describe("trust engine core safety invariants (9 required scenarios)", () => {
+  // 1. Insufficient independent reporters (< 5)
+  it("rejects promotion when independent reporters are insufficient (< 5)", () => {
+    const reports = Array.from({ length: 3 }, (_, index) =>
+      report(index, {
+        reporterKey: `unique-reporter-${index}`,
+        ipPrefixKey: `unique-ip-${index}`,
+        occurredAt: new Date(Date.UTC(2026, 9, 20 + index, 10)).toISOString(),
+        note: `Detailed description of payment demand and callback verification ${index}.`,
+      })
+    );
+    const result = evaluateTrust(reports);
+    expect(result.trusted).toBe(false);
+    expect(result.verdict).not.toBe("KNOWN_SCAM");
+    expect(result.signals.independentVoiceCount).toBe(3);
+    expect(result.eligibleReportIds).toHaveLength(0);
+    expect(result.reasons.some((r) => r.includes("Fewer than 5 independent reporter"))).toBe(true);
+  });
+
+  // 2. Insufficient independent IP prefixes (< 3)
+  it("rejects promotion when independent IP prefixes are insufficient (< 3)", () => {
+    const reports = Array.from({ length: 6 }, (_, index) =>
+      report(index, {
+        reporterKey: `distinct-reporter-${index}`,
+        ipPrefixKey: `prefix-${index % 2}`, // Only 2 distinct prefixes
+        occurredAt: new Date(Date.UTC(2026, 9, 20 + Math.floor(index / 2), 10 + index)).toISOString(),
+        note: `Detailed explanation of malicious payment link received with transaction ID ${index}.`,
+      })
+    );
+    const result = evaluateTrust(reports);
+    expect(result.trusted).toBe(false);
+    expect(result.verdict).not.toBe("KNOWN_SCAM");
+    expect(result.signals.independentIpPrefixCount).toBe(2);
+    expect(result.eligibleReportIds).toHaveLength(0);
+    expect(result.reasons.some((r) => r.includes("Fewer than 3 independent IP prefixes"))).toBe(true);
+  });
+
+  // 3. Repeated reporter submissions (same reporter does not multiply voices)
+  it("treats repeated reporter submissions as one independent voice", () => {
+    const reports = Array.from({ length: 7 }, (_, index) =>
+      report(index, {
+        reporterKey: "single-persistent-reporter",
+        ipPrefixKey: `distinct-ip-${index}`,
+        occurredAt: new Date(Date.UTC(2026, 9, 20 + index, 11)).toISOString(),
+        note: `Victim report submission number ${index} regarding caller demands for credentials.`,
+      })
+    );
+    const result = evaluateTrust(reports);
+    expect(result.trusted).toBe(false);
+    expect(result.signals.independentReporterCount).toBe(1);
+    expect(result.signals.repeatedReporter).toBe(true);
+    expect(result.signals.independentVoiceCount).toBe(1);
+    expect(result.verdict).not.toBe("KNOWN_SCAM");
+  });
+
+  // 4. Repeated IP-prefix submissions (shared network capped to 1 voice)
+  it("caps repeated submissions from the same IP prefix to one voice", () => {
+    const reports = Array.from({ length: 8 }, (_, index) =>
+      report(index, {
+        reporterKey: `office-worker-${index}`,
+        ipPrefixKey: "192.168.1.0/24", // Single shared prefix
+        occurredAt: new Date(Date.UTC(2026, 9, 20 + index, 12)).toISOString(),
+        note: `Colleague report ${index} about phishing email demanding urgent payroll account update.`,
+      })
+    );
+    const result = evaluateTrust(reports);
+    expect(result.trusted).toBe(false);
+    expect(result.signals.independentIpPrefixCount).toBe(1);
+    expect(result.signals.independentVoiceCount).toBe(1);
+    expect(result.verdict).not.toBe("KNOWN_SCAM");
+  });
+
+  // 5. Insufficient time buckets (reports all in one hour bucket)
+  it("requires reports to span at least two separate time buckets", () => {
+    // 6 distinct reporters & 6 distinct IPs, but all within the same 1-hour bucket
+    const reports = Array.from({ length: 6 }, (_, index) =>
+      report(index, {
+        reporterKey: `time-bucket-rep-${index}`,
+        ipPrefixKey: `time-bucket-ip-${index}`,
+        occurredAt: new Date(Date.UTC(2026, 9, 20, 10, index * 5)).toISOString(), // 10:00 to 10:25
+        note: `Report with substantive information regarding fake investment advisory claim ${index}.`,
+      })
+    );
+    const result = evaluateTrust(reports);
+    expect(result.trusted).toBe(false);
+    expect(result.signals.uniqueTimeBucketCount).toBe(1);
+    expect(result.reasons.some((r) => r.includes("time buckets"))).toBe(true);
+    expect(result.verdict).not.toBe("KNOWN_SCAM");
+  });
+
+  // 6. Substantive independent evidence
+  it("evaluates substantive independent evidence and flags low quality when descriptions are missing or copied", () => {
+    // 6 reports with empty descriptions and no screenshots
+    const emptyNoteReports = Array.from({ length: 6 }, (_, index) =>
+      report(index, {
+        reporterKey: `rep-brief-${index}`,
+        ipPrefixKey: `ip-brief-${index}`,
+        occurredAt: new Date(Date.UTC(2026, 9, 20 + index, 10)).toISOString(),
+        hasScreenshot: false,
+        note: "",
+      })
+    );
+    const emptyResult = evaluateTrust(emptyNoteReports);
+    expect(emptyResult.signals.averageEvidenceQuality).toBeLessThan(0.6);
+    expect(
+      emptyResult.reasons.some((r) =>
+        r.includes("Evidence quality is limited because reports lack substantive independent descriptions")
+      )
+    ).toBe(true);
+
+    // Reports with copied template notes
+    const copiedReports = Array.from({ length: 6 }, (_, index) =>
+      report(index, {
+        reporterKey: `rep-copied-${index}`,
+        ipPrefixKey: `ip-copied-${index}`,
+        occurredAt: new Date(Date.UTC(2026, 9, 20 + index, 10)).toISOString(),
+        note: "same repeated template complaint copied across all submissions",
+      })
+    );
+    const copiedResult = evaluateTrust(copiedReports);
+    expect(copiedResult.signals.copiedNoteRatio).toBeGreaterThanOrEqual(0.6);
+    expect(
+      copiedResult.reasons.some((r) =>
+        r.includes("Copied note concentration reduces evidence quality")
+      )
+    ).toBe(true);
+  });
+
+  // 7. A valid eligible case (independent reporters, distinct IPs, multi-bucket, substantive)
+  it("confirms a valid eligible case when all independent criteria are met", () => {
+    const reports = Array.from({ length: 6 }, (_, index) =>
+      report(index, {
+        reporterKey: `valid-reporter-${index}`,
+        ipPrefixKey: `valid-ip-${index}`,
+        occurredAt: new Date(Date.UTC(2026, 9, 20 + index, 9 + (index % 4))).toISOString(),
+        note: [
+          "Received an automated call from someone claiming to be from the electric board demanding ₹15,000.",
+          "Caller claimed to be police officer inquiring about a suspicious courier parcel containing contraband.",
+          "SMS sender urged immediate KYC update for bank account or service will be stopped within 24 hours.",
+          "Received WhatsApp job offer offering ₹5000/day for liking videos but asked for upfront registration fee.",
+          "Caller impersonating tax official threatened legal penalty unless immediate penalty payment was settled.",
+          "Phishing SMS with an unverified short link directed to a fake net banking login portal asking for OTP.",
+        ][index],
+      })
+    );
+    const result = evaluateTrust(reports);
+    expect(result.trusted).toBe(true);
+    expect(result.verdict).toBe("KNOWN_SCAM");
+    expect(result.signals.independentVoiceCount).toBeGreaterThanOrEqual(5);
+    expect(result.signals.independentIpPrefixCount).toBeGreaterThanOrEqual(3);
+    expect(result.signals.uniqueTimeBucketCount).toBeGreaterThanOrEqual(2);
+    expect(result.eligibleReportIds.length).toBeGreaterThanOrEqual(5);
+  });
+
+  // 8. Verified business protection
+  it("protects verified businesses and never marks them as KNOWN_SCAM", () => {
+    const reports = Array.from({ length: 15 }, (_, index) =>
+      report(index, {
+        reporterKey: `hostile-rep-${index}`,
+        ipPrefixKey: `hostile-ip-${index}`,
+        occurredAt: new Date(Date.UTC(2026, 9, 20 + (index % 4), 10 + (index % 5))).toISOString(),
+        note: `Adversarial coordinated accusation alleging fraud against legitimate store ${index}.`,
+      })
+    );
+    const result = evaluateTrust(reports, { verifiedBusiness: true });
+    expect(result.verdict).toBe("VERIFIED_BUSINESS");
+    expect(result.trusted).toBe(false);
+    expect(result.eligibleReportIds).toHaveLength(0);
+    expect(result.reasons.some((r) => r.includes("Verified business protection"))).toBe(true);
+  });
+
+  // 9. Challenged identifier protection
+  it("protects challenged identifiers from becoming KNOWN_SCAM during active dispute", () => {
+    const reports = Array.from({ length: 12 }, (_, index) =>
+      report(index, {
+        reporterKey: `disputed-rep-${index}`,
+        ipPrefixKey: `disputed-ip-${index}`,
+        occurredAt: new Date(Date.UTC(2026, 9, 20 + (index % 3), 10 + (index % 4))).toISOString(),
+        note: `Consumer report disputing payment processing and asking for merchant review ${index}.`,
+      })
+    );
+    const result = evaluateTrust(reports, { challenged: true });
+    expect(result.verdict).toBe("SUSPICIOUS");
+    expect(result.trusted).toBe(false);
+    expect(result.eligibleReportIds).toHaveLength(0);
+    expect(result.reasons.some((r) => r.includes("Identifier is under challenge"))).toBe(true);
+  });
+});
