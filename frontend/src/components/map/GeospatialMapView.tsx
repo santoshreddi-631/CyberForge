@@ -11,6 +11,7 @@ import {
   Globe2,
   Loader2,
   AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import { MapClusterItem, MapGeoJsonFeature } from "@/lib/contracts";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -32,10 +33,10 @@ export const DEFAULT_ZOOM = 11;
 export const MIN_ZOOM = 3.5;
 export const MAX_ZOOM = 18;
 
-// Officially documented OpenFreeMap public map style
+// Officially documented OpenFreeMap public vector map style
 export const OPENFREEMAP_LIBERTY_STYLE = "https://tiles.openfreemap.org/styles/liberty";
 
-// City centers for rapid geographical navigation
+// Actual geographical coordinates for supported cities in India
 const CITY_CENTERS: Record<string, [number, number]> = {
   Bengaluru: [77.5946, 12.9716],
   Mumbai: [72.8295, 19.0596],
@@ -54,49 +55,6 @@ const CITY_CENTERS: Record<string, [number, number]> = {
   Vizianagaram: [83.3978, 18.1124],
 };
 
-// Fallback SVG Projection Bounds
-const MIN_LNG = 68.0;
-const MAX_LNG = 97.5;
-const MIN_LAT = 8.0;
-const MAX_LAT = 37.0;
-const SVG_WIDTH = 800;
-const SVG_HEIGHT = 700;
-
-function projectCoords(lat: number, lng: number): { x: number; y: number } {
-  const clampedLng = Math.max(MIN_LNG, Math.min(MAX_LNG, lng));
-  const clampedLat = Math.max(MIN_LAT, Math.min(MAX_LAT, lat));
-
-  const x = ((clampedLng - MIN_LNG) / (MAX_LNG - MIN_LNG)) * (SVG_WIDTH - 80) + 40;
-  const y = ((MAX_LAT - clampedLat) / (MAX_LAT - MIN_LAT)) * (SVG_HEIGHT - 80) + 40;
-
-  return { x, y };
-}
-
-const REGIONAL_REFERENCE_HUBS = [
-  { name: "New Delhi", lat: 28.6139, lng: 77.209 },
-  { name: "Mumbai", lat: 19.076, lng: 72.8777 },
-  { name: "Bengaluru", lat: 12.9716, lng: 77.5946 },
-  { name: "Kolkata", lat: 22.5726, lng: 88.3639 },
-  { name: "Hyderabad", lat: 17.385, lng: 78.4867 },
-  { name: "Chennai", lat: 13.0827, lng: 80.2707 },
-  { name: "Ahmedabad", lat: 23.0225, lng: 72.5714 },
-  { name: "Jaipur", lat: 26.9124, lng: 75.7873 },
-  { name: "Lucknow", lat: 26.8467, lng: 80.9462 },
-  { name: "Pune", lat: 18.5204, lng: 73.8567 },
-  { name: "Kochi", lat: 9.9312, lng: 76.2673 },
-];
-
-const INDIA_COASTLINE_PATH =
-  "M 260 70 " +
-  "L 290 85 L 320 120 L 305 140 L 335 170 L 350 200 " +
-  "L 400 230 L 450 240 L 510 240 L 560 260 " +
-  "L 580 230 L 630 220 L 680 230 L 720 260 L 700 290 L 660 300 " +
-  "L 630 330 L 580 340 L 560 370 L 530 380 " +
-  "L 500 420 L 460 470 L 410 520 L 360 580 L 330 630 L 310 660 " +
-  "L 280 660 L 260 630 L 250 580 L 240 520 L 210 470 L 170 420 " +
-  "L 140 370 L 110 350 L 80 340 L 100 310 L 150 290 " +
-  "L 170 250 L 200 210 L 220 160 L 235 120 Z";
-
 interface ClusterGroup {
   items: MapClusterItem[];
   centerLng: number;
@@ -114,22 +72,18 @@ export function GeospatialMapView({
   isHi = false,
   cityFilter,
 }: GeospatialMapViewProps) {
-  // MapLibre state
   const mapContainerRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapInstanceRef = useRef<any>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const markersRef = useRef<any[]>([]);
-  const [maplibreReady, setMaplibreReady] = useState(false);
-  const [maplibreLoading, setMaplibreLoading] = useState(true);
-  const [maplibreFailed, setMaplibreFailed] = useState(false);
+
+  const [mapReady, setMapReady] = useState(false);
+  const [mapLoading, setMapLoading] = useState(true);
+  const [mapError, setMapError] = useState<string | null>(null);
   const [currentZoom, setCurrentZoom] = useState(DEFAULT_ZOOM);
 
-  // SVG Pan/Zoom state for robust fallback
-  const [zoom, setZoom] = useState(1);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  // Tooltip state for hovered markers
   const [hoveredCluster, setHoveredCluster] = useState<MapClusterItem | null>(null);
   const [hoveredGroup, setHoveredGroup] = useState<ClusterGroup | null>(null);
   const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null);
@@ -167,11 +121,13 @@ export function GeospatialMapView({
   useEffect(() => {
     let isCancelled = false;
 
-    async function initMaplibre() {
+    async function initMap() {
       if (typeof window === "undefined" || !mapContainerRef.current) return;
 
       try {
-        setMaplibreLoading(true);
+        setMapLoading(true);
+        setMapError(null);
+
         const maplibre = await import("maplibre-gl");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const MapClass = (maplibre as any).default?.Map || (maplibre as any).Map;
@@ -188,12 +144,20 @@ export function GeospatialMapView({
           attributionControl: false,
         });
 
+        // Add built-in navigation control for compass
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const NavControl = (maplibre as any).default?.NavigationControl || (maplibre as any).NavigationControl;
+        if (NavControl) {
+          map.addControl(new NavControl({ showCompass: true, showZoom: false }), "bottom-right");
+        }
+
         map.on("load", () => {
           if (!isCancelled) {
             mapInstanceRef.current = map;
-            setMaplibreReady(true);
-            setMaplibreLoading(false);
+            setMapReady(true);
+            setMapLoading(false);
             setCurrentZoom(map.getZoom());
+            map.resize();
           }
         });
 
@@ -204,27 +168,43 @@ export function GeospatialMapView({
         });
 
         map.on("error", () => {
-          // If vector style fails, gracefully indicate status without breaking page
-          if (!isCancelled && !maplibreReady) {
-            setMaplibreFailed(true);
-            setMaplibreLoading(false);
+          if (!isCancelled && !mapInstanceRef.current) {
+            setMapError(
+              isHi
+                ? "नक्शा टाइल्स लोड करने में त्रुटि। कृपया इंटरनेट कनेक्शन जांचें।"
+                : "Unable to load OpenFreeMap vector tiles. Please check your internet connection."
+            );
+            setMapLoading(false);
           }
         });
-      } catch {
+      } catch (err: unknown) {
         if (!isCancelled) {
-          setMaplibreFailed(true);
-          setMaplibreLoading(false);
+          const message = err instanceof Error ? err.message : "Map initialization failed";
+          setMapError(message);
+          setMapLoading(false);
         }
       }
     }
 
-    const timer = setTimeout(() => {
-      initMaplibre();
-    }, 0);
+    const timer = setTimeout(initMap, 0);
+
+    // ResizeObserver ensures canvas fits responsively when layout changes
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof window !== "undefined" && "ResizeObserver" in window && mapContainerRef.current) {
+      resizeObserver = new ResizeObserver(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.resize();
+        }
+      });
+      resizeObserver.observe(mapContainerRef.current);
+    }
 
     return () => {
       isCancelled = true;
       clearTimeout(timer);
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
       if (mapInstanceRef.current) {
         try {
           mapInstanceRef.current.remove();
@@ -232,14 +212,14 @@ export function GeospatialMapView({
         mapInstanceRef.current = null;
       }
     };
-  }, []);
+  }, [isHi]);
 
-  // Clustered Markers Algorithm for Overlapping Localities
+  // Marker clustering algorithm: groups overlapping localities into clusters
   const renderMarkers = useCallback(() => {
     const map = mapInstanceRef.current;
-    if (!map || !maplibreReady || maplibreFailed) return;
+    if (!map || !mapReady) return;
 
-    // Clear previous markers
+    // Remove previous markers
     markersRef.current.forEach((marker) => {
       try {
         marker.remove();
@@ -252,7 +232,7 @@ export function GeospatialMapView({
       const MarkerClass = (maplibre as any).default?.Marker || (maplibre as any).Marker;
       if (!MarkerClass) return;
 
-      // Filter valid coordinates
+      // Filter valid geographical coordinates
       const validClusters = clusters.filter(
         (c) => typeof c.lng === "number" && typeof c.lat === "number"
       );
@@ -347,7 +327,6 @@ export function GeospatialMapView({
 
           el.addEventListener("click", (e) => {
             e.stopPropagation();
-            // Smoothly fly and zoom into the cluster to disperse points
             map.flyTo({
               center: [group.centerLng, group.centerLat],
               zoom: Math.min(map.getZoom() + 2.5, MAX_ZOOM),
@@ -396,7 +375,7 @@ export function GeospatialMapView({
             ? `<div class="absolute -inset-2 rounded-full border-2 border-sky-400 border-dashed animate-spin" style="animation-duration: 9s;"></div>`
             : "";
 
-          // Locality badge appears when zoomed in (zoom >= 10.5) or when selected
+          // Locality label appears when zoomed in (zoom >= 10.5) or when selected
           const showLocalityLabel = currentZoom >= 10.5 || isSelected;
           const localityPillHtml = showLocalityLabel
             ? `<div class="absolute top-full mt-1.5 left-1/2 -translate-x-1/2 whitespace-nowrap px-2 py-0.5 rounded-md bg-[#120D2C]/90 border border-white/20 text-[10px] font-bold text-white shadow-md pointer-events-none backdrop-blur-sm">
@@ -456,17 +435,17 @@ export function GeospatialMapView({
         }
       });
     });
-  }, [clusters, selectedCluster, onSelectCluster, maplibreReady, maplibreFailed, currentZoom, getSeverityColors]);
+  }, [clusters, selectedCluster, onSelectCluster, mapReady, currentZoom, getSeverityColors]);
 
-  // Re-run clustering and marker positioning when clusters, selection, or zoom level changes
+  // Re-render markers on clusters, selection, or zoom changes
   useEffect(() => {
     renderMarkers();
   }, [renderMarkers]);
 
-  // Hook map zoom/pan events to re-cluster on user navigation
+  // Re-cluster when map moves or zooms
   useEffect(() => {
     const map = mapInstanceRef.current;
-    if (!map || !maplibreReady) return;
+    if (!map || !mapReady) return;
 
     const handleMoveEnd = () => {
       renderMarkers();
@@ -476,12 +455,12 @@ export function GeospatialMapView({
     return () => {
       map.off("moveend", handleMoveEnd);
     };
-  }, [renderMarkers, maplibreReady]);
+  }, [renderMarkers, mapReady]);
 
-  // Navigate when a specific city is filtered
+  // Smoothly fly to city when cityFilter is selected
   useEffect(() => {
     const map = mapInstanceRef.current;
-    if (!map || !maplibreReady || !cityFilter) return;
+    if (!map || !mapReady || !cityFilter) return;
 
     if (cityFilter !== "ALL" && CITY_CENTERS[cityFilter]) {
       map.flyTo({
@@ -491,12 +470,12 @@ export function GeospatialMapView({
         essential: true,
       });
     }
-  }, [cityFilter, maplibreReady]);
+  }, [cityFilter, mapReady]);
 
-  // Navigate when searchedCoordinates are provided (e.g. from pincode filter)
+  // Smoothly fly to searched coordinates (e.g. from pincode filter)
   useEffect(() => {
     const map = mapInstanceRef.current;
-    if (map && maplibreReady && searchedCoordinates) {
+    if (map && mapReady && searchedCoordinates) {
       map.flyTo({
         center: searchedCoordinates,
         zoom: 13,
@@ -504,12 +483,12 @@ export function GeospatialMapView({
         essential: true,
       });
     }
-  }, [searchedCoordinates, maplibreReady]);
+  }, [searchedCoordinates, mapReady]);
 
-  // Pan to selectedCluster if it changes outside direct click
+  // Center on selectedCluster if selected from external list
   useEffect(() => {
     const map = mapInstanceRef.current;
-    if (map && maplibreReady && selectedCluster) {
+    if (map && mapReady && selectedCluster) {
       if (typeof selectedCluster.lng === "number" && typeof selectedCluster.lat === "number") {
         map.easeTo({
           center: [selectedCluster.lng, selectedCluster.lat],
@@ -517,48 +496,29 @@ export function GeospatialMapView({
         });
       }
     }
-  }, [selectedCluster, maplibreReady]);
-
-  // Fallback SVG center to searched coordinates
-  useEffect(() => {
-    if ((!maplibreReady || maplibreFailed) && searchedCoordinates) {
-      const timer = setTimeout(() => {
-        const pt = projectCoords(searchedCoordinates[1], searchedCoordinates[0]);
-        setZoom(2.2);
-        setPan({
-          x: (SVG_WIDTH / 2 - pt.x) * 2.2,
-          y: (SVG_HEIGHT / 2 - pt.y) * 2.2,
-        });
-      }, 0);
-      return () => clearTimeout(timer);
-    }
-  }, [searchedCoordinates, maplibreReady, maplibreFailed]);
+  }, [selectedCluster, mapReady]);
 
   // Map Controls Handlers
   const handleZoomIn = () => {
-    if (mapInstanceRef.current && maplibreReady) {
+    if (mapInstanceRef.current && mapReady) {
       mapInstanceRef.current.zoomIn({ duration: 250 });
-    } else {
-      setZoom((z) => Math.min(z + 0.35, 3.5));
     }
   };
 
   const handleZoomOut = () => {
-    if (mapInstanceRef.current && maplibreReady) {
+    if (mapInstanceRef.current && mapReady) {
       mapInstanceRef.current.zoomOut({ duration: 250 });
-    } else {
-      setZoom((z) => Math.max(z - 0.35, 0.8));
     }
   };
 
   const handleResetNorth = () => {
-    if (mapInstanceRef.current && maplibreReady) {
+    if (mapInstanceRef.current && mapReady) {
       mapInstanceRef.current.resetNorthPitch({ duration: 400 });
     }
   };
 
   const handleResetView = () => {
-    if (mapInstanceRef.current && maplibreReady) {
+    if (mapInstanceRef.current && mapReady) {
       mapInstanceRef.current.flyTo({
         center: BENGALURU_CENTER,
         zoom: DEFAULT_ZOOM,
@@ -567,53 +527,36 @@ export function GeospatialMapView({
         duration: 800,
         essential: true,
       });
-    } else {
-      setZoom(1);
-      setPan({ x: 0, y: 0 });
     }
   };
 
-  // SVG Fallback drag handlers
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (maplibreReady && !maplibreFailed) return;
-    if (e.button !== 0) return;
-    setIsDragging(true);
-    setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return;
-    setPan({
-      x: e.clientX - dragStart.x,
-      y: e.clientY - dragStart.y,
-    });
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
+  const handleRetry = () => {
+    setMapError(null);
+    setMapLoading(true);
+    if (mapInstanceRef.current) {
+      try {
+        mapInstanceRef.current.remove();
+      } catch {}
+      mapInstanceRef.current = null;
+    }
+    setMapReady(false);
   };
 
   return (
     <div
       ref={containerRef}
       className={`relative w-full h-[520px] md:h-[620px] rounded-[2.5rem] border border-[#EAE6FD] bg-[#120D2C] overflow-hidden select-none shadow-xl shadow-[#6035E8]/10 ${className}`}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
       role="application"
       aria-label="Interactive Map of Scam Clusters"
     >
-      {/* MapLibre WebGL Canvas Container */}
+      {/* Real MapLibre WebGL Canvas Container */}
       <div
         ref={mapContainerRef}
-        className={`absolute inset-0 w-full h-full transition-opacity duration-300 ${
-          maplibreReady && !maplibreFailed ? "opacity-100 z-10" : "opacity-0 pointer-events-none -z-10"
-        }`}
+        className="absolute inset-0 w-full h-full"
       />
 
       {/* Loading Indicator while Vector Tiles initialize */}
-      {maplibreLoading && !maplibreFailed && (
+      {mapLoading && !mapError && (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#120D2C]/80 backdrop-blur-sm pointer-events-none transition-opacity duration-300">
           <Loader2 className="w-8 h-8 text-[#6035E8] animate-spin mb-3" />
           <p className="text-xs font-bold text-white tracking-wide">
@@ -625,164 +568,25 @@ export function GeospatialMapView({
         </div>
       )}
 
-      {/* SVG Interactive Fallback Canvas (renders when WebGL is unavailable) */}
-      {(!maplibreReady || maplibreFailed) && (
-        <>
-          <div className="absolute inset-0 pointer-events-none opacity-25 bg-[radial-gradient(#6035E8_1px,transparent_1px)] [background-size:24px_24px]" />
-
-          <svg
-            viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
-            className="w-full h-full"
-            style={{
-              transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-              transformOrigin: "center center",
-              transition: isDragging ? "none" : "transform 0.15s ease-out",
-            }}
+      {/* Error State if MapLibre fails */}
+      {mapError && (
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#120D2C] p-6 text-center">
+          <AlertCircle className="w-10 h-10 text-rose-500 mb-3" />
+          <p className="text-sm font-bold text-white mb-1">
+            {isHi ? "नक्शा लोड करने में असमर्थ" : "Geographical Map Unavailable"}
+          </p>
+          <p className="text-xs text-[#837FA8] max-w-sm mb-4">
+            {mapError}
+          </p>
+          <button
+            type="button"
+            onClick={handleRetry}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#6035E8] text-white text-xs font-bold hover:bg-[#5028D0] transition-colors cursor-pointer"
           >
-            <defs>
-              <radialGradient id="landmassGradient" cx="50%" cy="50%" r="65%">
-                <stop offset="0%" stopColor="#281A5E" stopOpacity="0.9" />
-                <stop offset="100%" stopColor="#191040" stopOpacity="0.85" />
-              </radialGradient>
-              <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="3.5" result="coloredBlur" />
-                <feMerge>
-                  <feMergeNode in="coloredBlur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
-
-            {/* Latitude / Longitude Reference Lines */}
-            <g stroke="#2D1F6E" strokeWidth="1" strokeDasharray="3 3">
-              <line x1="20" y1="216" x2="780" y2="216" />
-              <line x1="20" y1="416" x2="780" y2="416" />
-              <line x1="20" y1="560" x2="780" y2="560" />
-              <line x1="260" y1="20" x2="260" y2="680" />
-              <line x1="150" y1="20" x2="150" y2="680" />
-              <line x1="540" y1="20" x2="540" y2="680" />
-            </g>
-
-            {/* Mainland Polygon */}
-            <path
-              d={INDIA_COASTLINE_PATH}
-              fill="url(#landmassGradient)"
-              stroke="#4D2DBB"
-              strokeWidth="1.5"
-              strokeLinejoin="round"
-            />
-
-            {/* Regional Anchor Cities */}
-            {REGIONAL_REFERENCE_HUBS.map((hub) => {
-              const pt = projectCoords(hub.lat, hub.lng);
-              return (
-                <g key={hub.name} className="pointer-events-none opacity-45">
-                  <circle cx={pt.x} cy={pt.y} r="2.5" fill="#475569" />
-                  <text
-                    x={pt.x + 5}
-                    y={pt.y + 3}
-                    fontSize="9"
-                    fill="#64748b"
-                    fontFamily="monospace"
-                    letterSpacing="0.5px"
-                  >
-                    {hub.name}
-                  </text>
-                </g>
-              );
-            })}
-
-            {/* Cluster Markers */}
-            {clusters.map((cluster) => {
-              const pt = projectCoords(cluster.lat, cluster.lng);
-              const isSelected =
-                selectedCluster?.pincode === cluster.pincode &&
-                selectedCluster?.locality === cluster.locality;
-              const colors = getSeverityColors(cluster.severity);
-              const baseRadius = Math.min(Math.max(12, 10 + cluster.count * 1.2), 26);
-
-              return (
-                <g
-                  key={`${cluster.pincode}-${cluster.locality}`}
-                  transform={`translate(${pt.x}, ${pt.y})`}
-                  className="cursor-pointer transition-transform duration-150 focus:outline-none"
-                  tabIndex={0}
-                  role="button"
-                  aria-label={`Scam cluster in ${cluster.locality}, ${cluster.city}. PIN ${cluster.pincode}. ${cluster.count} reports. Severity ${cluster.severity}.`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onSelectCluster(cluster);
-                  }}
-                  onMouseEnter={(e) => {
-                    setHoveredCluster(cluster);
-                    const rect = containerRef.current?.getBoundingClientRect();
-                    if (rect) {
-                      setHoverPos({
-                        x: e.clientX - rect.left,
-                        y: e.clientY - rect.top,
-                      });
-                    }
-                  }}
-                  onMouseLeave={() => {
-                    setHoveredCluster(null);
-                    setHoverPos(null);
-                  }}
-                >
-                  {(cluster.severity?.toUpperCase() === "CRIT" || isSelected) && (
-                    <circle
-                      r={baseRadius + 14}
-                      fill="none"
-                      stroke={colors.fill}
-                      strokeWidth="2"
-                      opacity="0.6"
-                      className="animate-ping origin-center"
-                      style={{ animationDuration: "2.4s" }}
-                    />
-                  )}
-
-                  {isSelected && (
-                    <circle
-                      r={baseRadius + 8}
-                      fill="none"
-                      stroke="#38bdf8"
-                      strokeWidth="2.5"
-                      strokeDasharray="4 2"
-                      className="animate-spin"
-                      style={{ animationDuration: "12s" }}
-                    />
-                  )}
-
-                  <circle
-                    r={baseRadius + 4}
-                    fill={colors.bg}
-                    stroke={colors.fill}
-                    strokeWidth="1.2"
-                    strokeOpacity="0.8"
-                    filter="url(#glow)"
-                  />
-
-                  <circle
-                    r={baseRadius}
-                    fill="#0f172a"
-                    stroke={colors.fill}
-                    strokeWidth="2"
-                  />
-
-                  <text
-                    textAnchor="middle"
-                    dominantBaseline="central"
-                    fontSize={baseRadius > 16 ? "11" : "9.5"}
-                    fontWeight="bold"
-                    fill={colors.fill}
-                    fontFamily="monospace"
-                  >
-                    {cluster.count}
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
-        </>
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>{isHi ? "पुनः प्रयास करें" : "Retry Connection"}</span>
+          </button>
+        </div>
       )}
 
       {/* Map Control Floating Toolbar (Zoom in, Zoom out, North Reset, Reset View) */}
@@ -863,7 +667,7 @@ export function GeospatialMapView({
       <div className="absolute top-4 left-4 z-20 flex flex-wrap items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/95 border border-[#EAE6FD] text-[11px] font-mono text-[#171638] backdrop-blur-md shadow-sm max-w-[calc(100%-80px)]">
         <div className="flex items-center gap-1.5 text-[#6035E8] font-bold">
           <Globe2 className="w-3.5 h-3.5" />
-          <span>{maplibreReady && !maplibreFailed ? "OpenFreeMap Vector GL" : "GIS Engine"}</span>
+          <span>OpenFreeMap Vector GL</span>
         </div>
         <span className="text-[#DDD6FE]">•</span>
         <span className="font-bold text-[#08C9C5]">{clusters.length} active areas</span>
@@ -872,14 +676,6 @@ export function GeospatialMapView({
           © OpenFreeMap • © OpenStreetMap contributors
         </span>
       </div>
-
-      {/* Notice if MapLibre fails back to SVG */}
-      {maplibreFailed && (
-        <div className="absolute top-14 left-4 z-20 flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-[10px] text-amber-800 backdrop-blur-md">
-          <AlertCircle className="w-3 h-3 text-amber-600" />
-          <span>Vector GL fallback active (Geospatial Projection)</span>
-        </div>
-      )}
 
       {/* Floating Hover Tooltip for Individual Cluster */}
       {hoveredCluster && hoverPos && (
