@@ -5,6 +5,14 @@ coverage/
 .env.*
 !.env.example
 
+*.log
+.DS_Store
+Thumbs.db
+scratch/
+backend/scratch/
+frontend/.next/
+frontend/out/
+
 backend/.tmp-pg*/
 backend/dist/
 backend/node_modules/
