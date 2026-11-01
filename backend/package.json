@@ -20,6 +20,7 @@
     "db:cleanup-demo": "tsx scripts/cleanup-demo-data.ts",
     "test:db:prepare": "tsx scripts/prepare-test-db.ts",
     "db:seed": "node --env-file-if-exists=.env src/db/seeds/run.js",
+    "db:inspect": "node scripts/inspect-db.cjs",
     "test:db": "vitest run tests/database.test.js"
   },
   "dependencies": {
