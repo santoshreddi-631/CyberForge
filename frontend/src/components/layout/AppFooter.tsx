@@ -49,10 +49,10 @@ export function AppFooter() {
               </div>
               <div className="flex flex-col">
                 <span className="text-lg font-black text-white tracking-tight">
-                  Community Scam Map
+                  ScamWatch
                 </span>
                 <span className="text-[11px] font-bold text-[#FFC928] tracking-wider uppercase">
-                  India Citizen Cyber Defense Grid
+                  Community Scam Map · India Citizen Cyber Defense Grid
                 </span>
               </div>
             </Link>
@@ -123,7 +123,7 @@ export function AppFooter() {
 
         {/* Bottom copyright */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-purple-300/70">
-          <p>© {currentYear} Community Scam Map. Built for Indian Citizen Cyber Safety.</p>
+          <p>© {currentYear} ScamWatch (Community Scam Map). Built for Indian Citizen Cyber Safety.</p>
           <div className="flex items-center gap-6">
             <Link href="/lookup" className="hover:text-white transition-colors">Verify Identifier</Link>
             <Link href="/report" className="hover:text-white transition-colors">Report Incident</Link>

@@ -49,10 +49,10 @@ export function AppHeader({ onToggleSidebar, isSidebarOpen }: AppHeaderProps) {
             </div>
             <div className="flex flex-col">
               <span className="text-base font-extrabold tracking-tight text-[#171638] group-hover:text-[#6035E8] transition-colors leading-tight">
-                Community Scam Map
+                ScamWatch
               </span>
               <span className="text-[10px] font-bold text-[#6035E8] tracking-wider uppercase">
-                India Citizen Defense
+                Community Scam Map · India Citizen Defense
               </span>
             </div>
           </Link>

@@ -1,8 +1,8 @@
 {
   "app": {
-    "name": "Community Scam Map",
+    "name": "ScamWatch",
     "tagline": "India's Community-Driven Cyber Fraud Intelligence Network",
-    "badge": "Citizen Defense Grid"
+    "badge": "Community Scam Map · Citizen Defense"
   },
   "nav": {
     "home": "Home",

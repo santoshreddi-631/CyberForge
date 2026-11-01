@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Community Scam Map | India's Citizen Cyber Fraud Defense Grid",
-    template: "%s | Community Scam Map",
+    default: "ScamWatch | India's Citizen Cyber Fraud Defense Grid (Community Scam Map)",
+    template: "%s | ScamWatch",
   },
   description:
     "Real-time community-driven intelligence network to verify suspect phone numbers, UPI handles, bank accounts, and phishing links across India.",
