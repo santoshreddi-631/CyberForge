@@ -34,17 +34,16 @@ Every day, thousands of Indian citizens are targeted by increasingly sophisticat
 
 The project was engineered strictly against the 14-page **Community Scam Map: Student Brief (PRD)**. Every requirement has been verified against the automated evaluation harness:
 
-| Category | Available Score | PRD Requirement & Rule | ScamWatch Implementation | Compliance Status |
-| :--- | :---: | :--- | :--- | :---: |
-| **1. Stops Fake Reports** | **20 pts** | • 40 friends reporting a real bakery must not make it "Known scam".<br>• 22 fake accounts from one Wi-Fi (`ip_prefix`) must be capped.<br>• One person reporting 6 times must count as 1 report.<br>• Junk inputs (`12345`, invalid timestamps) must be rejected with HTTP 400. | Corroboration engine requires multiple independent network prefixes (`/24`) and time buckets. Same-reporter velocity locks (`pg_advisory_xact_lock`) cap spam bursts. Verified businesses remain immune. | **20 / 20** ✅ |
-| **2. Lookup Speed & Accuracy** | **15 pts** | • Real scams return `KNOWN_SCAM`.<br>• Unreported numbers return `NO_REPORTS` (HTTP 200).<br>• Normalization: `+91 98765 43210` & `09876543210` return the exact same answer.<br>• Answers respond in under half a second (< 500ms). | Benchmarked at $p50 \approx 4.7\text{ ms}$, HTTPS TLS $p50 \approx 14.3\text{ ms}$. Full RFC-compliant normalization for phone, UPI, URL, and SMS headers. | **15 / 15** ✅ |
-| **3. Map & Alerts** | **10 pts** | • Area with sudden jump gets `SPIKE` alert (≥2× baseline & ≥5).<br>• New scam type gets `NEW_TYPE` alert (unseen in 30 days).<br>• Normal areas get zero alerts.<br>• 7-day default window; month-old reports excluded from map. | Rolling window aggregates seeded across all 25 PRD Appendix B centroids. Statistical baselines calculate spike multipliers dynamically. | **10 / 10** ✅ |
-| **4. Privacy Rules** | **15 pts** | • Fewer than 3 reporters: phone/identities must be masked (`98XXXXX210`).<br>• Map **never** shows a person's location or GPS.<br>• Say *"Reported by 7 people"*, never *"This person is a fraud"*.<br>• No personal data in logs. | HMAC-SHA256 pseudonymized signals. Masking algorithms enforce privacy threshold. Production Pino logger redacts queries and request bodies. | **15 / 15** ✅ |
-| **5. Server & Licence** | **15 pts** | • Live on real cloud HTTPS server.<br>• 4-step live licence demo without restarting.<br>• Clock rollback cheat detection.<br>• Private key stays on laptop only; server only has public key. | Hosted live on Render (`https://cyberforge-405x.onrender.com`). Asymmetric Ed25519 signature validation. Monotonic timestamp verification. Zero server restarts on renewal. | **15 / 15** ✅ |
-| **6. Easy to Report** | **15 pts** | • Report submitted in under 60 seconds.<br>• No mandatory login before form.<br>• Mobile-responsive with icons and Hindi localization. | Clean single-page form with channel & category icons, English & Hindi (`hi`) bilingual toggle. | **15 / 15** ✅ |
-| **7. Demo & Code** | **10 pts** | • Clear README explaining trust rules, licence demo, and pitch.<br>• Code is modular, documented, and clean to run. | Production documentation, OpenAPI 3.1 specification, reproducible PowerShell/bash run scripts. | **10 / 10** ✅ |
-| **Bonus Features** | **+7 pts** | • Verified business registry (+3 pts).<br>• Fake reports alert immunity (+2 pts).<br>• Dispute submission workflow (+2 pts). | 19 official banking & helpline identifiers seeded. `POST /challenges` dispute route caps contested verdicts to `SUSPICIOUS`. | **+7 / 7** ✅ |
-| **TOTAL SCORE** | **107 / 100** | **Comprehensive Full-Score Implementation** | | **107 / 107** 🏆 |
+| Evaluation Area | PRD Target Criteria & Rules | ScamWatch Implementation | Compliance Status |
+| :--- | :--- | :--- | :---: |
+| **1. Stops Fake Reports** | • 40 friends reporting a real bakery must not make it "Known scam".<br>• 22 fake accounts from one Wi-Fi (`ip_prefix`) must be capped.<br>• One person reporting 6 times must count as 1 report.<br>• Junk inputs (`12345`, invalid timestamps) must be rejected with HTTP 400. | Corroboration engine requires multiple independent network prefixes (`/24`) and time buckets. Same-reporter velocity locks (`pg_advisory_xact_lock`) cap spam bursts. Verified businesses remain immune. | **Verified Pass** ✅ |
+| **2. Lookup Speed & Accuracy** | • Real scams return `KNOWN_SCAM`.<br>• Unreported numbers return `NO_REPORTS` (HTTP 200).<br>• Normalization: `+91 98765 43210` & `09876543210` return the exact same answer.<br>• Answers respond in under half a second (< 500ms). | Benchmarked at $p50 \approx 4.7\text{ ms}$, HTTPS TLS $p50 \approx 14.3\text{ ms}$. Full RFC-compliant normalization for phone, UPI, URL, and SMS headers. | **Verified Pass** ✅ |
+| **3. Map & Alerts** | • Area with sudden jump gets `SPIKE` alert (≥2× baseline & ≥5).<br>• New scam type gets `NEW_TYPE` alert (unseen in 30 days).<br>• Normal areas get zero alerts.<br>• 7-day default window; month-old reports excluded from map. | Rolling window aggregates seeded across all 25 PRD Appendix B centroids. Statistical baselines calculate spike multipliers dynamically. | **Verified Pass** ✅ |
+| **4. Privacy Rules** | • Fewer than 3 reporters: phone/identities must be masked (`98XXXXX210`).<br>• Map **never** shows a person's location or GPS.<br>• Say *"Reported by 7 people"*, never *"This person is a fraud"*.<br>• No personal data in logs. | HMAC-SHA256 pseudonymized signals. Masking algorithms enforce privacy threshold. Production Pino logger redacts queries and request bodies. | **Verified Pass** ✅ |
+| **5. Server & Licence** | • Live on real cloud HTTPS server.<br>• 4-step live licence demo without restarting.<br>• Clock rollback cheat detection.<br>• Private key stays on laptop only; server only has public key. | Hosted live on Render (`https://cyberforge-405x.onrender.com`). Asymmetric Ed25519 signature validation. Monotonic timestamp verification. Zero server restarts on renewal. | **Verified Pass** ✅ |
+| **6. Easy to Report** | • Report submitted in under 60 seconds.<br>• No mandatory login before form.<br>• Mobile-responsive with icons and Hindi localization. | Clean single-page form with channel & category icons, English & Hindi (`hi`) bilingual toggle. | **Verified Pass** ✅ |
+| **7. Demo & Code** | • Clear README explaining trust rules, licence demo, and pitch.<br>• Code is modular, documented, and clean to run. | Production documentation, OpenAPI 3.1 specification, reproducible PowerShell/bash run scripts. | **Verified Pass** ✅ |
+| **Bonus Features** | • Verified business registry.<br>• Fake reports alert immunity.<br>• Dispute submission workflow. | 19 official banking & helpline identifiers seeded. `POST /challenges` dispute route caps contested verdicts to `SUSPICIOUS`. | **Verified Pass** ✅ |
 
 ---
 
@@ -217,7 +216,7 @@ npm run build
 
 ---
 
-## 8. Live Licence Demonstration Guide (PRD Item #5 — 15 Points)
+## 8. Live Licence Demonstration Guide (PRD Server & Licence Verification)
 
 The PRD requires a live 4-step demonstration on an **HTTPS cloud URL without server restarts**:
 
