@@ -71,8 +71,19 @@ export function createApp(
   app.set("trust proxy", 1);
 
   // ── 5. Routes ─────────────────────────────────────────────────────────────
-  app.use(licenseMiddleware);
+  // Public root and health endpoints (must respond 200 for cloud health checks)
+  app.get("/", (_req, res) => {
+    res.json({
+      service: "Community Scam Map API",
+      status: "ok",
+      version: "1.0.0",
+      health: "/health",
+    });
+  });
   app.use("/health", healthRouter);
+
+  // Licence gate applied to all operational API routes
+  app.use(licenseMiddleware);
 
   app.use("/reports", reportsRouter);
   app.use("/lookup", lookupRouter);
