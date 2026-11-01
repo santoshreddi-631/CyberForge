@@ -10,7 +10,7 @@ import {
 import { FloatingPathsBackground } from "@/components/ui/floating-paths";
 
 export const metadata: Metadata = {
-  title: "Community Scam Map | India's Citizen Cyber Fraud Defense Grid",
+  title: " | India's Citizen Cyber Fraud Defense Grid",
   description:
     "Check suspicious phone numbers, UPI IDs, and links. Report scams and help protect your community through shared awareness across India.",
 };

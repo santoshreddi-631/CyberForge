@@ -4,7 +4,7 @@ import { LoadingSkeleton } from "@/components/ui/LoadingSkeleton";
 import { LookupPageClient } from "@/components/lookup/LookupPageClient";
 
 export const metadata: Metadata = {
-  title: "Check Before You Trust | Community Scam Map",
+  title: "Check Before You Trust | ",
   description:
     "Check suspicious numbers, payment IDs and links before interacting or making a payment.",
 };

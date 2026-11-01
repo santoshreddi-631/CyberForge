@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { MapPageClient } from "@/components/map/MapPageClient";
 
 export const metadata: Metadata = {
-  title: "Community Scam Map | Geospatial Cyber Fraud Trends in India",
+  title: " | Geospatial Cyber Fraud Trends in India",
   description:
     "Explore aggregated area-level scam trends and cyber fraud hotspots across India over the past 7 days based on community reports.",
   robots: {
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     follow: true,
   },
   openGraph: {
-    title: "Community Scam Map | Local Cyber Fraud Activity",
+    title: " | Local Cyber Fraud Activity",
     description:
       "Interactive map showing aggregated scam activity across monitored Indian localities over the last 7 days. Helps citizens identify local fraud patterns.",
     type: "website",

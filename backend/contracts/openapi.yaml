@@ -1,10 +1,10 @@
 openapi: "3.1.0"
 
 info:
-  title: Community Scam Map API
+  title:  API
   version: "1.0.0"
   description: |
-    Backend API for the Community Scam Map application.
+    Backend API for the  application.
     Allows community members to report and look up scam phone numbers,
     UPI IDs, links and SMS senders without mandatory authentication.
 

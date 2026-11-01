@@ -1,4 +1,4 @@
--- Seed script for Community Scam Map (CyberForge)
+-- Seed script for  (CyberForge)
 BEGIN;
 
 -- 1. Areas (Appendix B centroids)

@@ -1,6 +1,6 @@
-# Judge QA — CyberForge Community Scam Map
+# Judge QA — CyberForge 
 
-This guide prepares the evaluation team with direct, verifiable answers and commands for inspecting the architecture, privacy safeguards, adversarial resilience, and operational safety of the Community Scam Map backend.
+This guide prepares the evaluation team with direct, verifiable answers and commands for inspecting the architecture, privacy safeguards, adversarial resilience, and operational safety of the  backend.
 
 ---
 

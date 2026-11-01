@@ -1,5 +1,5 @@
 /**
- * Standard definitions from Community Scam Map PRD (Appendix B and C)
+ * Standard definitions from  PRD (Appendix B and C)
  */
 
 export interface AreaInfo {

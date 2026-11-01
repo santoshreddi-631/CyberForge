@@ -2,7 +2,7 @@
   "app": {
     "name": "ScamWatch",
     "tagline": "India's Community-Driven Cyber Fraud Intelligence Network",
-    "badge": "Community Scam Map · Citizen Defense"
+    "badge": " · Citizen Defense"
   },
   "nav": {
     "home": "Home",
@@ -53,7 +53,7 @@
     "helplineName": "National Cyber Helpline",
     "govPortal": "Official Government of India Cyber Crime Reporting Portal",
     "privacyNotice": "Privacy-First Architecture: Personal reporter identities and pinpoint coordinates are never disclosed. All map coordinates are aggregated at area level.",
-    "copyright": "Community Scam Map. Built for citizen awareness in India."
+    "copyright": ". Built for citizen awareness in India."
   },
   "home": {
     "badge": "India Citizen Cyber Fraud Intelligence Network",
@@ -170,10 +170,10 @@
     "stepPrivacy": "Step 5 — Privacy & Submit"
   },
   "map": {
-    "title": "Community Scam Map",
+    "title": "",
     "subtitle": "Visualizing aggregated scam activity across areas over the past 7 days. This map helps citizens and small businesses identify emerging local scam trends to stay vigilant against fraudulent calls, messages, and links.",
     "badge": "7-Day Rolling Intelligence",
-    "disclaimerTitle": "About Community Scam Map Data",
+    "disclaimerTitle": "About  Data",
     "disclaimerDesc": "Incident clusters represent aggregated reports received by our community safety network over the past seven days. Reports do not indicate or imply that an entire locality, neighborhood, or merchant community is fraudulent. Exact reporter locations, addresses, and individual identities are never exposed.",
     "activeClusters": "Active Clusters",
     "reports7Days": "7-Day Reports",
@@ -217,7 +217,7 @@
     "subtitle": "If you represent a business and believe a community scam report is incorrect, you can submit a challenge for review.",
     "badge": "Dispute Resolution Desk",
     "guideTitle": "About the Business Challenge Process",
-    "guideDesc": "The Community Scam Map is designed to protect citizens from financial fraud while ensuring that legitimate local shops, businesses, and service providers are protected from wrongful or competitor report-bombing.",
+    "guideDesc": "The  is designed to protect citizens from financial fraud while ensuring that legitimate local shops, businesses, and service providers are protected from wrongful or competitor report-bombing.",
     "step1": "1. Submit Proof",
     "step1Desc": "Provide your trade name, official contact email, and official registration details (e.g. GSTIN, Shop License, or MSME registration).",
     "step2": "2. Neutral Status",

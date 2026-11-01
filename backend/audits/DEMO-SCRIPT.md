@@ -1,8 +1,8 @@
-# Judge Demonstration Script — CyberForge Community Scam Map
+# Judge Demonstration Script — CyberForge 
 
 ## Overview
 
-This three-minute demonstration guides judges and evaluators through a live, end-to-end evaluation of the CyberForge Community Scam Map backend. It executes all core workflows over real HTTPS on port 3443, covering:
+This three-minute demonstration guides judges and evaluators through a live, end-to-end evaluation of the CyberForge  backend. It executes all core workflows over real HTTPS on port 3443, covering:
 1. System Health Verification
 2. Ed25519 Licence Verification & Zero-Downtime Dynamic Renewal
 3. Verified Registry Precedence

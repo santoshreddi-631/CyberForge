@@ -27,7 +27,7 @@ RUN npm prune --omit=dev
 FROM node:24-alpine AS runtime
 
 LABEL org.opencontainers.image.title="community-scam-map-backend"
-LABEL org.opencontainers.image.description="Community Scam Map API server"
+LABEL org.opencontainers.image.description=" API server"
 
 # Non-root user for security
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup

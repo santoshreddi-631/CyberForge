@@ -1,4 +1,4 @@
-# ScamWatch — Community Scam Map
+# ScamWatch — 
 
 India's Citizen Cyber Fraud Defense Grid — A unified, privacy-first platform connecting community scam reporting, real-time threat intelligence lookup, regional alert aggregation, and geospatial cluster analysis.
 
@@ -6,7 +6,7 @@ India's Citizen Cyber Fraud Defense Grid — A unified, privacy-first platform c
 
 ## 1. Project Overview
 
-The **ScamWatch** platform (Community Scam Map) enables Indian citizens to report scam incidents and verify suspicious phone numbers, UPI handles, phishing URLs, and SMS sender IDs without mandatory login or authentication.
+The **ScamWatch** platform () enables Indian citizens to report scam incidents and verify suspicious phone numbers, UPI handles, phishing URLs, and SMS sender IDs without mandatory login or authentication.
 
 Key architectural pillars:
 - **Zero Privacy Leakage:** Reporter identities (HMAC-SHA256 pseudonymized), raw notes, and exact GPS coordinates are strictly internal. Public responses aggregate data by postal code (PIN) centroids and mask raw identifiers until confirmed by multiple independent reports.

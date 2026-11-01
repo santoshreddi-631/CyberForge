@@ -1,7 +1,7 @@
 const fs = require('fs');
 const ref = require('../src/db/seeds/reference.js');
 
-let sql = '-- Seed script for Community Scam Map (CyberForge)\nBEGIN;\n\n';
+let sql = '-- Seed script for  (CyberForge)\nBEGIN;\n\n';
 
 sql += '-- 1. Areas (Appendix B centroids)\n';
 for (const [pincode, locality, city, lat, lng] of ref.areas) {

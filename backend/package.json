@@ -1,7 +1,7 @@
 {
   "name": "community-scam-map-backend",
   "version": "1.0.0",
-  "description": "Community Scam Map – backend API (Node.js 24, Express 5, TypeScript)",
+  "description": " – backend API (Node.js 24, Express 5, TypeScript)",
   "main": "dist/server.js",
   "engines": {
     "node": ">=24.0.0"

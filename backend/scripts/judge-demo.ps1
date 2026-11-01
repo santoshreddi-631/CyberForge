@@ -10,7 +10,7 @@ if ($Insecure -or $BaseUrl.StartsWith("https://localhost")) {
 }
 
 Write-Host "`n==================================================================" -ForegroundColor Cyan
-Write-Host "     CYBERFORGE - COMMUNITY SCAM MAP JUDGE DEMONSTRATION" -ForegroundColor Cyan
+Write-Host "     CYBERFORGE -  JUDGE DEMONSTRATION" -ForegroundColor Cyan
 Write-Host "     Target URL: $BaseUrl" -ForegroundColor Cyan
 Write-Host "==================================================================" -ForegroundColor Cyan
 

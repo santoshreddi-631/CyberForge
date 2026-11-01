@@ -24,7 +24,7 @@ const httpsPort = Number(process.env.HTTPS_PORT || 3443);
 const server = https.createServer({ key, cert }, app);
 
 server.listen(httpsPort, env.HOST, () => {
-  logger.info({ port: httpsPort, host: env.HOST, env: env.NODE_ENV }, "Community Scam Map HTTPS server started");
+  logger.info({ port: httpsPort, host: env.HOST, env: env.NODE_ENV }, " HTTPS server started");
   console.log(`HTTPS server listening on https://${env.HOST}:${httpsPort}`);
 });
 

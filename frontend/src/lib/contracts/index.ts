@@ -1,5 +1,5 @@
 /**
- * API Contracts defining request & response payloads for Community Scam Map
+ * API Contracts defining request & response payloads for 
  */
 import {
   ScamReportSummary,

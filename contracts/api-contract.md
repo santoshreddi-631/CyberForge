@@ -1,6 +1,6 @@
-# Community Scam Map — Verified API Contract
+#  — Verified API Contract
 
-This document specifies the exact, verified HTTP API contracts between the Community Scam Map frontend and backend, grounded in the original PRD (`PRD_Community_Scam_Map.pdf`) and the backend OpenAPI specification (`backend/contracts/openapi.yaml`).
+This document specifies the exact, verified HTTP API contracts between the  frontend and backend, grounded in the original PRD (`PRD_Community_Scam_Map.pdf`) and the backend OpenAPI specification (`backend/contracts/openapi.yaml`).
 
 Base URL: `http://localhost:3001` (configured via `NEXT_PUBLIC_API_BASE_URL` in frontend).
 
@@ -74,7 +74,7 @@ Submits an individual citizen scam incident report. Normalized and pseudonymized
 
 ## 3. GET /lookup
 
-Queries an identifier against the Community Scam Map defense grid.
+Queries an identifier against the  defense grid.
 
 - **Method:** `GET`
 - **Route:** `/lookup`

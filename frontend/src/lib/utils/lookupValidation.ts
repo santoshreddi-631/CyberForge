@@ -1,5 +1,5 @@
 /**
- * Validation utilities for Community Scam Map Lookup identifiers
+ * Validation utilities for  Lookup identifiers
  * Strictly adhering to PRD specifications.
  */
 

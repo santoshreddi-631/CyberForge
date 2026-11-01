@@ -1,6 +1,6 @@
-# Community Scam Map — Backend
+#  — Backend
 
-Node.js 24 + Express 5 + TypeScript backend for the Community Scam Map hackathon project.
+Node.js 24 + Express 5 + TypeScript backend for the  hackathon project.
 
 ## Quick start
 

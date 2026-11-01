@@ -53,7 +53,7 @@ async function main(): Promise<void> {
   const server = app.listen(env.PORT, env.HOST, () => {
     logger.info(
       { port: env.PORT, host: env.HOST, env: env.NODE_ENV },
-      "Community Scam Map server started"
+      " server started"
     );
   });
 

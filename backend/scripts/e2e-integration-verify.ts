@@ -28,7 +28,7 @@ function issueLicense(licensee: string, expiresAt: string): { licensee: string; 
 
 async function run() {
   console.log("==================================================");
-  console.log("   COMMUNITY SCAM MAP - INTEGRATION VERIFICATION  ");
+  console.log("    - INTEGRATION VERIFICATION  ");
   console.log("==================================================");
 
   const env = getEnv();
@@ -157,7 +157,7 @@ async function run() {
     assert(afterReportData.display_value.includes("X"), `display_value is properly masked: "${afterReportData.display_value}"`);
 
     // -------------------------------------------------------------------------
-    // 7. GET /map (FLOW B - Community Scam Map)
+    // 7. GET /map (FLOW B - )
     // -------------------------------------------------------------------------
     console.log("\n7. Testing GET /map (FLOW B) ...");
     const mapRes = await fetch(`${baseUrl}/map?pincode=560102&days=7&radius_km=2`);

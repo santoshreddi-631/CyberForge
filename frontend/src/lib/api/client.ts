@@ -1,5 +1,5 @@
 /**
- * Community Scam Map - Frontend API Client
+ *  - Frontend API Client
  * Robust, typed HTTP client connecting to FastAPI backend.
  */
 

@@ -73,7 +73,7 @@ export function CommunityPrivacy() {
             <p className="mt-4 text-base sm:text-lg text-purple-100/90 leading-relaxed font-normal">
               {isHi
                 ? "कम्युनिटी स्कैम मैप एक सख्त गोपनीयता-प्रथम मॉडल पर काम करता है। हमारा उद्देश्य नागरिकों की निजता की रक्षा करते हुए साइबर अपराधियों को रोकना है।"
-                : "Community Scam Map operates on a strict privacy-first model. Our objective is to stop cyber criminals and alert citizens while strictly safeguarding the privacy of individuals who report incidents."}
+                : " operates on a strict privacy-first model. Our objective is to stop cyber criminals and alert citizens while strictly safeguarding the privacy of individuals who report incidents."}
             </p>
           </div>
 

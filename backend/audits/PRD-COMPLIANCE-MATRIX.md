@@ -1,6 +1,6 @@
 # PRD Compliance Matrix — Final Phase 18 Release Audit
 
-This document is the authoritative compliance matrix for the Community Scam Map backend, updated through Phase 18. **PASS** denotes verified by source implementation and automated execution; **FAIL** denotes requirement violation; **NOT VERIFIED** denotes external cloud environments or host-level tools that were not available for direct execution.
+This document is the authoritative compliance matrix for the  backend, updated through Phase 18. **PASS** denotes verified by source implementation and automated execution; **FAIL** denotes requirement violation; **NOT VERIFIED** denotes external cloud environments or host-level tools that were not available for direct execution.
 
 ---
 

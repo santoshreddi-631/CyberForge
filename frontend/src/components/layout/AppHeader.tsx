@@ -52,7 +52,7 @@ export function AppHeader({ onToggleSidebar, isSidebarOpen }: AppHeaderProps) {
                 ScamWatch
               </span>
               <span className="text-[10px] font-bold text-[#6035E8] tracking-wider uppercase">
-                Community Scam Map · India Citizen Defense
+                 · India Citizen Defense
               </span>
             </div>
           </Link>

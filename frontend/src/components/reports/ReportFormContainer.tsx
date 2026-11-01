@@ -853,7 +853,7 @@ export function ReportFormContainer() {
               <span>
                 {isHi
                   ? "कम्युनिटी स्कैम मैप इंटेलिजेंस नेटवर्क को भेजा जा रहा है…"
-                  : "Sending to the Community Scam Map intelligence network…"}
+                  : "Sending to the  intelligence network…"}
               </span>
             </p>
           )}

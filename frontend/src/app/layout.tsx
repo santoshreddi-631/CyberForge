@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "ScamWatch | India's Citizen Cyber Fraud Defense Grid (Community Scam Map)",
+    default: "ScamWatch | India's Citizen Cyber Fraud Defense Grid ()",
     template: "%s | ScamWatch",
   },
   description:

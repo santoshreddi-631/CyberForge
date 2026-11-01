@@ -1,5 +1,5 @@
 /**
- * Core TypeScript definitions for Community Scam Map
+ * Core TypeScript definitions for 
  */
 
 export type LanguageCode = "en" | "hi";

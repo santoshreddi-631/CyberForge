@@ -74,7 +74,7 @@ export function createApp(
   // Public root and health endpoints (must respond 200 for cloud health checks)
   app.get("/", (_req, res) => {
     res.json({
-      service: "Community Scam Map API",
+      service: " API",
       status: "ok",
       version: "1.0.0",
       health: "/health",

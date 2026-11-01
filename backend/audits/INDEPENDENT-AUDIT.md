@@ -1,4 +1,4 @@
-# Community Scam Map — Independent Backend Audit
+#  — Independent Backend Audit
 
 **Audit outcome: FAIL for release readiness.** The Express application and PostgreSQL implementation are real and most local integration checks pass. The release is not safe to call complete because the unauthenticated reset is not isolated from production data, expired signed licences can be submitted successfully, and the anti-abuse controls have bypass gaps. Public deployment over HTTPS was not available to verify.
 
