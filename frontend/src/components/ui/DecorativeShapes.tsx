@@ -36,7 +36,7 @@ export function DonutRing({
     <div
       aria-hidden="true"
       className={cn(
-        "rounded-full pointer-events-none select-none shrink-0 transition-transform duration-700",
+        "rounded-full pointer-events-none select-none shrink-0",
         sizeStyles[size],
         colorStyles[color],
         animate && "motion-safe:animate-[pulse_8s_ease-in-out_infinite]",

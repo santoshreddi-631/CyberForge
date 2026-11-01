@@ -14,7 +14,6 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { MapClusterItem, MapGeoJsonFeature } from "@/lib/contracts";
-import "maplibre-gl/dist/maplibre-gl.css";
 
 export interface GeospatialMapViewProps {
   clusters: MapClusterItem[];
@@ -76,6 +75,8 @@ export function GeospatialMapView({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapInstanceRef = useRef<any>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const maplibreRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const markersRef = useRef<any[]>([]);
 
   const [mapReady, setMapReady] = useState(false);
@@ -129,8 +130,15 @@ export function GeospatialMapView({
         setMapError(null);
 
         const maplibre = await import("maplibre-gl");
+        maplibreRef.current = maplibre;
+
+        // Configure the static worker URL from public directory (avoids Turbopack chunking errors)
+        if (typeof maplibre.setWorkerUrl === "function") {
+          maplibre.setWorkerUrl("/maplibre-gl-worker.mjs");
+        }
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const MapClass = (maplibre as any).default?.Map || (maplibre as any).Map;
+        const MapClass = (maplibre as any).Map || (maplibre as any).default?.Map;
 
         if (!MapClass || isCancelled || !mapContainerRef.current) return;
 
@@ -227,12 +235,13 @@ export function GeospatialMapView({
     });
     markersRef.current = [];
 
-    import("maplibre-gl").then((maplibre) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const MarkerClass = (maplibre as any).default?.Marker || (maplibre as any).Marker;
-      if (!MarkerClass) return;
+    const maplibre = maplibreRef.current;
+    if (!maplibre) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const MarkerClass = (maplibre as any).Marker || (maplibre as any).default?.Marker;
+    if (!MarkerClass) return;
 
-      // Filter valid geographical coordinates
+    // Filter valid geographical coordinates
       const validClusters = clusters.filter(
         (c) => typeof c.lng === "number" && typeof c.lat === "number"
       );
@@ -434,7 +443,6 @@ export function GeospatialMapView({
           markersRef.current.push(marker);
         }
       });
-    });
   }, [clusters, selectedCluster, onSelectCluster, mapReady, currentZoom, getSeverityColors]);
 
   // Re-render markers on clusters, selection, or zoom changes
