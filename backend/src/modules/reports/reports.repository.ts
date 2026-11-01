@@ -4,6 +4,7 @@ import schema from "../../db/schema/index.js";
 import { pseudonymize } from "../../db/signals.js";
 import type { ReportRequest } from "./reports.schema.js";
 import { evaluateTrust } from "../trust/trust-engine.js";
+import { resolvePostalCoordinates } from "../geo/postal-lookup.js";
 
 type DatabaseClient = ReturnType<typeof createClient>;
 
@@ -61,13 +62,25 @@ export async function storeReport(
       };
     }
 
-    const [area] = await tx
+    const [existingArea] = await tx
       .select({ locality: schema.areas.locality, city: schema.areas.city })
       .from(schema.areas)
       .where(sql`${schema.areas.pincode} = ${input.pincode}`)
       .limit(1);
-    if (!area) {
-      throw new ReportValidationError("pincode is not a supported Indian postal area");
+    if (!existingArea) {
+      const resolvedLocality = input.locality?.trim() || `Area ${input.pincode}`;
+      const resolvedCity = input.city?.trim() || "India";
+      const coords = resolvePostalCoordinates(input.pincode, input.lat, input.lng, resolvedCity);
+      await tx
+        .insert(schema.areas)
+        .values({
+          pincode: input.pincode,
+          locality: resolvedLocality,
+          city: resolvedCity,
+          lat: coords.lat.toFixed(4),
+          lng: coords.lng.toFixed(4),
+        })
+        .onConflictDoNothing();
     }
 
     const [identifier] = await tx

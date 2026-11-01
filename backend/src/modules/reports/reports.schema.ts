@@ -17,6 +17,8 @@ export const reportRequestSchema = z.object({
   pincode: z.string().regex(/^\d{6}$/u, "pincode must be a six-digit Indian postal code"),
   locality: nonEmptyText("locality", 200),
   city: nonEmptyText("city", 100),
+  lat: z.coerce.number().finite().min(-90).max(90).optional(),
+  lng: z.coerce.number().finite().min(-180).max(180).optional(),
   note: z.string().max(5000, "note is too long").nullable().optional(),
   has_screenshot: z.boolean().default(false),
   amount_lost_inr: z.number().finite().min(0).max(99_999_999_999_999).default(0),
