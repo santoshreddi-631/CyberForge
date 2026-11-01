@@ -2,7 +2,7 @@
 ### India's Citizen Cyber Fraud Defense Grid
 
 > **A real-time, privacy-preserving threat intelligence network for Indian citizens to verify suspicious phone numbers, UPI handles, phishing links, and SMS sender IDs, combined with geospatial threat clustering and neighborhood surge alerts.**
-
+* **Live Web Application:** [https://scam-watch-neon.vercel.app/](https://scam-watch-neon.vercel.app/) 
 ---
 
 ## 1. The Problem Statement
@@ -303,7 +303,7 @@ The `contracts/api-contract.md` document is the formal contract bridging the fro
 
 ## 10. Live Deployment Links
 
-* **Live Web Application:** [https://cyberforge.vercel.app](https://cyberforge.vercel.app) *(or your Vercel deployment)*
+* **Live Web Application:** [https://scam-watch-neon.vercel.app/](https://scam-watch-neon.vercel.app/) 
 * **Live API Health Check:** [https://cyberforge-405x.onrender.com/health](https://cyberforge-405x.onrender.com/health)
 * **Live Licence Status:** [https://cyberforge-405x.onrender.com/license](https://cyberforge-405x.onrender.com/license)
 * **Live Scam Map Feed:** [https://cyberforge-405x.onrender.com/map?days=7](https://cyberforge-405x.onrender.com/map?days=7)
